@@ -7,7 +7,7 @@ from Bio import motifs
 from Bio import SeqIO
 from Bio import AlignIO
 
-from expected_frequencies import naive_freq_tables
+from vllogo.expected_frequencies import naive_freq_tables
 
 import pandas as pd
 import numpy as np
