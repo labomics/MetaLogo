@@ -9,17 +9,29 @@ from matplotlib.textpath import TextPath
 from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
 from matplotlib.path import Path
 
+from item import Item
 
-class Character:
+class Character(Item):
 
-    def __init__(self, char, init_corrdinate, target_corrdinate, init_size=None, target_size=None, font = 'Arial', color = 'r', alpha = 1):
+    def __init__(self, char, ax=None, init_corrdinate=(0,0), target_corrdinate=(0,0),  target_size=None, font = 'Arial', color = 'r', alpha = 1, *args, **kwargs):
+        super(Character, self).__init__(*args, **kwargs)
         self.char = char
         self.init_corrdinate = init_corrdinate
         self.target_corrdinate = target_corrdinate
-        self.init_size = init_size
         self.target_size = target_size
+        self.alpha = alpha
         self.path = None
         self.patch = None
+        if ax == None:
+            self.generate_ax()
+        else:
+            self.ax = ax
+        self.generate_components()
+    
+    def generate_components(self):
+        self.generate_path()
+        self.generate_patch()
+
 
     def generate_path(self):
         self.path = TextPath(self.init_corrdinate, self.char, size=1)
@@ -37,8 +49,6 @@ class Character:
     def set_target_corrdinate(self, x, y):
         self.target_corrdinate = (x,y)
 
-    def set_init_size(self, width, height):
-        self.init_size = (width, height)
 
     def set_target_size(self, width, height):
         self.target_size = (width, height)
@@ -60,6 +70,9 @@ class Character:
     
     def transform(self):
         pass
+
+    def draw(self):
+        self.ax.add_patch(self.patch)
 
 
  
