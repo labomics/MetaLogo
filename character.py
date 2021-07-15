@@ -14,12 +14,17 @@ from colors import get_color_scheme
 
 class Character(Item):
 
-    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, font = 'Arial', color = 'basic_dna_color', alpha = 1, *args, **kwargs):
+    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, 
+                    logo_type='Horizontal', font = 'Arial', color = 'basic_dna_color', alpha = 1, 
+                    origin=(0,0), deg=np.pi/2, *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
         self.start_pos = start_pos
         self.target_size = target_size
+        self.logo_type = logo_type
         self.alpha = alpha
+        self.origin = origin
+        self.deg = deg
         self.path = None
         self.patch = None
         self.color_map = get_color_scheme(color)
@@ -60,11 +65,19 @@ class Character(Item):
         width,height = self.target_size
         tmp_path = TextPath((0,0), self.char, size=1)
         bbox = tmp_path.get_extents()
-        hoffset = (width - bbox.width * width / max(bbox.width,self.limited_width))/2
+        if self.logo_type == 'Horizontal':
+            hoffset = (width - bbox.width * width / max(bbox.width,self.limited_width))/2
+        elif self.logo_type == 'Circle':
+            hoffset = -1*(bbox.width * width / max(bbox.width,self.limited_width))/2
+        else:
+            pass
+
         transformation = Affine2D() \
             .translate(tx=-bbox.xmin, ty=-bbox.ymin) \
             .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
-            .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])
+            .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])\
+            .rotate_around(self.start_pos[0], self.start_pos[1], self.deg-np.pi/2)
+
         self.path = transformation.transform_path(tmp_path)
         self.patch = PathPatch(self.path, linewidth=0, 
                                 facecolor=self.color_map.get(self.char,self.color_map['other']),                              

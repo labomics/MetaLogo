@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--select_group',type=str,help='How to choose the groups, by options: most_seqnum, least_seqnum, longest, shortest, first, last, random',default='most_seqnum')
 
     #sort
-    parser.add_argument('--group_order',type=str,help='The order of groups',default='length')
+    parser.add_argument('--group_order',type=str,help='The order of groups',default='length_reverse')
 
     #color
     parser.add_argument('--color_scheme',type=str,help='The color scheme')
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     bits = compute_bits(groups,args.tmp_path)
     #print(groups)
 
-    logogroup = LogoGroup(bits,args.group_order)
+    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type)
     print(logogroup.logos)
     logogroup.draw()
     logogroup.savefig('test.png')

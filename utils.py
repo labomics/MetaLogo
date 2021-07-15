@@ -4,6 +4,7 @@ from format_utils import process_data
 import tempfile
 import os
 import uuid
+import numpy as np
 
 
 def read_file(filename, filetype, min_length, max_length):
@@ -71,5 +72,14 @@ def compute_bits(groups,tmp_path = './tmp/'):
         _,ic = process_data(tmpf_name,data_type='fasta')
         ic_table[group_id] = ic
     return ic_table
+
+def angle_between(p1, p2=(0,0)):
+    ang1 = np.arctan2(*p1[::-1])
+    ang2 = np.arctan2(*p2[::-1])
+    return (ang1 - ang2) % (2 * np.pi)
+
+def get_coor_by_angle(radius, angle, origin=(0,0)):
+    relative_coor =  (radius * np.cos(angle), radius * np.sin(angle))
+    return (relative_coor[0]+origin[0],relative_coor[1]+origin[1])
 
 

@@ -20,4 +20,10 @@ class Item():
 
     def set_start_pos(self,start_pos):
         self.start_pos = start_pos
+    
+    def set_deg(self,deg):
+        self.deg = deg
+    
+    def set_width(self,width):
+        self.width = width
 
