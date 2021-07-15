@@ -18,3 +18,6 @@ class Item():
         if (hasattr(self,'ax')) and (self.ax is not None):
             self.ax.get_figure().savefig(filename)
 
+    def set_start_pos(self,start_pos):
+        self.start_pos = start_pos
+

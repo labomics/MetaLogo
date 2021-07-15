@@ -4,11 +4,12 @@ from item import Item
 
 class Column(Item):
 
-    def __init__(self, bases, weights, ax=None, v_margin=0.1, *args, **kwargs):
+    def __init__(self, bases, weights, ax=None, start_pos=(0,0), char_margin=0.1, *args, **kwargs):
         super(Column, self).__init__(*args, **kwargs)
         self.bases = bases 
         self.weights = weights 
-        self.v_margin = v_margin
+        self.char_margin = char_margin
+        self.start_pos = start_pos
         #self.path_hight, self.init_hight, self.target_height = self.get_heights()
         self.characters = []
         if ax == None:
@@ -28,8 +29,8 @@ class Column(Item):
     #    target_height = 0
     #    for character in self.characters:
     #        path_height += character.get_extents().height 
-    #        init_heigth += character.init_size[1] + self.v_margin
-    #        target_height += character.target_size[1] + self.v_margin
+    #        init_heigth += character.init_size[1] + self.char_margin
+    #        target_height += character.target_size[1] + self.char_margin
     #    
     #    return path_height, init_heigth, target_height
     
@@ -43,6 +44,19 @@ class Column(Item):
     def draw(self):
         for character in self.characters:
             character.draw()
+    
+    def compute_positions(self):
+        start_pos = self.start_pos
+        for character in self.characters:
+            character.set_start_pos(start_pos)
+            character.compute_positions()
+            start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin)
+    
+    def get_height(self):
+        return sum([char.get_height() + self.char_margin for char in self.characters])
+    def get_width(self):
+        return max([char.get_width()  for char in self.characters])
+
 
 
         

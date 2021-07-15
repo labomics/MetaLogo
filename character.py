@@ -13,11 +13,10 @@ from item import Item
 
 class Character(Item):
 
-    def __init__(self, char, ax=None, init_corrdinate=(0,0), target_corrdinate=(0,0),  target_size=None, font = 'Arial', color = 'r', alpha = 1, *args, **kwargs):
+    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, font = 'Arial', color = 'r', alpha = 1, *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
-        self.init_corrdinate = init_corrdinate
-        self.target_corrdinate = target_corrdinate
+        self.start_pos = start_pos
         self.target_size = target_size
         self.alpha = alpha
         self.path = None
@@ -26,29 +25,19 @@ class Character(Item):
             self.generate_ax()
         else:
             self.ax = ax
+        if limited_width == None:
+            self.limited_width = self.get_limited_width()
         self.generate_components()
     
     def generate_components(self):
-        self.generate_path()
-        self.generate_patch()
-
-
-    def generate_path(self):
-        self.path = TextPath(self.init_corrdinate, self.char, size=1)
-
-    def generate_patch(self):
-        if self.path:
-            self.patch = PathPatch(self.path, alpha=self.alpha, linewidth=0)
+        self.path = TextPath(self.start_pos, self.char, size=1)
     
+    def get_limited_width(self, limited_char='E'):
+        tmp_path = TextPath((0, 0), 'E', size=1)
+        return tmp_path.get_extents().width
+
     def transform_path(self, transformation):
         return transformation.transform_path(self.path)
-
-    def set_init_corrdinate(self, x, y):
-        self.init_corrdinate = (x,y)
-    
-    def set_target_corrdinate(self, x, y):
-        self.target_corrdinate = (x,y)
-
 
     def set_target_size(self, width, height):
         self.target_size = (width, height)
@@ -69,10 +58,28 @@ class Character(Item):
         return self.patch.get_extents()
     
     def transform(self):
-        pass
+        width,height = self.target_size
+        tmp_path = TextPath((0,0), self.char, size=1)
+        bbox = tmp_path.get_extents()
+        hoffset = (width - bbox.width * width / max(bbox.width,self.limited_width))/2
+        transformation = Affine2D() \
+            .translate(tx=-bbox.xmin, ty=-bbox.ymin) \
+            .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
+            .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])
+        self.path = transformation.transform_path(tmp_path)
+        self.patch = PathPatch(self.path, linewidth=0)
 
     def draw(self):
+        self.transform()
         self.ax.add_patch(self.patch)
+
+    def compute_positions(self):
+        pass
+
+    def get_height(self):
+        return self.target_size[1]
+    def get_width(self):
+        return self.target_size[0]
 
 
  
