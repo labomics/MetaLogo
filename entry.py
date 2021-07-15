@@ -17,7 +17,7 @@ if __name__ == '__main__':
     
     #sequences
     parser.add_argument('--min_length',type=int,help='The minimum length of sequences to be included',default=25)
-    parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=27)
+    parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=30)
 
     #tmp
     parser.add_argument('--tmp_path',type=str,help='The location to store tmp files',default='tmp/')

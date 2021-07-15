@@ -52,7 +52,7 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_margin = 0.1, *args, **kwargs):
+    def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_margin = 0.01, *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -65,9 +65,11 @@ class LogoGroup(Item):
     
     def generate_components(self):
         print('come in generate_components')
-        for group_id,bits in self.seq_bits.items():
-            logo = Logo(bits,ax=self.ax)
-            self.logos.append(logo)
+        if self.group_order == 'length':
+            for group_id in sorted(self.seq_bits.keys()):
+                bits = self.seq_bits[group_id]
+                logo = Logo(bits,ax=self.ax)
+                self.logos.append(logo)
     
     def set_font(self):
         pass

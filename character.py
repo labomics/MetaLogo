@@ -10,10 +10,11 @@ from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
 from matplotlib.path import Path
 
 from item import Item
+from colors import get_color_scheme
 
 class Character(Item):
 
-    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, font = 'Arial', color = 'r', alpha = 1, *args, **kwargs):
+    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, font = 'Arial', color = 'basic_dna_color', alpha = 1, *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
         self.start_pos = start_pos
@@ -21,6 +22,7 @@ class Character(Item):
         self.alpha = alpha
         self.path = None
         self.patch = None
+        self.color_map = get_color_scheme(color)
         if ax == None:
             self.generate_ax()
         else:
@@ -45,9 +47,6 @@ class Character(Item):
     def set_font(self, font):
         self.font = font
 
-    def set_color(self, color):
-        self.color = color 
-    
     def set_alpha(self, alpha):
         self.set_alpha = alpha
     
@@ -67,7 +66,10 @@ class Character(Item):
             .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
             .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])
         self.path = transformation.transform_path(tmp_path)
-        self.patch = PathPatch(self.path, linewidth=0)
+        self.patch = PathPatch(self.path, linewidth=0, 
+                                facecolor=self.color_map.get(self.char,self.color_map['other']),                              
+                                alpha=self.alpha,
+                                edgecolor=self.color_map.get(self.char,self.color_map['other']))
 
     def draw(self):
         self.transform()
@@ -78,11 +80,6 @@ class Character(Item):
 
     def get_height(self):
         return self.target_size[1]
+
     def get_width(self):
         return self.target_size[0]
-
-
- 
-
-
-

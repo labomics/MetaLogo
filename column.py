@@ -4,7 +4,7 @@ from item import Item
 
 class Column(Item):
 
-    def __init__(self, bases, weights, ax=None, start_pos=(0,0), char_margin=0.1, *args, **kwargs):
+    def __init__(self, bases, weights, ax=None, start_pos=(0,0), char_margin=0.02, *args, **kwargs):
         super(Column, self).__init__(*args, **kwargs)
         self.bases = bases 
         self.weights = weights 
