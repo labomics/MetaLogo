@@ -14,16 +14,17 @@ from colors import get_color_scheme
 
 class Character(Item):
 
-    def __init__(self, char, ax=None, start_pos=(0,0),  target_size=None, limited_width=None, 
+    def __init__(self, char, ax=None, start_pos=(0,0),  width=1, height=1, limited_width=None, 
                     logo_type='Horizontal', font = 'Arial', color = 'basic_dna_color', alpha = 1, 
-                    origin=(0,0), deg=np.pi/2, *args, **kwargs):
+                    parent_start=(0,0), deg=np.pi/2, *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
         self.start_pos = start_pos
-        self.target_size = target_size
+        self.width = width 
+        self.height =  height
         self.logo_type = logo_type
         self.alpha = alpha
-        self.origin = origin
+        self.parent_start = parent_start
         self.deg = deg
         self.path = None
         self.patch = None
@@ -46,8 +47,6 @@ class Character(Item):
     def transform_path(self, transformation):
         return transformation.transform_path(self.path)
 
-    def set_target_size(self, width, height):
-        self.target_size = (width, height)
 
     def set_font(self, font):
         self.font = font
@@ -62,7 +61,8 @@ class Character(Item):
         return self.patch.get_extents()
     
     def transform(self):
-        width,height = self.target_size
+        width = self.width
+        height = self.height
         tmp_path = TextPath((0,0), self.char, size=1)
         bbox = tmp_path.get_extents()
         if self.logo_type == 'Horizontal':
@@ -76,7 +76,9 @@ class Character(Item):
             .translate(tx=-bbox.xmin, ty=-bbox.ymin) \
             .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
             .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])\
-            .rotate_around(self.start_pos[0], self.start_pos[1], self.deg-np.pi/2)
+            .rotate_around(self.parent_start[0], self.parent_start[1], self.deg-np.pi/2)
+        
+        #self.ax.annotate(self.start_pos, self.deg)
 
         self.path = transformation.transform_path(tmp_path)
         self.patch = PathPatch(self.path, linewidth=0, 
@@ -92,7 +94,7 @@ class Character(Item):
         pass
 
     def get_height(self):
-        return self.target_size[1]
+        return self.height
 
     def get_width(self):
-        return self.target_size[0]
+        return self.width

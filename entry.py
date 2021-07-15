@@ -29,7 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('--select_group',type=str,help='How to choose the groups, by options: most_seqnum, least_seqnum, longest, shortest, first, last, random',default='most_seqnum')
 
     #sort
-    parser.add_argument('--group_order',type=str,help='The order of groups',default='length_reverse')
+    parser.add_argument('--group_order',type=str,help='The order of groups',default='length')
 
     #color
     parser.add_argument('--color_scheme',type=str,help='The color scheme')

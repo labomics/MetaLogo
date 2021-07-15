@@ -7,7 +7,7 @@ class Item():
         pass
 
     def generate_ax(self):
-       fig, ax = plt.subplots(1, 1,figsize=(20,10))
+       fig, ax = plt.subplots(1, 1,figsize=(10,10))
        self.ax = ax    
     
     def draw(self):
@@ -21,6 +21,9 @@ class Item():
     def set_start_pos(self,start_pos):
         self.start_pos = start_pos
     
+    def set_parent_start(self,parent_start):
+        self.parent_start = parent_start 
+
     def set_deg(self,deg):
         self.deg = deg
     
