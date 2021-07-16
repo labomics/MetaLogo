@@ -4,13 +4,13 @@ from item import Item
 
 class Column(Item):
 
-    def __init__(self, bases, weights, ax=None, start_pos=(0,0), logo_type = 'Horizontal', char_margin=0.02,
+    def __init__(self, bases, weights, ax=None, start_pos=(0,0), logo_type = 'Horizontal', char_margin_ratio=0.05,
                  width=1, parent_start=(0,0), origin=(0,0), *args, **kwargs):
         super(Column, self).__init__(*args, **kwargs)
         self.bases = bases 
         self.weights = weights 
         self.width = width
-        self.char_margin = char_margin
+        self.char_margin_ratio = char_margin_ratio
         self.start_pos = start_pos
         self.parent_start = parent_start
         self.origin = origin
@@ -49,12 +49,12 @@ class Column(Item):
             character.set_width(self.width)
             character.compute_positions()
             if self.logo_type == 'Threed':
-                start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin, start_pos[2])
+                start_pos = (start_pos[0], start_pos[1] + character.get_height() *(1+self.char_margin_ratio), start_pos[2])
             else:
-                start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin)
+                start_pos = (start_pos[0], start_pos[1] + character.get_height() * (1+self.char_margin_ratio))
     
     def get_height(self):
-        return sum([char.get_height() + self.char_margin for char in self.characters])
+        return sum([char.get_height() * (1+self.char_margin_ratio) for char in self.characters])
     def get_width(self):
         return max([char.get_width()  for char in self.characters])
 

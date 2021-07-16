@@ -11,14 +11,14 @@ from utils import get_coor_by_angle
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin=0.1, parent_start = (0,0), origin = (0,0), *args, **kwargs):
+                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
         self.start_pos = start_pos
         self.logo_type = logo_type
         self.parent_start = parent_start
-        self.column_margin = column_margin
+        self.column_margin_ratio = column_margin_ratio
         self.column_width = column_width
         self.origin = origin
         self.columns = []
@@ -59,7 +59,7 @@ class Logo(Item):
     def compute_positions(self):
 
         if self.logo_type == 'Circle':
-            self.column_margin = 0
+            self.column_margin_ratio = 0
             self.radius = np.sqrt((self.start_pos[0]-self.parent_start[0])**2 + (self.start_pos[1]-self.parent_start[1])**2)
             self.each_deg = 2*np.pi / len(self.bits)
             width = 2 * self.radius * np.tan(self.each_deg/2)
@@ -76,7 +76,7 @@ class Logo(Item):
             if self.logo_type == 'Horizontal':
                 col.set_start_pos(start_pos)
                 col.compute_positions()
-                start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1])
+                start_pos = (start_pos[0] + col.get_width() * (1+self.column_margin_ratio), start_pos[1])
             elif self.logo_type == 'Circle':
                 start_pos = get_coor_by_angle(self.radius, self.degs[index], self.parent_start)
                 col.set_start_pos(start_pos)
@@ -88,11 +88,11 @@ class Logo(Item):
                 col.set_deg(self.deg)
                 col.set_radiation_space(self.radiation_space)
                 col.compute_positions()
-                start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1])
+                start_pos = (start_pos[0] + col.get_width() *(1+self.column_margin_ratio), start_pos[1])
             elif self.logo_type == 'Threed':
                 col.set_start_pos(start_pos)
                 col.compute_positions()
-                start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1], start_pos[2])
+                start_pos = (start_pos[0] + col.get_width() *(1+self.column_margin_ratio), start_pos[1], start_pos[2])
             else:
                 pass
     
@@ -100,7 +100,7 @@ class Logo(Item):
         return max([col.get_height() for col in self.columns])
     
     def get_width(self):
-        return sum([col.get_width() + self.column_margin for col in self.columns])
+        return sum([col.get_width() *(1+self.column_margin_ratio) for col in self.columns])
 
 
 
@@ -239,4 +239,7 @@ class LogoGroup(Item):
         if self.logo_type == 'Circle':
             self.ax.get_figure().set_figheight(10)
             self.ax.get_figure().set_figwidth(10)
+        if self.logo_type == 'Horizontal':
+            self.ax.get_figure().set_figheight(10)
+            self.ax.get_figure().set_figwidth(20)
 
