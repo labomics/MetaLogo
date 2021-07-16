@@ -65,7 +65,7 @@ if __name__ == '__main__':
     #print(groups)
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type)
-    print(logogroup.logos)
+    #print(logogroup.logos)
     logogroup.draw()
     logogroup.savefig('test.png')
 

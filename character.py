@@ -16,7 +16,7 @@ class Character(Item):
 
     def __init__(self, char, ax=None, start_pos=(0,0),  width=1, height=1, limited_width=None, 
                     logo_type='Horizontal', font = 'Arial', color = 'basic_dna_color', alpha = 1, 
-                    parent_start=(0,0), deg=np.pi/2, *args, **kwargs):
+                    parent_start=(0,0), deg=np.pi/2, origin=(0,0), *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
         self.start_pos = start_pos
@@ -25,6 +25,7 @@ class Character(Item):
         self.logo_type = logo_type
         self.alpha = alpha
         self.parent_start = parent_start
+        self.origin = origin
         self.deg = deg
         self.path = None
         self.patch = None
@@ -67,16 +68,29 @@ class Character(Item):
         bbox = tmp_path.get_extents()
         if self.logo_type == 'Horizontal':
             hoffset = (width - bbox.width * width / max(bbox.width,self.limited_width))/2
+            voffset = 0
         elif self.logo_type == 'Circle':
             hoffset = -1*(bbox.width * width / max(bbox.width,self.limited_width))/2
+            voffset = 0
+        elif self.logo_type == 'Radiation':
+            hoffset = 0 
+            voffset = -1 * self.radiation_space/2
         else:
             pass
 
         transformation = Affine2D() \
             .translate(tx=-bbox.xmin, ty=-bbox.ymin) \
             .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
-            .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1])\
-            .rotate_around(self.parent_start[0], self.parent_start[1], self.deg-np.pi/2)
+            .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1] + voffset)
+        
+
+        if self.logo_type == 'Circle':
+            transformation = transformation.rotate_around(self.parent_start[0], self.parent_start[1], self.deg-np.pi/2) 
+        elif self.logo_type == 'Radiation':
+            transformation = transformation.rotate_around(self.origin[0], self.origin[1], self.deg)
+            #pass
+        
+        #print('self.parent_start: ',self.parent_start)
         
         #self.ax.annotate(self.start_pos, self.deg)
 
@@ -89,6 +103,7 @@ class Character(Item):
     def draw(self):
         self.transform()
         self.ax.add_patch(self.patch)
+        #print(self.deg)
 
     def compute_positions(self):
         pass

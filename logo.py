@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import genericpath
+from matplotlib.colors import get_named_colors_mapping
 import numpy as np
 from matplotlib.patches import Circle
 from character import Character
@@ -10,7 +11,7 @@ from utils import get_coor_by_angle
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin=0.1, parent_start = (0,0), *args, **kwargs):
+                 column_margin=0.1, parent_start = (0,0), origin = (0,0), *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
@@ -19,6 +20,7 @@ class Logo(Item):
         self.parent_start = parent_start
         self.column_margin = column_margin
         self.column_width = column_width
+        self.origin = origin
         self.columns = []
 
         if ax == None:
@@ -35,7 +37,7 @@ class Logo(Item):
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
             weights = [x[1] for x in bit]
-            column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type)
+            column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,origin=self.origin)
             self.columns.append(column)
     
     def draw(self):
@@ -43,6 +45,8 @@ class Logo(Item):
         self.compute_positions()
         for col in self.columns:
             col.draw()
+        
+
         
     def draw_circle_help(self):
 
@@ -65,9 +69,6 @@ class Logo(Item):
             degs = degs[::-1]
             degs = [degs.pop()] + degs
             self.degs = degs
-        elif self.logo_type == 'Radiation':
-            pass
-
 
         start_pos = self.start_pos
         for index,col in enumerate(self.columns):
@@ -82,9 +83,14 @@ class Logo(Item):
                 col.set_deg(self.degs[index])
                 col.set_width(self.column_width)
                 col.compute_positions()
+            elif self.logo_type == 'Radiation':
+                col.set_start_pos(start_pos)
+                col.set_deg(self.deg)
+                col.set_radiation_space(self.radiation_space)
+                col.compute_positions()
+                start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1])
             else:
                 pass
-
     
     def get_height(self):
         return max([col.get_height() for col in self.columns])
@@ -97,7 +103,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.01, *args, **kwargs):
+                 logo_margin = 0.01, radiation_head_n = 5, *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -105,22 +111,22 @@ class LogoGroup(Item):
         self.logo_margin = logo_margin
         self.logo_type = logo_type
         self.init_radius = init_radius
+        self.radiation_head_n = 5
         self.ceiling_pos = ()
         self.logos = []
         self.generate_ax()
         self.generate_components()
     
     def generate_components(self):
-        print('come in generate_components')
         if self.group_order == 'length':
-            group_ids = sorted(self.seq_bits.keys())
+            self.group_ids = sorted(self.seq_bits.keys())
         elif self.group_order == 'length_reverse':
-            group_ids = sorted(self.seq_bits.keys(),reverse=True)
+            self.group_ids = sorted(self.seq_bits.keys(),reverse=True)
         else:
             pass
-        for group_id in group_ids:
+        for group_id in self.group_ids:
             bits = self.seq_bits[group_id]
-            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos)
+            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos)
             self.logos.append(logo)
 
     def set_font(self):
@@ -133,20 +139,59 @@ class LogoGroup(Item):
         
         if self.logo_type == 'Circle':
             logo.draw_circle_help()
+        
+        if self.logo_type == 'Radiation':
+            self.draw_radiation_help()
 
         self.compute_xy()
         self.set_figsize()
 
+    def draw_radiation_help(self):
+        self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
+
     def compute_positions(self):
-        start_pos = self.start_pos
-        if self.logo_type == 'Circle':
-            start_pos = (self.start_pos[0], self.start_pos[1]+self.init_radius)
-        for index,logo in enumerate(self.logos):
-            logo.set_parent_start(self.start_pos)
-            logo.set_start_pos(start_pos)
-            logo.compute_positions()
-            start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
-        self.ceiling_pos = start_pos
+
+        if self.logo_type == 'Radiation':
+            self.start_pos = (0,0)
+            self.radiation_radius = 1
+            self.radiation_width = 1
+            self.radiation_ratio = 0.9
+            thetas = []
+            head_ranges = [] 
+            for group_id in self.group_ids:
+                bit = self.seq_bits[group_id]
+                head_range = max([sum([x[1] for x in col])*1.1  for col in bit][:self.radiation_head_n])
+                head_ranges.append(head_range)
+            self.radiation_radius = 2 * sum(head_ranges) / (np.pi*self.radiation_ratio)
+
+            thetas = []
+            for head_range in head_ranges:
+                thetas.append(2*np.arctan(head_range/(2*self.radiation_radius)))
+
+            deg_pointer = (np.pi/2 - sum(thetas))/2
+            for index,theta in enumerate(thetas):
+                c_deg = np.pi/2 - deg_pointer - theta/2
+                deg_pointer += theta
+                #start_pos = get_coor_by_angle(self.radiation_radius, c_deg, self.start_pos)
+                logo = self.logos[index]
+                logo.set_parent_start(self.start_pos)
+                logo.set_start_pos((self.radiation_radius,0))
+                logo.set_deg(c_deg)
+                logo.set_radiation_space(head_ranges[index])
+                logo.compute_positions()
+                print(c_deg)
+            
+ 
+        else:
+            start_pos = self.start_pos
+            if self.logo_type == 'Circle':
+                start_pos = (self.start_pos[0], self.start_pos[1]+self.init_radius)
+            for index,logo in enumerate(self.logos):
+                logo.set_parent_start(self.start_pos)
+                logo.set_start_pos(start_pos)
+                logo.compute_positions()
+                start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
+            self.ceiling_pos = start_pos
     
     def get_height(self):
         return self.ceiling_pos[1] - self.start_pos[1]
@@ -162,6 +207,19 @@ class LogoGroup(Item):
             radius = self.ceiling_pos[1] - self.start_pos[1]
             self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
             self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius)
+        elif self.logo_type == 'Radiation':
+            ###
+            lims = []
+            for logo in self.logos:
+                width = logo.get_width()
+                lim = max(width*np.sin(logo.deg), width*np.cos(logo.deg))
+                lims.append(lim)
+            print(lims)
+            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims))
+            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims))
+        
+        #self.ax.set_xlim(-5,5)
+        #self.ax.set_ylim(-5,5)
     
     def set_figsize(self):
         if self.logo_type == 'Circle':

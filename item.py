@@ -30,3 +30,5 @@ class Item():
     def set_width(self,width):
         self.width = width
 
+    def set_radiation_space(self,space):
+        self.radiation_space = space
