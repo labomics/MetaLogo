@@ -8,6 +8,8 @@ from matplotlib.transforms import Affine2D, Bbox
 from matplotlib.textpath import TextPath
 from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
 from matplotlib.path import Path
+import mpl_toolkits.mplot3d.art3d as art3d
+
 
 from item import Item
 from colors import get_color_scheme
@@ -31,7 +33,7 @@ class Character(Item):
         self.patch = None
         self.color_map = get_color_scheme(color)
         if ax == None:
-            self.generate_ax()
+            self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
         if limited_width == None:
@@ -66,7 +68,7 @@ class Character(Item):
         height = self.height
         tmp_path = TextPath((0,0), self.char, size=1)
         bbox = tmp_path.get_extents()
-        if self.logo_type == 'Horizontal':
+        if self.logo_type in ['Horizontal','Threed']:
             hoffset = (width - bbox.width * width / max(bbox.width,self.limited_width))/2
             voffset = 0
         elif self.logo_type == 'Circle':
@@ -103,6 +105,8 @@ class Character(Item):
     def draw(self):
         self.transform()
         self.ax.add_patch(self.patch)
+        if self.logo_type == 'Threed':
+            art3d.pathpatch_2d_to_3d(self.patch, z=self.start_pos[2], zdir='y')
         #print(self.deg)
 
     def compute_positions(self):

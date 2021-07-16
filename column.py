@@ -18,7 +18,7 @@ class Column(Item):
         #self.path_hight, self.init_hight, self.target_height = self.get_heights()
         self.characters = []
         if ax == None:
-            self.generate_ax()
+            self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
         self.generate_components()
@@ -42,14 +42,16 @@ class Column(Item):
 
             if self.logo_type == 'Circle':
                 character.set_deg(self.deg)
-
-            if self.logo_type == 'Radiation':
+            elif self.logo_type == 'Radiation':
                 character.set_deg(self.deg)
                 character.set_radiation_space(self.radiation_space)
 
             character.set_width(self.width)
             character.compute_positions()
-            start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin)
+            if self.logo_type == 'Threed':
+                start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin, start_pos[2])
+            else:
+                start_pos = (start_pos[0], start_pos[1] + character.get_height() + self.char_margin)
     
     def get_height(self):
         return sum([char.get_height() + self.char_margin for char in self.characters])

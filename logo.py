@@ -24,7 +24,7 @@ class Logo(Item):
         self.columns = []
 
         if ax == None:
-            self.ax = self.generate_ax()
+            self.ax = self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
         
@@ -89,6 +89,10 @@ class Logo(Item):
                 col.set_radiation_space(self.radiation_space)
                 col.compute_positions()
                 start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1])
+            elif self.logo_type == 'Threed':
+                col.set_start_pos(start_pos)
+                col.compute_positions()
+                start_pos = (start_pos[0] + col.get_width() + self.column_margin, start_pos[1], start_pos[2])
             else:
                 pass
     
@@ -103,7 +107,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.01, radiation_head_n = 5, *args, **kwargs):
+                 logo_margin = 0.01, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -112,9 +116,10 @@ class LogoGroup(Item):
         self.logo_type = logo_type
         self.init_radius = init_radius
         self.radiation_head_n = 5
+        self.threed_interval = threed_interval
         self.ceiling_pos = ()
         self.logos = []
-        self.generate_ax()
+        self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
     
     def generate_components(self):
@@ -180,21 +185,28 @@ class LogoGroup(Item):
                 logo.set_radiation_space(head_ranges[index])
                 logo.compute_positions()
                 print(c_deg)
-            
- 
         else:
             start_pos = self.start_pos
             if self.logo_type == 'Circle':
                 start_pos = (self.start_pos[0], self.start_pos[1]+self.init_radius)
+            elif self.logo_type == 'Threed':
+                start_pos = (self.start_pos[0], self.start_pos[1], 0)
+                self.start_pos = start_pos
             for index,logo in enumerate(self.logos):
                 logo.set_parent_start(self.start_pos)
                 logo.set_start_pos(start_pos)
                 logo.compute_positions()
-                start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
+                if self.logo_type == 'Threed':
+                    start_pos = (start_pos[0], start_pos[1], start_pos[2] + self.threed_interval)
+                else:
+                    start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
             self.ceiling_pos = start_pos
     
     def get_height(self):
         return self.ceiling_pos[1] - self.start_pos[1]
+    
+    def get_max_logo_height(self):
+        return max([logo.get_height() for logo in self.logos])
 
     def get_width(self):
         return max([logo.get_width() for logo in self.logos])
@@ -217,9 +229,11 @@ class LogoGroup(Item):
             print(lims)
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims))
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims))
-        
-        #self.ax.set_xlim(-5,5)
-        #self.ax.set_ylim(-5,5)
+        elif self.logo_type == 'Threed':
+            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.get_width())
+            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + (len(self.logos)-1)*self.threed_interval )
+            self.ax.set_zlim(0, self.get_max_logo_height())
+
     
     def set_figsize(self):
         if self.logo_type == 'Circle':

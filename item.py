@@ -6,9 +6,14 @@ class Item():
     def __init__(self, *args, **kwargs) :
         pass
 
-    def generate_ax(self):
-       fig, ax = plt.subplots(1, 1,figsize=(10,10))
-       self.ax = ax    
+    def generate_ax(self,threed=False):
+        print(threed)
+        if threed:
+            fig, ax = plt.subplots(1, 1,figsize=(10,10),subplot_kw=dict(projection="3d"))
+            print('xxx')
+        else: 
+            fig, ax = plt.subplots(1, 1,figsize=(10,10))
+        self.ax = ax    
     
     def draw(self):
         pass
