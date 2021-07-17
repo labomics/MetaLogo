@@ -1,6 +1,6 @@
 #!/usr/bin/python
-from character import Character
-from item import Item
+from .character import Character
+from .item import Item
 
 class Column(Item):
 

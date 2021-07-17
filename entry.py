@@ -1,17 +1,17 @@
 #!/usr/bin/python
 import argparse
 
-from logo import LogoGroup
-from utils import read_file
-from utils import grouping
-from utils import compute_bits
+from .logo import LogoGroup
+from .utils import read_file
+from .utils import grouping
+from .utils import compute_bits
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
-    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test.fa')
+    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
     parser.add_argument('--input_file_type',type=str,help='The type of input file',default='fasta')
 
     
@@ -67,5 +67,5 @@ if __name__ == '__main__':
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type)
     #print(logogroup.logos)
     logogroup.draw()
-    logogroup.savefig('test.png')
+    logogroup.savefig('test/test.png')
 

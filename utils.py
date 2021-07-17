@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from numpy.lib.function_base import delete
-from format_utils import process_data
+from .format_utils import process_data
 import tempfile
 import os
 import uuid

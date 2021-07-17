@@ -3,10 +3,10 @@ import genericpath
 from matplotlib.colors import get_named_colors_mapping
 import numpy as np
 from matplotlib.patches import Circle
-from character import Character
-from column import Column
-from item import Item
-from utils import get_coor_by_angle
+from .character import Character
+from .column import Column
+from .item import Item
+from .utils import get_coor_by_angle
 
 
 class Logo(Item):

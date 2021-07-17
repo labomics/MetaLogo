@@ -11,8 +11,8 @@ from matplotlib.path import Path
 import mpl_toolkits.mplot3d.art3d as art3d
 
 
-from item import Item
-from colors import get_color_scheme
+from .item import Item
+from .colors import get_color_scheme
 
 class Character(Item):
 
