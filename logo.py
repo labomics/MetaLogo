@@ -150,6 +150,7 @@ class LogoGroup(Item):
 
         self.compute_xy()
         self.set_figsize()
+        self.ax.grid()
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
