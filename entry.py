@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--tmp_path',type=str,help='The location to store tmp files',default='tmp/')
 
     #group
-    parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',default='by_length')
+    parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',default='length')
     parser.add_argument('--group_info',type=str,help='The file contains group information of sequences')
     parser.add_argument('--group_limit',type=str,help='The number of groups to be showed on the figure',default=5)
     parser.add_argument('--select_group',type=str,help='How to choose the groups, by options: most_seqnum, least_seqnum, longest, shortest, first, last, random',default='most_seqnum')
@@ -52,20 +52,26 @@ if __name__ == '__main__':
 
     #output 
     parser.add_argument('--show_X',type=bool,help='If show alignment of different sequence logo')
+    parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
+    parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     args = parser.parse_args()
 
     #read seqs
     #print(args.input_file)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
+    #if len(seqs) == 0:
+    #    print('no sequences detected')
     #group seqs
-    #print(seqs)
+    print(args.input_file, args.input_file_type, args.min_length, args.max_length,seqs)
+    print('logotype:',args.type)
 
-    groups = grouping(seqs,group_by='length')
+    groups = grouping(seqs,group_by=args.group_strategy)
     bits = compute_bits(groups,args.tmp_path)
+
+    print('bits: ',bits)
     #print(groups)
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type)
-    #print(logogroup.logos)
     logogroup.draw()
-    logogroup.savefig('test/test.png')
+    logogroup.savefig(f'{args.output_dir}/{args.output_name}')
 

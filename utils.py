@@ -14,7 +14,7 @@ def read_file(filename, filetype, min_length, max_length):
     seqname = None
     seq = None
     ith = 0
-    if filetype == 'fasta':
+    if filetype.lower() in ['fasta','fa']:
         with open(filename,'r') as inpf:
             for line in inpf:
                 line = line.strip()
@@ -24,7 +24,7 @@ def read_file(filename, filetype, min_length, max_length):
                     seqnames.append(seqname)
                 else:
                     seq_dict[seqname]  = seq_dict.get(seqname,'') + line
-    elif filetype == 'fastq':
+    elif filetype.lower() == ['fastq','fq']:
         with open(filename,'r') as inpf:
             num = -1
             for line in inpf:
@@ -43,7 +43,7 @@ def read_file(filename, filetype, min_length, max_length):
 
 def grouping(seqs,group_by='length',group_file=None):
     groups_dict = {}
-    if group_by == 'length':
+    if group_by.lower() == 'length':
         for name,seq in seqs:
             #print(name,seq)
             if len(seq) not in groups_dict:

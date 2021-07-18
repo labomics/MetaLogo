@@ -97,7 +97,7 @@ class Logo(Item):
                 pass
     
     def get_height(self):
-        return max([col.get_height() for col in self.columns])
+        return max([col.get_height() for col in self.columns]+[0])
     
     def get_width(self):
         return sum([col.get_width() *(1+self.column_margin_ratio) for col in self.columns])
@@ -117,7 +117,7 @@ class LogoGroup(Item):
         self.init_radius = init_radius
         self.radiation_head_n = 5
         self.threed_interval = threed_interval
-        self.ceiling_pos = ()
+        self.ceiling_pos = (0,1)
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
@@ -166,7 +166,7 @@ class LogoGroup(Item):
             head_ranges = [] 
             for group_id in self.group_ids:
                 bit = self.seq_bits[group_id]
-                head_range = max([sum([x[1] for x in col])*1.1  for col in bit][:self.radiation_head_n])
+                head_range = max([sum([x[1] for x in col])*1.1  for col in bit][:self.radiation_head_n] + [0])
                 head_ranges.append(head_range)
             self.radiation_radius = 2 * sum(head_ranges) / (np.pi*self.radiation_ratio)
 
@@ -207,10 +207,10 @@ class LogoGroup(Item):
         return self.ceiling_pos[1] - self.start_pos[1]
     
     def get_max_logo_height(self):
-        return max([logo.get_height() for logo in self.logos])
+        return max([logo.get_height() for logo in self.logos]+[0])
 
     def get_width(self):
-        return max([logo.get_width() for logo in self.logos])
+        return max([logo.get_width() for logo in self.logos]+[0])
 
     def compute_xy(self):
         if self.logo_type == 'Horizontal':
@@ -228,8 +228,8 @@ class LogoGroup(Item):
                 lim = max(width*np.sin(logo.deg), width*np.cos(logo.deg))
                 lims.append(lim)
             print(lims)
-            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims))
-            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims))
+            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims+[0]))
+            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims+[0]))
         elif self.logo_type == 'Threed':
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.get_width())
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + (len(self.logos)-1)*self.threed_interval )
