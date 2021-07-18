@@ -48,12 +48,12 @@ class Logo(Item):
         
 
         
-    def draw_circle_help(self):
-
+    def draw_circle_help(self,only_circle=True):
           self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
-          space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
-          space_coor = get_coor_by_angle(self.radius + self.get_height(),space_deg)
-          self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]])
+          if not only_circle:
+            space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
+            space_coor = get_coor_by_angle(self.radius + self.get_height(),space_deg)
+            self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]])
 
     
     def compute_positions(self):
@@ -142,8 +142,8 @@ class LogoGroup(Item):
         for index,logo in enumerate(self.logos):
             logo.draw()
         
-        if self.logo_type == 'Circle':
-            logo.draw_circle_help()
+            if self.logo_type == 'Circle':
+                logo.draw_circle_help(only_circle=(index!=(len(self.logos)-1)))
         
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
