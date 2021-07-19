@@ -514,8 +514,14 @@ result_panel = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row([
-                    html.Img(id='img_res',src='',style={"width":"100%","margin":"auto"})
+                    html.Img(id='img_res',src='',style={"width":"100%","margin":"auto"}),
                     ]),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Button("Download Figure", id="download_btn",active=False,disabled=True), 
+                        dcc.Download(id="download_png",type='image/png')
+                    ], style={'textAlign':'center','margin':'auto'})
+                ]),
             ]
         )
     ], style={'marginTop':'20px'}
@@ -615,6 +621,36 @@ app.clientside_callback(
     Output('garbage', 'children'),
     Input('functional_garbage', 'children'),
 )
+@app.callback(
+    [Output("download_btn","active"),Output("download_btn","disabled")],
+    Input("functional_garbage","children")
+)
+def show_btn(uid):
+    if (uid is not None) and (len(uid) > 0):
+        return True,False
+    else:
+        return False,True
+
+@app.callback(
+    [
+        Output("download_png","data"),
+    ],
+    [
+        Input("download_btn","n_clicks")
+    ],
+    [
+        State("functional_garbage","children"),
+        State('img_res', 'src'),
+    ],prevent_initial_call=True,
+    )
+def udpate_download(n_clicks,uid,src):
+    if len(uid) > 0:
+        return [dict(
+                base64=True,
+                content=src.split('base64,')[1],
+                filename=f'{uid}.png'
+            )]
+
 
 
 @app.callback(
