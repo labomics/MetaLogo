@@ -82,18 +82,24 @@ class Column(Item):
     
     def get_edge(self):
 
-        if self.logo_type == 'Horizontal':
-            h = self.get_height()
-            w = self.get_width()
+        h = self.get_height()
+        w = self.get_width()
+
+        if self.logo_type in 'Horizontal':
             leftbottom = self.start_pos
             rightbottom = (self.start_pos[0]+w, self.start_pos[1])
             righttop = (self.start_pos[0] + w, self.start_pos[1] + h ) 
             lefttop = (self.start_pos[0],self.start_pos[1] + h)
             return leftbottom,rightbottom,righttop,lefttop
 
+        if self.logo_type in 'Threed':
+            leftbottom = self.start_pos
+            rightbottom = (self.start_pos[0]+w, self.start_pos[1], self.start_pos[2])
+            righttop = (self.start_pos[0] + w, self.start_pos[1] + h, self.start_pos[2]) 
+            lefttop = (self.start_pos[0],self.start_pos[1] + h, self.start_pos[2])
+            return leftbottom,rightbottom,righttop,lefttop
+
         if self.logo_type == 'Circle':
-            h = self.get_height()
-            w = self.get_width()
             p1 = (self.start_pos[0] - w/2, self.start_pos[1])
             p2 = (self.start_pos[0] + w/2, self.start_pos[1])
             p3 = (self.start_pos[0] + w/2, self.start_pos[1]+h)
@@ -102,20 +108,15 @@ class Column(Item):
             return nodes
        
         if self.logo_type == 'Radiation':
-            h = self.get_height()
-            w = self.get_width()
-            #p1 = (self.start_pos[0], self.start_pos[1]-self.radiation_space/2)
-            #p2 = (self.start_pos[0]+w, self.start_pos[1]-self.radiation_space/2)
-            #p3 = (self.start_pos[0]+w, self.start_pos[1]+self.radiation_space/2)
-            #p4 = (self.start_pos[0], self.start_pos[1]+self.radiation_space/2)
-
             p1 = (self.start_pos[0], self.start_pos[1]-self.radiation_space/2)
             p2 = (self.start_pos[0]+w, self.start_pos[1]-self.radiation_space/2)
             p3 = (self.start_pos[0]+w, self.start_pos[1]+h-self.radiation_space/2)
             p4 = (self.start_pos[0], self.start_pos[1]+h-self.radiation_space/2)
-
             nodes = rotate([p1,p2,p3,p4],origin=self.origin, angle=self.deg)
             return nodes
+        
+
+
  
 
 

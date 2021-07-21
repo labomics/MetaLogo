@@ -11,6 +11,7 @@ import numpy as np
 
 from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
 from matplotlib.path import Path
+import mpl_toolkits.mplot3d.art3d as art3d
 
 
 
@@ -161,9 +162,13 @@ def straight_connect(p1,p2,p3,p4,**kargs):
     patch = PathPatch(path, **kargs)
     return patch
 
-def link_edges(edge1, edge2, ax):
+def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1):
     if ax is None:
         _, ax = plt.subplots(1, 1,figsize=(10,10))
+    
+    print('in link edges')
+    print('edge1: ', edge1)
+    print('edge2: ', edge2)
     
     p1,p2 = edge1
     p4,p3 = edge2
@@ -172,8 +177,20 @@ def link_edges(edge1, edge2, ax):
     #ax.scatter(p2[0],p2[1])
     #ax.scatter(p3[0],p3[1])
     #ax.scatter(p4[0],p4[1])
+    if threed:
+        patch = straight_connect((p1[x],p1[y]),
+                                 (p2[x],p2[y]),
+                                 (p3[x],p3[y]),
+                                 (p4[x],p4[y]), fill=True,alpha=0.1,color='blue',linewidth=0)
 
-    ax.add_patch(straight_connect(p1,p2,p3,p4, fill=True,alpha=0.1,color='blue',linewidth=0))
+    else:
+        patch = straight_connect(p1,p2,p3,p4, fill=True,alpha=0.1,color='blue',linewidth=0)
+
+
+    ax.add_patch(patch)
+    if threed:
+        art3d.pathpatch_2d_to_3d(patch, z=0, zdir='z')
+
     return ax
 
 

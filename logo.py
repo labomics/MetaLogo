@@ -172,20 +172,20 @@ class LogoGroup(Item):
         self.set_figsize()
         self.ax.grid()
     
-    def link_columns(self, column1, column2):
-        #print('in link columns')
+    def link_columns(self, column1, column2, ):
+
         nodes1 = column1.get_edge()
         nodes2 = column2.get_edge()
-        #print('nodes1: ',nodes1)
-        #print('nodes2: ',nodes2)
 
-        if self.logo_type == 'Radiation':
-            link_edges( (nodes1[0],nodes1[1]), (nodes2[3],nodes2[2]) , self.ax)
+        if self.logo_type == 'Threed':
+            link_edges((nodes1[0],nodes1[1]), (nodes2[0],nodes2[1]) , self.ax, threed=True, x=0,y=2,z=1)
         else:
-            link_edges( (nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
-
-        link_edges( (nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax)
-        link_edges( (nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
+            if self.logo_type == 'Radiation':
+                link_edges((nodes1[0],nodes1[1]), (nodes2[3],nodes2[2]) , self.ax)
+            else:
+                link_edges((nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
+            link_edges((nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax)
+            link_edges((nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
 
 
     
@@ -236,7 +236,8 @@ class LogoGroup(Item):
                 logo.set_start_pos(start_pos)
                 logo.compute_positions()
                 if self.logo_type == 'Threed':
-                    start_pos = (start_pos[0], start_pos[1], start_pos[2] + self.threed_interval)
+                    #start_pos = (start_pos[0], start_pos[1], start_pos[2] + self.threed_interval)
+                    start_pos = (start_pos[0], start_pos[1], start_pos[2] + logo.get_height())
                 else:
                     start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
             self.ceiling_pos = start_pos
@@ -270,8 +271,8 @@ class LogoGroup(Item):
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims+[0]))
         elif self.logo_type == 'Threed':
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.get_width())
-            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + (len(self.logos)-1)*self.threed_interval )
-            self.ax.set_zlim(0, self.get_max_logo_height())
+            self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + sum([logo.get_height() for logo in self.logos[:-1]]) )
+            self.ax.set_zlim(self.start_pos[1], self.start_pos[1] + sum([logo.get_height() for logo in self.logos]) )
 
     
     def set_figsize(self):
