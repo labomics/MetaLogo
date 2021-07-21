@@ -5,6 +5,13 @@ import tempfile
 import os
 import uuid
 import numpy as np
+from scipy.stats import spearmanr,pearsonr
+from matplotlib import pyplot as plt
+import numpy as np
+
+from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
+from matplotlib.path import Path
+
 
 
 def read_file(filename, filetype, min_length, max_length):
@@ -82,4 +89,158 @@ def get_coor_by_angle(radius, angle, origin=(0,0)):
     relative_coor =  (radius * np.cos(angle), radius * np.sin(angle))
     return (relative_coor[0]+origin[0],relative_coor[1]+origin[1])
 
+def get_connect(bits_array, p_threshold = 0.05):
+    print('len of bits: ', len(bits_array))
+    connected = {}
+    for index,bit in enumerate(bits_array):
+        if index == len(bits_array) - 1:
+            break
+        bits1 = bit
+        bits2 = bits_array[index + 1]
+        align1,align2 = needle(bits1,bits2)
 
+        connected[index] = {}
+
+        for pos1, pos2 in zip(align1,align2):
+            if pos1 == '-' or pos2 == '-':
+                continue
+            score = match_score(bits1[pos1],bits2[pos2])
+            connected[index][pos1] = [score, [pos2]]
+    return connected
+
+
+def check_parallel(edge1, edge2):
+    start1, end1 = edge1
+    start2, end2 = edge2
+    shifted_end1 = (end1[0]-start1[0], end1[1]-start1[1])
+    shifted_end2 = (end2[0]-start2[0], end2[1]-start2[1])
+
+def curve_connect(leftbot,lefttop,righttop,rightbot,limit_width,direction='right',**kargs):
+    if np.abs((leftbot[0] - lefttop[0])/limit_width)< 0.1:
+        return Polygon(xy=[leftbot,lefttop,righttop,rightbot], **kargs)
+    else:
+        if direction == 'left':
+            limit_width = -limit_width
+        p0 = leftbot
+        p1 = (leftbot[0] + limit_width, leftbot[1])
+        p2 = (lefttop[0] + limit_width, lefttop[1])
+        p3 = lefttop
+        p4 = righttop
+        p5 = (righttop[0] + limit_width,righttop[1])
+        p6 = (rightbot[0] + limit_width, rightbot[1])
+        p7 = rightbot
+        p8 = p0
+
+        verts = [p0,p1,p2,p3,p4,p5,p6,p7,p8]
+
+        codes = [
+            Path.MOVETO,
+            Path.CURVE4,
+            Path.CURVE4,
+            Path.CURVE4,
+            Path.LINETO,
+            Path.CURVE4,
+            Path.CURVE4,
+            Path.CURVE4,
+            Path.CLOSEPOLY
+        ]
+        path = Path(verts, codes)
+        patch = PathPatch(path, **kargs)
+        return patch
+
+def straight_connect(p1,p2,p3,p4,**kargs):
+    verts = [p1,p2,p3,p4,p1]
+    codes = [
+        Path.MOVETO,
+        Path.LINETO,
+        Path.LINETO,
+        Path.LINETO,
+        Path.CLOSEPOLY
+    ]
+    path = Path(verts, codes)
+    patch = PathPatch(path, **kargs)
+    return patch
+
+def link_edges(edge1, edge2, ax):
+    if ax is None:
+        _, ax = plt.subplots(1, 1,figsize=(10,10))
+    p1,p2 = edge1
+    p4,p3 = edge2
+    ax.add_patch(straight_connect(p1,p2,p3,p4, fill=True,alpha=0.1,color='blue',linewidth=0))
+    return ax
+
+
+
+
+
+def match_score(bit1, bit2):
+    #bit1: {'A':0.1,'T':0.2}
+    bit1 = dict(bit1)
+    bit2 = dict(bit2)
+    keys = sorted(list(bit1.keys()|bit2.keys()))
+    #a1 = [bit1.get(key, 0) for key in keys]
+    #a2 = [bit2.get(key, 0) for key in keys]
+    err = 0
+    for key in keys:
+        err += abs(bit1.get(key,0) - bit2.get(key,0))
+    return 1-err
+
+
+
+def needle(seq1, seq2, gap_penalty=-1,delete=-1,insert=-1):
+    m, n = len(seq1), len(seq2)  # length of two sequences
+    
+    # Generate DP table and traceback path pointer matrix
+    score = np.zeros((m+1, n+1))      # the DP table
+   
+    # Calculate DP table
+    for i in range(0, m + 1):
+        score[i][0] = gap_penalty * i
+    for j in range(0, n + 1):
+        score[0][j] = gap_penalty * j
+    #print(score)
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            match = score[i - 1][j - 1] + match_score(seq1[i-1], seq2[j-1])
+            delete = score[i - 1][j] + gap_penalty
+            insert = score[i][j - 1] + gap_penalty
+            score[i][j] = max(match, delete, insert)
+
+    # Traceback and compute the alignment 
+    align1, align2 = [], [] 
+    i,j = m,n # start from the bottom right cell
+    while i > 0 and j > 0: # end toching the top or the left edge
+        score_current = score[i][j]
+        score_diagonal = score[i-1][j-1]
+        score_up = score[i][j-1]
+        score_left = score[i-1][j]
+
+        #print('seq1[i-1]:', seq1[i-1])
+        #print('seq2[j-1]:', seq1[j-1])
+
+        if score_current == score_diagonal + match_score(seq1[i-1], seq2[j-1]):
+            align1.append(i-1)
+            align2.append(j-1)
+            i -= 1
+            j -= 1
+        elif score_current == score_left + gap_penalty:
+            align1.append(i-1)
+            align2.append('-')
+            i -= 1
+        elif score_current == score_up + gap_penalty:
+            align1.append('-')
+            align2.append(j-1)
+            j -= 1
+
+    # Finish tracing up to the top left cell
+    while i > 0:
+        align1.append(i-1)
+        align2.append('-')
+        i -= 1
+    while j > 0:
+        align1.append('-')
+        align2.append(j-1)
+        j -= 1
+    #print('align1:',  align1)
+    #print('align2: ', align2)
+    return align1[::-1],align2[::-1]

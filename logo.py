@@ -6,7 +6,7 @@ from matplotlib.patches import Circle
 from .character import Character
 from .column import Column
 from .item import Item
-from .utils import get_coor_by_angle
+from .utils import get_coor_by_angle, get_connect, link_edges
 
 
 class Logo(Item):
@@ -107,7 +107,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.01, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
+                 logo_margin = 0.01, connect = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -117,6 +117,7 @@ class LogoGroup(Item):
         self.init_radius = init_radius
         self.radiation_head_n = 5
         self.threed_interval = threed_interval
+        self.connect = connect
         self.ceiling_pos = (0,1)
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
@@ -139,18 +140,44 @@ class LogoGroup(Item):
     
     def draw(self):
         self.compute_positions()
+
+
         for index,logo in enumerate(self.logos):
             logo.draw()
-        
             if self.logo_type == 'Circle':
                 logo.draw_circle_help(only_circle=(index!=(len(self.logos)-1)))
         
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
+        
+        #draw connect
+
+        if self.connect:
+            self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids])
+            #print('connected: ', self.connected)
+            #for index,logo in enumerate(self.logos):
+            i = -1
+            for group_id  in self.connected:
+                i += 1
+                if group_id == self.group_ids[-1]:
+                    continue
+                link = self.connected[i]
+                for pos1, arr in link.items():
+                    r, targets = arr
+                    for pos2 in targets:
+                        self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
         self.compute_xy()
         self.set_figsize()
         self.ax.grid()
+    
+    def link_columns(self, column1, column2):
+        nodes1 = column1.get_edge()
+        nodes2 = column2.get_edge()
+        link_edges( (nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
+
+
+    
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
@@ -243,4 +270,3 @@ class LogoGroup(Item):
         if self.logo_type == 'Horizontal':
             self.ax.get_figure().set_figheight(10)
             self.ax.get_figure().set_figwidth(20)
-

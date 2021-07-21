@@ -62,13 +62,13 @@ if __name__ == '__main__':
     #if len(seqs) == 0:
     #    print('no sequences detected')
     #group seqs
-    print(args.input_file, args.input_file_type, args.min_length, args.max_length,seqs)
-    print('logotype:',args.type)
+    #print(args.input_file, args.input_file_type, args.min_length, args.max_length,seqs)
+    #print('logotype:',args.type)
 
     groups = grouping(seqs,group_by=args.group_strategy)
     bits = compute_bits(groups,args.tmp_path)
 
-    print('bits: ',bits)
+    #print('bits: ',bits)
     #print(groups)
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type)

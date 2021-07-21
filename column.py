@@ -57,6 +57,17 @@ class Column(Item):
         return sum([char.get_height() * (1+self.char_margin_ratio) for char in self.characters])
     def get_width(self):
         return max([char.get_width()  for char in self.characters])
+    
+    def get_edge(self):
+        h = self.get_height()
+        w = self.get_width()
+        leftbottom = self.start_pos
+        rightbottom = (self.start_pos[0]+w, self.start_pos[1])
+        righttop = (self.start_pos[0] + w, self.start_pos[1] + h ) 
+        lefttop = (self.start_pos[0],self.start_pos[1] + h)
+        return leftbottom,rightbottom,righttop,lefttop
+        
+
 
 
 
