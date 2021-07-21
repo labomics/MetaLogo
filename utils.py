@@ -170,20 +170,58 @@ def link_edges(edge1, edge2, ax):
     return ax
 
 
+def match_score(bit1, bit2, algrithm='sort_diff'):
+
+    if algrithm == 'error':
+        bit1 = dict(bit1)
+        bit2 = dict(bit2)
+        keys = sorted(list(bit1.keys()|bit2.keys()))
+        err = 0
+        for key in keys:
+            err += abs(bit1.get(key,0) - bit2.get(key,0))
+        return 1-err
+    if algrithm == 'sort_diff':
+        bit1 = sorted(bit1, key=lambda d:d[1],reverse=True)
+        bit2 = sorted(bit2, key=lambda d:d[1],reverse=True)
+        score = 0
+        for i in range(min(len(bit1),len(bit2))):
+            if bit1[i][0] == bit2[i][0]:
+                #score += (bit1[i][1] + bit2[i][1])/2
+                score += np.sqrt(bit1[i][1] * bit2[i][1])
+        return score
+    if algrithm == 'correlation':
+
+        bit1 = dict(bit1)
+        bit2 = dict(bit2)
+        keys = sorted(list(bit1.keys()|bit2.keys()))
+        a1 = []
+        a2 = []
+        for i in range(len(keys)):
+            v1 = bit1.get(keys[i],0)
+            v2 = bit2.get(keys[i],0)
+            #if v1 < 0.01:
+            #    v1 = 0
+            #if v2 < 0.01:
+            #    v2 = 0
+            if v1 == v2 == 0:
+                continue
+            a1.append(v1)
+            a2.append(v2)
+        
+        coor,pval = pearsonr(a1,a2)
+        if pval > 0.05:
+            corr = 0
+        print(a1,a2,coor)
+        return coor
 
 
 
-def match_score(bit1, bit2):
-    #bit1: {'A':0.1,'T':0.2}
-    bit1 = dict(bit1)
-    bit2 = dict(bit2)
-    keys = sorted(list(bit1.keys()|bit2.keys()))
-    #a1 = [bit1.get(key, 0) for key in keys]
-    #a2 = [bit2.get(key, 0) for key in keys]
-    err = 0
-    for key in keys:
-        err += abs(bit1.get(key,0) - bit2.get(key,0))
-    return 1-err
+
+
+
+    
+
+
 
 
 

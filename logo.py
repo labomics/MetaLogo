@@ -107,7 +107,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.01, connect = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
+                 logo_margin = 0.1, connect = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -164,8 +164,9 @@ class LogoGroup(Item):
                 link = self.connected[i]
                 for pos1, arr in link.items():
                     r, targets = arr
-                    for pos2 in targets:
-                        self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
+                    if r > 0.4:
+                        for pos2 in targets:
+                            self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
         self.compute_xy()
         self.set_figsize()
@@ -175,6 +176,8 @@ class LogoGroup(Item):
         nodes1 = column1.get_edge()
         nodes2 = column2.get_edge()
         link_edges( (nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
+        link_edges( (nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax)
+        link_edges( (nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
 
 
     

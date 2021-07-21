@@ -85,6 +85,8 @@ class Character(Item):
             .scale(sx=width/max(bbox.width,self.limited_width), sy=height/bbox.height) \
             .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1] + voffset)
         
+        #self.ax.add_patch(Rectangle((self.start_pos[0] + hoffset,self.start_pos[1] + voffset),self.width,self.height))
+        
 
         if self.logo_type == 'Circle':
             transformation = transformation.rotate_around(self.parent_start[0], self.parent_start[1], self.deg-np.pi/2) 

@@ -54,7 +54,11 @@ class Column(Item):
                 start_pos = (start_pos[0], start_pos[1] + character.get_height() * (1+self.char_margin_ratio))
     
     def get_height(self):
-        return sum([char.get_height() * (1+self.char_margin_ratio) for char in self.characters])
+        height = sum([char.get_height() * (1+self.char_margin_ratio) for char in self.characters[:-1]]) 
+        if len(self.characters) > 1:
+            height += self.characters[-1].get_height()
+        return height
+
     def get_width(self):
         return max([char.get_width()  for char in self.characters])
     
