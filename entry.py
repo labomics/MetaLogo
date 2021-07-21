@@ -39,8 +39,8 @@ if __name__ == '__main__':
     parser.add_argument('--font',type=str,help='The font of sequence characters')
 
     #align
-    #parser.add_argument('--align',type=bool,help='If show alignment of different sequence logo')
-    parser.add_argument('--connect',type=bool,help='If show alignment of different sequence logo')
+    parser.add_argument('--align',type=bool,help='If show alignment of different sequence logo')
+    #parser.add_argument('--connect',type=bool,help='If show alignment of different sequence logo')
     parser.add_argument('--align_type',type=str,help='The align type between different sequence logos',default='normal')
 
     #style
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     #print('bits: ',bits)
     #print(groups)
 
-    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, connect=args.connect)
+    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, align=args.align)
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
 

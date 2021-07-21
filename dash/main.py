@@ -724,10 +724,12 @@ def submit(nclicks1,nclicks2,nclicks3,input_format_dropdown, sequence_type_dropd
     seq_file = f"tmp/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
+    align = align_dropdown == 'Yes'
+
     os.system(f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} \
-                --max_length {max_len_input} --min_length {min_len_input} \
+                --max_length {max_len_input} --min_length {min_len_input}  --align {align} \
                 --output_name {uid}.png \
                 ')
     png = f'../../test/{uid}.png'

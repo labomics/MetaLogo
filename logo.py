@@ -6,12 +6,17 @@ from matplotlib.patches import Circle
 from .character import Character
 from .column import Column
 from .item import Item
-from .utils import get_coor_by_angle, get_connect, link_edges
+from .utils import get_coor_by_angle, get_connect, link_edges, text3d
+from matplotlib.patches import Circle, PathPatch
+from matplotlib.text import TextPath
+from matplotlib.transforms import Affine2D
+import mpl_toolkits.mplot3d.art3d as art3d
+
 
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), *args, **kwargs):
+                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
@@ -21,6 +26,7 @@ class Logo(Item):
         self.column_margin_ratio = column_margin_ratio
         self.column_width = column_width
         self.origin = origin
+        self.id = id
         self.columns = []
 
         if ax == None:
@@ -45,6 +51,9 @@ class Logo(Item):
         self.compute_positions()
         for col in self.columns:
             col.draw()
+
+        if self.logo_type == 'Threed': 
+            self.draw_3d_help()
         
 
         
@@ -54,6 +63,11 @@ class Logo(Item):
             space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
             space_coor = get_coor_by_angle(self.radius + self.get_height(),space_deg)
             self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]])
+    
+    def draw_3d_help(self):
+        self.ax.text(-1, self.start_pos[2], 2, f'Group {self.id}', 'z')
+
+
 
     
     def compute_positions(self):
@@ -107,7 +121,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.1, connect = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
+                 logo_margin = 0.1, align = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -117,7 +131,7 @@ class LogoGroup(Item):
         self.init_radius = init_radius
         self.radiation_head_n = 5
         self.threed_interval = threed_interval
-        self.connect = connect
+        self.align = align 
         self.ceiling_pos = (0,1)
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
@@ -132,7 +146,7 @@ class LogoGroup(Item):
             pass
         for group_id in self.group_ids:
             bits = self.seq_bits[group_id]
-            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos)
+            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos,id=group_id)
             self.logos.append(logo)
 
     def set_font(self):
@@ -152,7 +166,7 @@ class LogoGroup(Item):
         
         #draw connect
 
-        if self.connect:
+        if self.align:
             self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids])
             #print('connected: ', self.connected)
             #for index,logo in enumerate(self.logos):
