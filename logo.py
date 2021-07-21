@@ -13,6 +13,8 @@ from matplotlib.transforms import Affine2D
 import mpl_toolkits.mplot3d.art3d as art3d
 import seaborn as sns
 from matplotlib.lines import Line2D
+from matplotlib.patches import Arc, RegularPolygon
+from numpy import radians as rad
 
 
 
@@ -60,6 +62,9 @@ class Logo(Item):
         
         if self.logo_type == 'Horizontal':
             self.draw_hz_help()
+        
+        #if self.logo_type == 'Circle':
+        #    self.draw_circle_help()
     
     def draw_hz_help(self):
         #self.ax.text(-0.5, self.start_pos[1]+0.2, f'Group {self.id}', rotation=90, size=20)
@@ -70,20 +75,36 @@ class Logo(Item):
         #height = bb.height
         #print('in draw t3ext : ', width,height)
 
-
         
+    def draw_circle_help(self,draw_arrow=False):
+        self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
 
-        
-    def draw_circle_help(self,only_circle=True):
-          self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
+        space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
+        space_coor = get_coor_by_angle(self.radius ,space_deg)
+        self.ax.scatter(space_coor[0],space_coor[1],color=self.color)
 
-          space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
-          space_coor = get_coor_by_angle(self.radius ,space_deg)
-          self.ax.scatter(space_coor[0],space_coor[1],color=self.color)
+        space_coor2 = get_coor_by_angle(self.radius + self.get_height() ,space_deg)
+        #self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]],zorder=-1)
 
-          if not only_circle:
-            space_coor = get_coor_by_angle(self.radius + self.get_height(),space_deg)
-            self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]],zorder=-1)
+        #print(space_coor, space_coor2)
+        self.ax.plot([space_coor[0],space_coor2[0]],[space_coor[1],space_coor2[1]],zorder=-1,color='grey')
+
+        if draw_arrow == True:
+            self.ax.plot([self.origin[0],space_coor[0]],[self.origin[1],space_coor[1]],zorder=-1,color='grey')
+            arc = Arc(self.origin,self.radius,self.radius,angle=270,
+                  theta1=0,theta2=180,capstyle='round',linestyle='-',lw=1,color='black')
+            self.ax.add_patch(arc)
+            endX = 0
+            endY = -self.radius/2
+            self.ax.add_patch(                    #Create triangle as arrow head
+                 RegularPolygon(
+                    (endX, endY),            # (x,y)
+                     3,                       # number of vertices
+                    self.radius/9,                # radius
+                    rad(30+180),     # orientation
+                    color='black'
+                )
+            )
 
     
     def draw_3d_help(self):
@@ -183,7 +204,7 @@ class LogoGroup(Item):
         for index,logo in enumerate(self.logos):
             logo.draw()
             if self.logo_type == 'Circle':
-                logo.draw_circle_help(only_circle=(index!=(len(self.logos)-1)))
+                logo.draw_circle_help(draw_arrow=index==0)
         
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
@@ -233,7 +254,7 @@ class LogoGroup(Item):
         #https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         legend_elements = []
         for logo in self.logos[::-1]:
-            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=logo.id, linestyle = 'None', markersize=5) )
+            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=f'Group {logo.id}', linestyle = 'None', markersize=5) )
         self.ax.legend(handles=legend_elements)
 
     def draw_radiation_help(self):
