@@ -13,6 +13,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 
 from .item import Item
 from .colors import get_color_scheme
+from .utils import rotate
 
 class Character(Item):
 
@@ -86,6 +87,23 @@ class Character(Item):
             .translate(tx=self.start_pos[0] + hoffset,ty=self.start_pos[1] + voffset)
         
         #self.ax.add_patch(Rectangle((self.start_pos[0] + hoffset,self.start_pos[1] + voffset),self.width,self.height))
+        #
+        #tmptfm = transformation
+        #ttpath = tmptfm.transform_path(tmp_path)
+        #b1 = ttpath.get_extents()
+        #nodes = rotate([(b1.x0,b1.y0),(b1.x1,b1.y0), (b1.x1,b1.y1),(b1.x0,b1.y1)],origin= self.parent_start, angle=self.deg-np.pi/2)
+        #verts = [nodes[0],nodes[1],nodes[2],nodes[3],nodes[0]]
+        ##print(verts)
+        #codes = [
+        #    Path.MOVETO,
+        #    Path.LINETO,
+        #    Path.LINETO,
+        #    Path.LINETO,
+        #    Path.CLOSEPOLY
+        #]
+        #self.ax.add_patch(PathPatch(Path(verts, codes)))
+        #if self.deg-np.pi/2 != 0:
+        #    exit(0)
         
 
         if self.logo_type == 'Circle':

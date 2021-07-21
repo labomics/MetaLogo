@@ -1,6 +1,11 @@
 #!/usr/bin/python
 from .character import Character
 from .item import Item
+from .utils import rotate
+import numpy as np
+from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
+from matplotlib.path import Path
+
 
 class Column(Item):
 
@@ -32,6 +37,18 @@ class Column(Item):
     def draw(self):
         for character in self.characters:
             character.draw()
+        
+        #h = self.get_height()
+        #w = self.get_width()
+        #self.ax.scatter(self.start_pos[0],self.start_pos[1])
+        #p1 = (self.start_pos[0] - w/2, self.start_pos[1])
+        #p2 = (self.start_pos[0] + w/2, self.start_pos[1])
+        #p3 = (self.start_pos[0] + w/2, self.start_pos[1]+h)
+        #p4 = (self.start_pos[0] - w/2, self.start_pos[1]+h)
+        #self.ax.scatter(p1[0],p1[1])
+        #self.ax.scatter(p2[0],p2[1])
+        #self.ax.scatter(p3[0],p3[1])
+        #self.ax.scatter(p4[0],p4[1])
 
     
     def compute_positions(self):
@@ -63,14 +80,26 @@ class Column(Item):
         return max([char.get_width()  for char in self.characters])
     
     def get_edge(self):
-        h = self.get_height()
-        w = self.get_width()
-        leftbottom = self.start_pos
-        rightbottom = (self.start_pos[0]+w, self.start_pos[1])
-        righttop = (self.start_pos[0] + w, self.start_pos[1] + h ) 
-        lefttop = (self.start_pos[0],self.start_pos[1] + h)
-        return leftbottom,rightbottom,righttop,lefttop
-        
+
+        if self.logo_type == 'Horizontal':
+            h = self.get_height()
+            w = self.get_width()
+            leftbottom = self.start_pos
+            rightbottom = (self.start_pos[0]+w, self.start_pos[1])
+            righttop = (self.start_pos[0] + w, self.start_pos[1] + h ) 
+            lefttop = (self.start_pos[0],self.start_pos[1] + h)
+            return leftbottom,rightbottom,righttop,lefttop
+
+        if self.logo_type == 'Circle':
+            h = self.get_height()
+            w = self.get_width()
+            p1 = (self.start_pos[0] - w/2, self.start_pos[1])
+            p2 = (self.start_pos[0] + w/2, self.start_pos[1])
+            p3 = (self.start_pos[0] + w/2, self.start_pos[1]+h)
+            p4 = (self.start_pos[0] - w/2, self.start_pos[1]+h)
+            nodes = rotate([p1,p2,p3,p4],origin=self.start_pos, angle=self.deg-np.pi/2)
+            return nodes
+       
 
 
 

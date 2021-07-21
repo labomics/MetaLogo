@@ -223,8 +223,7 @@ def match_score(bit1, bit2, algrithm='sort_diff'):
 
 
 
-
-
+#https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
 def needle(seq1, seq2, gap_penalty=-1,delete=-1,insert=-1):
     m, n = len(seq1), len(seq2)  # length of two sequences
     
@@ -282,3 +281,12 @@ def needle(seq1, seq2, gap_penalty=-1,delete=-1,insert=-1):
     #print('align1:',  align1)
     #print('align2: ', align2)
     return align1[::-1],align2[::-1]
+
+
+#https://stackoverflow.com/questions/34372480/rotate-point-about-another-point-in-degrees-python/34374437
+def rotate(p, origin=(0, 0), angle=0):
+    R = np.array([[np.cos(angle), -np.sin(angle)],
+                  [np.sin(angle),  np.cos(angle)]])
+    o = np.atleast_2d(origin)
+    p = np.atleast_2d(p)
+    return np.squeeze((R @ (p.T-o.T) + o.T).T)
