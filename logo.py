@@ -11,12 +11,14 @@ from matplotlib.patches import Circle, PathPatch
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
 import mpl_toolkits.mplot3d.art3d as art3d
+import seaborn as sns
+from matplotlib.lines import Line2D
 
 
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', *args, **kwargs):
+                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', color='b', *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
@@ -27,6 +29,7 @@ class Logo(Item):
         self.column_width = column_width
         self.origin = origin
         self.id = id
+        self.color = color
         self.columns = []
 
         if ax == None:
@@ -73,10 +76,15 @@ class Logo(Item):
         
     def draw_circle_help(self,only_circle=True):
           self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
+
+          space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
+          space_coor = get_coor_by_angle(self.radius ,space_deg)
+          self.ax.scatter(space_coor[0],space_coor[1],color=self.color)
+
           if not only_circle:
-            space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
             space_coor = get_coor_by_angle(self.radius + self.get_height(),space_deg)
-            self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]])
+            self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]],zorder=-1)
+
     
     def draw_3d_help(self):
         self.ax.text(-1, self.start_pos[2], 2, f'Group {self.id}', 'z')
@@ -152,15 +160,17 @@ class LogoGroup(Item):
         self.generate_components()
     
     def generate_components(self):
+        self.color_palette = sns.color_palette("hls", len(self.seq_bits))
+
         if self.group_order == 'length':
             self.group_ids = sorted(self.seq_bits.keys())
         elif self.group_order == 'length_reverse':
             self.group_ids = sorted(self.seq_bits.keys(),reverse=True)
         else:
             pass
-        for group_id in self.group_ids:
+        for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
-            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos,id=group_id)
+            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos,id=group_id,color=self.color_palette[index])
             self.logos.append(logo)
 
     def set_font(self):
@@ -177,6 +187,9 @@ class LogoGroup(Item):
         
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
+        
+        if self.logo_type == 'Circle':
+            self.draw_circle_help()
         
         #draw connect
 
@@ -216,7 +229,12 @@ class LogoGroup(Item):
             link_edges((nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
 
 
-    
+    def draw_circle_help(self):           
+        #https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
+        legend_elements = []
+        for logo in self.logos[::-1]:
+            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=logo.id, linestyle = 'None', markersize=5) )
+        self.ax.legend(handles=legend_elements)
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
