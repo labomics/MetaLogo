@@ -169,9 +169,9 @@ def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1):
     if ax is None:
         _, ax = plt.subplots(1, 1,figsize=(10,10))
     
-    print('in link edges')
-    print('edge1: ', edge1)
-    print('edge2: ', edge2)
+    #print('in link edges')
+    #print('edge1: ', edge1)
+    #print('edge2: ', edge2)
     
     p1,p2 = edge1
     p4,p3 = edge2

@@ -6,7 +6,7 @@ from matplotlib.patches import Circle
 from .character import Character
 from .column import Column
 from .item import Item
-from .utils import get_coor_by_angle, get_connect, link_edges, text3d
+from .utils import get_coor_by_angle, get_connect, link_edges, rotate, text3d
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
@@ -54,6 +54,20 @@ class Logo(Item):
 
         if self.logo_type == 'Threed': 
             self.draw_3d_help()
+        
+        if self.logo_type == 'Horizontal':
+            self.draw_hz_help()
+    
+    def draw_hz_help(self):
+        #self.ax.text(-0.5, self.start_pos[1]+0.2, f'Group {self.id}', rotation=90, size=20)
+        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'Group {self.id}')#,bbox={'fc': '0.8', 'pad': 0})
+        #r = self.ax.get_figure().canvas.get_renderer()
+        #bb = t.get_window_extent(r).inverse_transformed(self.ax.transData)
+        #width = bb.width
+        #height = bb.height
+        #print('in draw t3ext : ', width,height)
+
+
         
 
         
@@ -267,8 +281,23 @@ class LogoGroup(Item):
 
     def compute_xy(self):
         if self.logo_type == 'Horizontal':
-            self.ax.set_xlim(self.start_pos[0],self.start_pos[0] + self.get_width())
+            self.ax.set_xlim(self.start_pos[0]-1,self.start_pos[0] + self.get_width()+1)
             self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
+
+            r = self.ax.get_figure().canvas.get_renderer()
+            x_range = 0
+            for i in range(len(self.logos)):
+                #width = self.ax.transData.inverted(self.logos[i].id_txt.get_window_extent(r)).width
+                text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
+                logo_width = self.logos[i].get_width()
+                _range = text_width + 0.1 + logo_width
+                print('text_width,logo_width,range',text_width,logo_width, _range)
+                if _range > x_range:
+                    x_range = _range
+            
+            self.ax.set_xlim(self.start_pos[0],x_range)
+
+
         elif self.logo_type == 'Circle':
             radius = self.ceiling_pos[1] - self.start_pos[1]
             self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
