@@ -90,6 +90,7 @@ class Logo(Item):
         self.ax.plot([space_coor[0],space_coor2[0]],[space_coor[1],space_coor2[1]],zorder=-1,color='grey')
 
         if draw_arrow == True:
+            #https://stackoverflow.com/a/38208040
             self.ax.plot([self.origin[0],space_coor[0]],[self.origin[1],space_coor[1]],zorder=-1,color='grey')
             arc = Arc(self.origin,self.radius,self.radius,angle=270,
                   theta1=0,theta2=180,capstyle='round',linestyle='-',lw=1,color='black')
