@@ -173,9 +173,17 @@ class LogoGroup(Item):
         self.ax.grid()
     
     def link_columns(self, column1, column2):
+        #print('in link columns')
         nodes1 = column1.get_edge()
         nodes2 = column2.get_edge()
-        link_edges( (nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
+        #print('nodes1: ',nodes1)
+        #print('nodes2: ',nodes2)
+
+        if self.logo_type == 'Radiation':
+            link_edges( (nodes1[0],nodes1[1]), (nodes2[3],nodes2[2]) , self.ax)
+        else:
+            link_edges( (nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
+
         link_edges( (nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax)
         link_edges( (nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
 

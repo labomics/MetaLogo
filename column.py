@@ -38,17 +38,18 @@ class Column(Item):
         for character in self.characters:
             character.draw()
         
-        #h = self.get_height()
-        #w = self.get_width()
-        #self.ax.scatter(self.start_pos[0],self.start_pos[1])
-        #p1 = (self.start_pos[0] - w/2, self.start_pos[1])
-        #p2 = (self.start_pos[0] + w/2, self.start_pos[1])
-        #p3 = (self.start_pos[0] + w/2, self.start_pos[1]+h)
-        #p4 = (self.start_pos[0] - w/2, self.start_pos[1]+h)
-        #self.ax.scatter(p1[0],p1[1])
-        #self.ax.scatter(p2[0],p2[1])
-        #self.ax.scatter(p3[0],p3[1])
-        #self.ax.scatter(p4[0],p4[1])
+    def draw_wrap(self):
+        p1,p2,p3,p4 = self.get_edge()
+        verts = [p1,p2,p3,p4,p1]
+        codes = [
+            Path.MOVETO,
+            Path.LINETO,
+            Path.LINETO,
+            Path.LINETO,
+            Path.CLOSEPOLY
+        ]
+        self.ax.add_patch(PathPatch(Path(verts, codes)))
+
 
     
     def compute_positions(self):
@@ -100,7 +101,22 @@ class Column(Item):
             nodes = rotate([p1,p2,p3,p4],origin=self.start_pos, angle=self.deg-np.pi/2)
             return nodes
        
+        if self.logo_type == 'Radiation':
+            h = self.get_height()
+            w = self.get_width()
+            #p1 = (self.start_pos[0], self.start_pos[1]-self.radiation_space/2)
+            #p2 = (self.start_pos[0]+w, self.start_pos[1]-self.radiation_space/2)
+            #p3 = (self.start_pos[0]+w, self.start_pos[1]+self.radiation_space/2)
+            #p4 = (self.start_pos[0], self.start_pos[1]+self.radiation_space/2)
 
+            p1 = (self.start_pos[0], self.start_pos[1]-self.radiation_space/2)
+            p2 = (self.start_pos[0]+w, self.start_pos[1]-self.radiation_space/2)
+            p3 = (self.start_pos[0]+w, self.start_pos[1]+h-self.radiation_space/2)
+            p4 = (self.start_pos[0], self.start_pos[1]+h-self.radiation_space/2)
+
+            nodes = rotate([p1,p2,p3,p4],origin=self.origin, angle=self.deg)
+            return nodes
+ 
 
 
 

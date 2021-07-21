@@ -164,8 +164,15 @@ def straight_connect(p1,p2,p3,p4,**kargs):
 def link_edges(edge1, edge2, ax):
     if ax is None:
         _, ax = plt.subplots(1, 1,figsize=(10,10))
+    
     p1,p2 = edge1
     p4,p3 = edge2
+
+    #ax.scatter(p1[0],p1[1])
+    #ax.scatter(p2[0],p2[1])
+    #ax.scatter(p3[0],p3[1])
+    #ax.scatter(p4[0],p4[1])
+
     ax.add_patch(straight_connect(p1,p2,p3,p4, fill=True,alpha=0.1,color='blue',linewidth=0))
     return ax
 
@@ -211,7 +218,7 @@ def match_score(bit1, bit2, algrithm='sort_diff'):
         coor,pval = pearsonr(a1,a2)
         if pval > 0.05:
             corr = 0
-        print(a1,a2,coor)
+        #print(a1,a2,coor)
         return coor
 
 
