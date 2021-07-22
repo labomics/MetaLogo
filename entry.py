@@ -3,7 +3,7 @@ import argparse
 
 from .logo import LogoGroup
 from .utils import read_file
-from .utils import grouping
+from .utils import grouping,check_group
 from .utils import compute_bits
 
 
@@ -60,6 +60,7 @@ if __name__ == '__main__':
     #read seqs
     #print(args.input_file)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
+    print('seqs:', seqs)
     #if len(seqs) == 0:
     #    print('no sequences detected')
     #group seqs
@@ -67,6 +68,8 @@ if __name__ == '__main__':
     #print('logotype:',args.type)
 
     groups = grouping(seqs,group_by=args.group_strategy)
+    check_group(groups)
+    print('groups:', groups)
     bits = compute_bits(groups,args.tmp_path)
 
     #print('bits: ',bits)

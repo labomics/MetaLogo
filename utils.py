@@ -5,10 +5,11 @@ import tempfile
 import os
 import uuid
 import numpy as np
+import numpy as np
+import re
+
 from scipy.stats import spearmanr,pearsonr
 from matplotlib import pyplot as plt
-import numpy as np
-
 from matplotlib.patches import PathPatch,Rectangle,Circle,Polygon
 from matplotlib.path import Path
 import mpl_toolkits.mplot3d.art3d as art3d
@@ -31,7 +32,7 @@ def read_file(filename, filetype, min_length, max_length):
                 line = line.strip()
                 if line[0] == '>':
                     ith += 1
-                    seqname = f'{line[1:]}-{ith}'
+                    seqname = f'{line[1:]} {ith}'
                     seqnames.append(seqname)
                 else:
                     seq_dict[seqname]  = seq_dict.get(seqname,'') + line
@@ -52,16 +53,30 @@ def read_file(filename, filetype, min_length, max_length):
 
     return [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>=min_length) and (len(seq_dict[seqname])<=max_length)]
 
-def grouping(seqs,group_by='length',group_file=None):
+def grouping(seqs,group_by='length'):
+
     groups_dict = {}
     if group_by.lower() == 'length':
         for name,seq in seqs:
-            #print(name,seq)
             if len(seq) not in groups_dict:
-                groups_dict[len(seq)] = []
-            groups_dict[len(seq)].append([name,seq])
-    #return sorted(groups_dict.items(),key=lambda d:d[0])
+                groups_dict[f'Len{len(seq)}'] = []
+            groups_dict[f'Len{len(seq)}'].append([name,seq])
+    if group_by.lower() == 'identifier':
+        for name,seq in seqs:
+            group_pat = re.search('group@\d+-\S+',name)
+            if group_pat:
+                group_id = group_pat.group()
+                if group_id not in groups_dict:
+                    groups_dict[group_id] = []
+                groups_dict[group_id].append([name,seq])
     return groups_dict
+
+def check_group(groups):
+    for group_id in groups:
+        seqs = groups[group_id]
+        if len(set([len(x[1]) for x in seqs])) > 1:
+            print('Sequence lengths not same in one group')
+            exit(0)
 
 def write_to_tmp(seqs,tmp_path = './tmp/'):
     if not os.path.exists(tmp_path):

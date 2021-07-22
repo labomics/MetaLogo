@@ -49,8 +49,6 @@ class Column(Item):
             Path.CLOSEPOLY
         ]
         self.ax.add_patch(PathPatch(Path(verts, codes)))
-
-
     
     def compute_positions(self):
         start_pos = self.start_pos

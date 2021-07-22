@@ -232,12 +232,12 @@ sort_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="sortby_dropdown",
             options=[
-                {"label": "Length", "value": 'Length'},
-                {"label": "Length reverse", "value": 'Length_rev'},
-                {"label": "Group Id", "value": 'group_id'},
-                {"label": "Group Id reverse", "value": 'group_id_rev'},
+                {"label": "Length", "value": 'length'},
+                {"label": "Length reverse", "value": 'length_reverse'},
+                {"label": "Group Id", "value": 'identifier'},
+                {"label": "Group Id reverse", "value": 'identifier_reverse'},
             ],
-            value='Length'
+            value='length'
         ),
     ]
 )
@@ -709,16 +709,14 @@ def submit(nclicks1,nclicks2,nclicks3,input_format_dropdown, sequence_type_dropd
     seqs = []
     if file_upload_content is not None:
         response = handle_seqs_file(file_upload_content,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
-        if not response['successful']:
-            return '','Error',response['msg'],True,'',''
-        seqs = response['res']['seqs']
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
-        if not response['successful']:
-            return '','Error',response['msg'],True,'',''
-        seqs = response['res']['seqs']
+    if not response['successful']:
+        return '','Error',response['msg'],True,'',''
+    seqs = response['res']['seqs']
 
-    if sum([((len(seq) >= min_len_input) and (len(seq) <= max_len_input)) for name,seq in seqs]) == 0:
+    seqs = [(name,seq) for name,seq in seqs  if (len(seq)>=min_len_input) and (len(seq)<=max_len_input)]
+    if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,'',''
 
     uid = str(uuid.uuid4())
@@ -727,9 +725,11 @@ def submit(nclicks1,nclicks2,nclicks3,input_format_dropdown, sequence_type_dropd
 
     align = align_dropdown == 'Yes'
 
+    print('sortby_dropdown: ', sortby_dropdown)
+
     os.system(f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
-                --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} \
+                --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
                 --max_length {max_len_input} --min_length {min_len_input}  --align {align} \
                 --output_name {uid}.png \
                 ')

@@ -16,6 +16,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Arc, RegularPolygon
 from numpy import radians as rad
 import math
+import re
 
 
 
@@ -76,10 +77,10 @@ class Logo(Item):
         label_radius = (self.start_pos[0] + self.get_width() ) 
         label_x = label_radius * np.cos(self.deg)
         label_y = label_radius * np.sin(self.deg)
-        self.id_txt = self.ax.text(label_x,label_y, f'Group {self.id}',rotation=math.degrees(self.deg))
+        self.id_txt = self.ax.text(label_x,label_y, f'{self.id}',rotation=math.degrees(self.deg))
     
     def draw_hz_help(self,**kwargs):
-        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'Group {self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
+        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'{self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
 
         
     def draw_circle_help(self,draw_arrow=False,**kwargs):
@@ -114,7 +115,7 @@ class Logo(Item):
 
     
     def draw_3d_help(self,**kwargs):
-        self.ax.text(0, self.start_pos[2], min(2,self.get_height()), f'Group {self.id}', 'z')
+        self.ax.text(0, self.start_pos[2], min(2,self.get_height()), f'{self.id}', 'z')
 
 
 
@@ -189,12 +190,19 @@ class LogoGroup(Item):
     def generate_components(self):
         self.color_palette = sns.color_palette("hls", len(self.seq_bits))
 
-        if self.group_order == 'length':
+        try:
+            if self.group_order.lower() == 'length':
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: len(self.seq_bits[d]))
+            elif self.group_order.lower() == 'length_reverse':
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: len(self.seq_bits[d]),reverse=True)
+            elif self.group_order.lower() == 'identifier':
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[1])
+            elif self.group_order.lower() == 'identifier_reverse':
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[1], reverse=True)
+        except Exception as e:
+            print(e)
             self.group_ids = sorted(self.seq_bits.keys())
-        elif self.group_order == 'length_reverse':
-            self.group_ids = sorted(self.seq_bits.keys(),reverse=True)
-        else:
-            pass
+
         for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
             logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos,id=group_id,color=self.color_palette[index])
@@ -267,7 +275,7 @@ class LogoGroup(Item):
         #https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         legend_elements = []
         for logo in self.logos[::-1]:
-            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=f'Group {logo.id}', linestyle = 'None', markersize=5) )
+            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
         self.ax.legend(handles=legend_elements)
 
     def draw_radiation_help(self):
