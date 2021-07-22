@@ -27,6 +27,9 @@ from plotly.tools import mpl_to_plotly
 from io import BytesIO
 import base64
 
+PNG_DIR = '../../test'
+FA_DIR = 'tmp'
+
 def fig_to_uri(in_fig, close_all=True, **save_args):
     # type: (plt.Figure) -> str
     """
@@ -191,10 +194,62 @@ input_panel = dbc.Card(
         )
     ],style={'marginBottom':'10px'}
 )
+align_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Align logos?", html_for="dropdown"),
+        dcc.Dropdown(
+            id="align_dropdown",
+            options=[
+                {"label": "Yes", "value": 'Yes'},
+                {"label": "No", "value": 'No'}
+            ],
+            value='Yes'
+        ),
+    ]
+)
+align_metric = dbc.FormGroup(
+    [
+        dbc.Label("Score metric", html_for="dropdown"),
+        dcc.Dropdown(
+            id="score_metric",
+            options=[
+                {"label": "Correlation", "value": 'correlation'},
+                {"label": "1-diff", "value": 'diff'},
+                {"label": "sort_consistency", "value": 'sort_consistency'},
+            ],
+            value='sort_consistency'
+        ),
+    ]
+)
+
+align_threshold = dbc.FormGroup(
+    [
+        dbc.Label("Align threshold",html_for='input'),
+        dbc.Input(type="number", min=0, max=1, step=0.01, value=0.8,id="align_threshold"),
+    ]
+)
+
+style_submit =  html.Div(
+    [
+        dbc.Button(
+            "Submit", id="submit2",  color='info'
+        ),
+        html.Div("* Submit the job to our server and wait for results", 
+                    style={"fontSize":"10px","verticalAlign": "middle"}),
+    ],
+    style={'marginTop':'10px','textAlign':'right'}
+)
 
 algrithm_panel = dbc.Card([
     dbc.CardHeader("Step2. Choose Algrithm"),
-    dbc.CardBody()
+    dbc.CardBody([
+        dbc.Row([
+            dbc.Col(align_dropdown),
+            dbc.Col(align_metric),
+            dbc.Col(align_threshold)
+        ]),
+        dbc.Row(dbc.Col(style_submit))
+    ])
 ])
 
 logo_type_dropdown = dbc.FormGroup(
@@ -213,19 +268,7 @@ logo_type_dropdown = dbc.FormGroup(
     ]
 )
 
-align_dropdown = dbc.FormGroup(
-    [
-        dbc.Label("Align logos?", html_for="dropdown"),
-        dcc.Dropdown(
-            id="align_dropdown",
-            options=[
-                {"label": "Yes", "value": 'Yes'},
-                {"label": "No", "value": 'No'}
-            ],
-            value='Yes'
-        ),
-    ]
-)
+
 sort_dropdown = dbc.FormGroup(
     [
         dbc.Label("Sort by", html_for="dropdown"),
@@ -265,7 +308,7 @@ character_margin_input = dbc.FormGroup(
 layout_submit =  html.Div(
     [
         dbc.Button(
-            "Submit", id="submit2",  color='info'
+            "Submit", id="submit3",  color='info'
         ),
         html.Div("* Submit here and skip following steps by using default parameters", 
                     style={"fontSize":"10px","verticalAlign": "middle"}),
@@ -281,7 +324,7 @@ layout_panel = dbc.Card(
                 dbc.Row([
                     dbc.Col(logo_type_dropdown),
                     dbc.Col(sort_dropdown),
-                    dbc.Col(align_dropdown)
+                    #dbc.Col(align_dropdown)
                     ]),
                 dbc.Row([
                     dbc.Col(logo_margin_input),
@@ -364,10 +407,13 @@ download_format_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="download_format_dropdown",
             options=[
-                {"label": "PNG", "value": 'PNG'},
-                {"label": "PDF", "value": 'PDF'}
+                {"label": "PNG", "value": 'png'},
+                {"label": "PDF", "value": 'pdf'},
+                {"label": "PS", "value": 'ps'},
+                {"label": "EPS", "value": 'eps'},
+                {"label": "SVG", "value": 'svg'}
             ],
-            value='PNG'
+            value='png'
         ),
     ]
 )
@@ -429,7 +475,7 @@ for alphabet in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S'
 style_submit =  html.Div(
     [
         dbc.Button(
-            "Submit", id="submit3",  color='primary'
+            "Submit", id="submit4",  color='primary'
         ),
         html.Div("* Submit the job to our server and wait for results", 
                     style={"fontSize":"10px","verticalAlign": "middle"}),
@@ -565,6 +611,13 @@ app.layout = dbc.Container(children=[
 #def close_modal(n):
 #    return False
 
+@app.callback([Output("score_metric","disabled"),Output("align_threshold","disabled")], Input("align_dropdown","value"))
+def enable_align_detail(align):
+    if align == 'Yes':
+        return [False,False]
+    else:
+        return [True,True]
+
 @app.callback(Output("seq_textarea","placeholder"), Input("input_format_dropdown","value"))
 def change_placeholder(input_format):
     return f"Input sequences as {input_format} format"
@@ -622,35 +675,38 @@ app.clientside_callback(
     Output('garbage', 'children'),
     Input('functional_garbage', 'children'),
 )
-@app.callback(
-    [Output("download_btn","active"),Output("download_btn","disabled")],
-    Input("functional_garbage","children")
-)
-def show_btn(uid):
-    if (uid is not None) and (len(uid) > 0):
-        return True,False
-    else:
-        return False,True
 
 @app.callback(
-    [
+    [Output("download_btn","disabled"),
+     Output("download_btn","children")],
+    Input("functional_garbage","children"),
+    State("download_format_dropdown","value"),prevent_initial_call=True,
+)
+def show_btn(uid, format):
+    if (uid is not None) and (len(uid) > 0):
+        return False, f"Download {format.upper()}"
+    else:
+        return True, f"Download {format.upper()}"
+
+@app.callback(
         Output("download_png","data"),
-    ],
-    [
-        Input("download_btn","n_clicks")
-    ],
+        Input("download_btn","n_clicks"),
     [
         State("functional_garbage","children"),
+        State('download_format_dropdown','value'),
         State('img_res', 'src'),
     ],prevent_initial_call=True,
     )
-def udpate_download(n_clicks,uid,src):
+def udpate_download(n_clicks,uid,format,src):
     if len(uid) > 0:
-        return [dict(
-                base64=True,
-                content=src.split('base64,')[1],
-                filename=f'{uid}.png'
-            )]
+        #return [dict(
+        #        base64=True,
+        #        content=src.split('base64,')[1],
+        #        filename=f'{uid}.png'
+        #    )]
+        return dcc.send_file(
+        f"{PNG_DIR}/{uid}.{format}"
+        )
 
 
 
@@ -666,7 +722,8 @@ def udpate_download(n_clicks,uid,src):
     [
         Input('submit1', 'n_clicks'),
         Input('submit2', 'n_clicks'),
-        Input('submit3', 'n_clicks')
+        Input('submit3', 'n_clicks'),
+        Input('submit4', 'n_clicks')
     ],
     [
         State('input_format_dropdown', 'value'),
@@ -679,6 +736,8 @@ def udpate_download(n_clicks,uid,src):
         State('logo_shape_dropdown', 'value'),
         State('sortby_dropdown', 'value'),
         State('align_dropdown', 'value'),
+        State('score_metric', 'value'),
+        State('align_threshold', 'value'),
         State('logo_margin_input', 'value'),
         State('column_margin_input', 'value'),
         State('char_margin_input', 'value'),
@@ -694,11 +753,13 @@ def udpate_download(n_clicks,uid,src):
     ] + [State(f'colorpicker_{base}', 'value') for base in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']],
     prevent_initial_call=True
 )
-def submit(nclicks1,nclicks2,nclicks3,input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
-            seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,align_dropdown,logo_margin_input, column_margin_input,
+def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
+            seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,align_dropdown,align_metric, align_threshold, logo_margin_input, column_margin_input,
             char_margin_input, xlabel_input, ylabel_input, width_input, height_input, showid_check_input, showgrid_check_input,
             showxy_check_input, download_format_dropdown, color_dropdown, *args):
     print('in submit')
+
+    #print('xxxx',max_len_input,min_len_input)
 
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,'',''
@@ -715,28 +776,41 @@ def submit(nclicks1,nclicks2,nclicks3,input_format_dropdown, sequence_type_dropd
         return '','Error',response['msg'],True,'',''
     seqs = response['res']['seqs']
 
-    seqs = [(name,seq) for name,seq in seqs  if (len(seq)>=min_len_input) and (len(seq)<=max_len_input)]
+    seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
+
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,'',''
 
     uid = str(uuid.uuid4())
-    seq_file = f"tmp/server-{uid}.fasta"
+    #seq_file = f"tmp/server-{uid}.fasta"
+    seq_file = f"{FA_DIR}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
     align = align_dropdown == 'Yes'
 
     print('sortby_dropdown: ', sortby_dropdown)
+    print('align: ',align)
+    print('align_dropdown: ',align_dropdown)
 
-    os.system(f'cd ../..;\
+    cmd = f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
-                --max_length {max_len_input} --min_length {min_len_input}  --align {align} \
-                --output_name {uid}.png \
-                ')
-    png = f'../../test/{uid}.png'
+                --max_length {max_len_input} --min_length {min_len_input}  \
+                 --align_metric {align_metric} --align_threshold {align_threshold} \
+                --output_name {uid}.{download_format_dropdown} ' 
+    
+    if align:
+        cmd += '--align'
+                
+        
+    print('cmd:', cmd)
+    os.system(cmd)
+    #png = f'../../test/{uid}.{download_format_dropdown}.png'
+    png = f'{PNG_DIR}/{uid}.png'
     
     encoded_image = base64.b64encode(open(png, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+                #--align {align} --align_metric {align_metric} --align_threshold {align_threshold} \ 
 
 
     return '','','',False,src,uid

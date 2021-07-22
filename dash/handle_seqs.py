@@ -41,7 +41,7 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
             if line[0] == '>':
                 if len(seq_name) > 0: 
                         if len(seq) > 0:
-                            seqs.append([seq_name,seq])
+                            seqs.append([seq_name,seq.upper()])
                         else:
                             successful = False
                             msg = 'Fasta format error, please check!'
@@ -53,7 +53,7 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
                 seq += line
         if len(seq_name) > 0: 
                 if len(seq) > 0:
-                    seqs.append([seq_name,seq])
+                    seqs.append([seq_name,seq.upper()])
                 else:
                     successful = False
                     msg = 'Fastq format error, please check!'
@@ -75,7 +75,7 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
                 seq_name = line[1:]
             if i%4 == 1:
                 seq = line
-                seqs.append([seq_name,seq])
+                seqs.append([seq_name,seq.upper()])
     
     if successful:
         if len(seqs) == 0:

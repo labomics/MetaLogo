@@ -39,26 +39,29 @@ if __name__ == '__main__':
     parser.add_argument('--font',type=str,help='The font of sequence characters')
 
     #align
-    parser.add_argument('--align',type=bool,help='If show alignment of different sequence logo')
-    #parser.add_argument('--connect',type=bool,help='If show alignment of different sequence logo')
-    parser.add_argument('--align_type',type=str,help='The align type between different sequence logos',default='normal')
+    parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of different sequence logo')
+
+    parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
+    parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
 
     #style
-    parser.add_argument('--hide_X',type=bool,help='If hide X axis')
-    parser.add_argument('--hide_X_ticks',type=bool,help='If hide ticks of X axis')
-    parser.add_argument('--hide_Y',type=bool,help='If hide X axis')
-    parser.add_argument('--hide_Y_ticks',type=bool,help='If hide ticks of Y axis')
-    parser.add_argument('--X_label',type=bool,help='The label for X axis')
-    parser.add_argument('--Y_label',type=bool,help='The label for Y axis')
+    parser.add_argument('--hide_X',action='store_true',dest='hide_X',help='If hide X axis')
+    parser.add_argument('--hide_X_ticks',action='store_true',dest='hide_X_ticks',help='If hide ticks of X axis')
+    parser.add_argument('--hide_Y',action='store_true',dest='hide_Y',help='If hide Y axis')
+    parser.add_argument('--hide_Y_ticks',action='store_true',dest='hide_Y_ticks',help='If hide ticks of Y axis')
+    parser.add_argument('--X_label', action='store_true',dest='X_label', help='The label for X axis')
+    parser.add_argument('--Y_label', action='store_true',dest='Y_label', help='The label for Y axis')
 
     #output 
-    parser.add_argument('--show_X',type=bool,help='If show alignment of different sequence logo')
     parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
+    
+    #parser.set_defaults(align=True)
     args = parser.parse_args()
 
+    print('args: ',args)
     #read seqs
-    #print(args.input_file)
+    print(args.input_file)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
     print('seqs:', seqs)
     #if len(seqs) == 0:
@@ -74,8 +77,14 @@ if __name__ == '__main__':
 
     #print('bits: ',bits)
     #print(groups)
+    print('align: ',args.align)
 
-    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, align=args.align)
+    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold)
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
+    if not args.output_name.endswith('.png'):
+        base = '.'.join(args.output_name.split('.')[:-1]) 
+        logogroup.savefig(f'{args.output_dir}/{base}.png')
+    
+
 

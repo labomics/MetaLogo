@@ -6,7 +6,8 @@ from matplotlib.patches import Circle
 from .character import Character
 from .column import Column
 from .item import Item
-from .utils import get_coor_by_angle, get_connect, link_edges, rotate, text3d
+from .utils import get_coor_by_angle,  link_edges, rotate, text3d
+from .connect import get_connect
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
@@ -171,7 +172,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.1, align = True, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
+                 logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -183,6 +184,8 @@ class LogoGroup(Item):
         self.threed_interval = threed_interval
         self.align = align 
         self.ceiling_pos = (0,1)
+        self.align_metric = align_metric
+        self.align_threshold = align_threshold
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
@@ -238,7 +241,7 @@ class LogoGroup(Item):
             self.draw_circle_help()
     
     def draw_connect(self):
-        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids])
+        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric)
         #print('connected: ', self.connected)
         #for index,logo in enumerate(self.logos):
         i = -1
@@ -249,7 +252,7 @@ class LogoGroup(Item):
             link = self.connected[i]
             for pos1, arr in link.items():
                 r, targets = arr
-                if r > 0.4:
+                if r > self.align_threshold:
                     for pos2 in targets:
                         self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
