@@ -114,7 +114,7 @@ class Logo(Item):
 
     
     def draw_3d_help(self,**kwargs):
-        self.ax.text(-1, self.start_pos[2], 2, f'Group {self.id}', 'z')
+        self.ax.text(0, self.start_pos[2], min(2,self.get_height()), f'Group {self.id}', 'z')
 
 
 

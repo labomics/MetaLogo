@@ -135,6 +135,7 @@ seqinput_form = html.Div([
     dcc.Textarea(
         placeholder='',
         value='',
+        rows=5,
         style={'width': '100%'},
         id = 'seq_textarea'
     ),  
