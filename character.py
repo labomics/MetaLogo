@@ -101,6 +101,7 @@ class Character(Item):
                                 facecolor=self.color_map.get(self.char,self.color_map['other']),                              
                                 alpha=self.alpha,
                                 edgecolor=self.color_map.get(self.char,self.color_map['other']))
+        
 
     def draw(self):
         self.transform()

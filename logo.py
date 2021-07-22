@@ -15,6 +15,7 @@ import seaborn as sns
 from matplotlib.lines import Line2D
 from matplotlib.patches import Arc, RegularPolygon
 from numpy import radians as rad
+import math
 
 
 
@@ -56,27 +57,32 @@ class Logo(Item):
         self.compute_positions()
         for col in self.columns:
             col.draw()
+    
+    def draw_help(self,**kwargs):
 
         if self.logo_type == 'Threed': 
-            self.draw_3d_help()
+            self.draw_3d_help(**kwargs)
+       
+        if self.logo_type == 'Horizontal': 
+            self.draw_hz_help(**kwargs)
         
-        if self.logo_type == 'Horizontal':
-            self.draw_hz_help()
+        if self.logo_type == 'Circle':
+            self.draw_circle_help(**kwargs)
         
-        #if self.logo_type == 'Circle':
-        #    self.draw_circle_help()
+        if self.logo_type == 'Radiation':
+            self.draw_rad_help(**kwargs)
     
-    def draw_hz_help(self):
-        #self.ax.text(-0.5, self.start_pos[1]+0.2, f'Group {self.id}', rotation=90, size=20)
-        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'Group {self.id}')#,bbox={'fc': '0.8', 'pad': 0})
-        #r = self.ax.get_figure().canvas.get_renderer()
-        #bb = t.get_window_extent(r).inverse_transformed(self.ax.transData)
-        #width = bb.width
-        #height = bb.height
-        #print('in draw t3ext : ', width,height)
+    def draw_rad_help(self, **kwargs):
+        label_radius = (self.start_pos[0] + self.get_width() ) 
+        label_x = label_radius * np.cos(self.deg)
+        label_y = label_radius * np.sin(self.deg)
+        self.id_txt = self.ax.text(label_x,label_y, f'Group {self.id}',rotation=math.degrees(self.deg))
+    
+    def draw_hz_help(self,**kwargs):
+        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'Group {self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
 
         
-    def draw_circle_help(self,draw_arrow=False):
+    def draw_circle_help(self,draw_arrow=False,**kwargs):
         self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
 
         space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
@@ -90,10 +96,9 @@ class Logo(Item):
         self.ax.plot([space_coor[0],space_coor2[0]],[space_coor[1],space_coor2[1]],zorder=-1,color='grey')
 
         if draw_arrow == True:
-            #https://stackoverflow.com/a/38208040
             self.ax.plot([self.origin[0],space_coor[0]],[self.origin[1],space_coor[1]],zorder=-1,color='grey')
             arc = Arc(self.origin,self.radius,self.radius,angle=270,
-                  theta1=0,theta2=180,capstyle='round',linestyle='-',lw=1,color='black')
+                  theta1=0,theta2=180,capstyle='round',linestyle='-',lw=2,color='black')
             self.ax.add_patch(arc)
             endX = 0
             endY = -self.radius/2
@@ -108,7 +113,7 @@ class Logo(Item):
             )
 
     
-    def draw_3d_help(self):
+    def draw_3d_help(self,**kwargs):
         self.ax.text(-1, self.start_pos[2], 2, f'Group {self.id}', 'z')
 
 
@@ -204,36 +209,43 @@ class LogoGroup(Item):
 
         for index,logo in enumerate(self.logos):
             logo.draw()
-            if self.logo_type == 'Circle':
-                logo.draw_circle_help(draw_arrow=index==0)
+            logo.draw_help(draw_arrow=index==0)
         
+        
+        #draw connect
+
+        if self.align:
+            self.draw_connect()
+
+        self.draw_help()
+        self.compute_xy()
+        self.set_figsize()
+        self.ax.grid()
+    
+    def draw_help(self):
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
         
         if self.logo_type == 'Circle':
             self.draw_circle_help()
-        
-        #draw connect
+    
+    def draw_connect(self):
+        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids])
+        #print('connected: ', self.connected)
+        #for index,logo in enumerate(self.logos):
+        i = -1
+        for group_id  in self.connected:
+            i += 1
+            if group_id == self.group_ids[-1]:
+                continue
+            link = self.connected[i]
+            for pos1, arr in link.items():
+                r, targets = arr
+                if r > 0.4:
+                    for pos2 in targets:
+                        self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
-        if self.align:
-            self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids])
-            #print('connected: ', self.connected)
-            #for index,logo in enumerate(self.logos):
-            i = -1
-            for group_id  in self.connected:
-                i += 1
-                if group_id == self.group_ids[-1]:
-                    continue
-                link = self.connected[i]
-                for pos1, arr in link.items():
-                    r, targets = arr
-                    if r > 0.4:
-                        for pos2 in targets:
-                            self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
-        self.compute_xy()
-        self.set_figsize()
-        self.ax.grid()
     
     def link_columns(self, column1, column2, ):
 
@@ -327,11 +339,10 @@ class LogoGroup(Item):
             r = self.ax.get_figure().canvas.get_renderer()
             x_range = 0
             for i in range(len(self.logos)):
-                #width = self.ax.transData.inverted(self.logos[i].id_txt.get_window_extent(r)).width
                 text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
                 logo_width = self.logos[i].get_width()
-                _range = text_width + 0.1 + logo_width
-                print('text_width,logo_width,range',text_width,logo_width, _range)
+                _range = text_width + 1 + logo_width
+                #print('text_width,logo_width,range',text_width,logo_width, _range)
                 if _range > x_range:
                     x_range = _range
             
@@ -349,9 +360,25 @@ class LogoGroup(Item):
                 width = logo.get_width()
                 lim = max(width*np.sin(logo.deg), width*np.cos(logo.deg))
                 lims.append(lim)
-            print(lims)
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims+[0]))
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims+[0]))
+
+            print('before: ', max(lims))
+
+            r = self.ax.get_figure().canvas.get_renderer()
+            x_range = 0
+            for i,logo in enumerate(self.logos):
+                lim = lims[i]
+                text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
+                text_lim = max(text_width*np.sin(logo.deg), text_width*np.cos(logo.deg))
+                _range = text_width + text_lim + lim
+                if _range > x_range:
+                    x_range = _range
+            print('after: ', x_range)
+
+            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
+            self.ax.set_ylim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
+
         elif self.logo_type == 'Threed':
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.get_width())
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + sum([logo.get_height() for logo in self.logos[:-1]]) )
@@ -363,5 +390,5 @@ class LogoGroup(Item):
             self.ax.get_figure().set_figheight(10)
             self.ax.get_figure().set_figwidth(10)
         if self.logo_type == 'Horizontal':
-            self.ax.get_figure().set_figheight(10)
-            self.ax.get_figure().set_figwidth(20)
+            self.ax.get_figure().set_figheight(6)
+            self.ax.get_figure().set_figwidth(12)
