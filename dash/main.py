@@ -134,7 +134,7 @@ min_len_input = dbc.FormGroup(
 )
 
 seqinput_form = html.Div([
-    html.Label('Paste sequences (<= 50,000 sequences)'),
+    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example",href='#',id="load_example")]),
     dcc.Textarea(
         placeholder='',
         value='',
@@ -610,6 +610,30 @@ app.layout = dbc.Container(children=[
 #@app.callback(Output('modal','is_open'), Input('modal_close','n_clicks'))
 #def close_modal(n):
 #    return False
+
+@app.callback(Output("seq_textarea","value"), Input("load_example","n_clicks"),prevent_initial_call=True)
+def load_example(nclicks):
+    if nclicks > 0:
+        if os.path.exists(f'example2.fa'):
+            f = open('example2.fa','r')
+            return ''.join(f.readlines())
+        else:
+            example = """\
+>seq1 group@1-good
+AAACACACACACAGAC
+>seq2 group@1-good
+AGACTTAGACACAGAC
+>seq3 group@1-good
+ATACATACGCACAGAC
+>seq4 group@2-bad
+CTGCATGCAGAC
+>seq5 group@2-bad
+GTACATACACAC
+>seq6 group@2-bad
+ATCCATCTATAC
+"""
+            return example
+
 
 @app.callback([Output("score_metric","disabled"),Output("align_threshold","disabled")], Input("align_dropdown","value"))
 def enable_align_detail(align):

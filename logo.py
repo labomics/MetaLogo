@@ -115,8 +115,8 @@ class Logo(Item):
             )
 
     
-    def draw_3d_help(self,**kwargs):
-        self.ax.text(0, self.start_pos[2], min(2,self.get_height()), f'{self.id}', 'z')
+    def draw_3d_help(self,z_height_3d=2, **kwargs):
+        self.ax.text(0, self.start_pos[2], z_height_3d, f'{self.id}', 'z')
 
 
 
@@ -217,10 +217,10 @@ class LogoGroup(Item):
     def draw(self):
         self.compute_positions()
 
-
+        z_height_3d = max([logo.get_height() for logo in self.logos])
         for index,logo in enumerate(self.logos):
             logo.draw()
-            logo.draw_help(draw_arrow=index==0)
+            logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d)
         
         
         #draw connect
