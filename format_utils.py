@@ -11,6 +11,7 @@ from .expected_frequencies import naive_freq_tables
 
 import pandas as pd
 import numpy as np
+import math
 
 
 def count_to_pfm(counts):
@@ -91,6 +92,8 @@ def exact_error(pfm, n):
                 done = True
     return exact_error
 
+def log20(d):
+    return np.log(d) / np.log(20)
 
 def calc_info_matrix(pfm, n_occur, correction_type='approx', seq_type='dna'):
     """Calculate information matrix with small sample correction"""
@@ -111,17 +114,19 @@ def calc_info_matrix(pfm, n_occur, correction_type='approx', seq_type='dna'):
                 [pfm[b][l] * np.nan_to_num(np.log2(pfm[b][l])) for b in bases])
             for l in range(0, n)
         ]
+
     elif seq_type == 'aa':
         shannon_entropy = [
             sum([
-                -pfm[b][l] * np.nan_to_num(np.log20(pfm[b][l])) for b in bases
+                -pfm[b][l] * np.nan_to_num(log20(pfm[b][l])) for b in bases
             ]) for l in range(0, n)
         ]
         info_matrix = [
             2 + sum([
-                pfm[b][l] * np.nan_to_num(np.log20(pfm[b][l])) for b in bases
+                pfm[b][l] * np.nan_to_num(log20(pfm[b][l])) for b in bases
             ]) for l in range(0, n)
         ]
+
     else:
         # Custom
         logscale = np.log(len(bases))
@@ -142,13 +147,13 @@ def calc_info_matrix(pfm, n_occur, correction_type='approx', seq_type='dna'):
     return info_matrix
 
 
-def calc_relative_information(pfm, n_occur, correction_type='approx'):
+def calc_relative_information(pfm, n_occur, correction_type='approx',seq_type='dna'):
     """Calculate relative information matrix"""
     bases = list(pfm.keys())
     if correction_type == 'approx':
-        info_matrix = calc_info_matrix(pfm, n_occur)
+        info_matrix = calc_info_matrix(pfm, n_occur,seq_type=seq_type)
     else:
-        info_matrix = calc_info_matrix(pfm, 'exact')
+        info_matrix = calc_info_matrix(pfm, 'exact',seq_type=seq_type)
     relative_info = {
         base: [
             np.nan_to_num(prob * info)
@@ -244,18 +249,19 @@ def format_matrix(matrix):
 
 
 def process_data(data, data_type='counts', seq_type='dna'):
+    print('in process_data, seq_type:',seq_type)
     if data_type == 'counts':
         pfm, total = count_to_pfm(data)
-        ic = calc_relative_information(pfm, total)
+        ic = calc_relative_information(pfm, total,seq_type=seq_type)
     elif data_type == 'probability':
         pfm = data
-        ic = calc_relative_information(pfm, 10)
+        ic = calc_relative_information(pfm, 10,seq_type=seq_type)
     elif data_type in ['fasta', 'stockholm']:
         #motif, ic = read_alignment(data, data_type, seq_type)
         #pfm = motif.counts.normalize(pseudocounts=1)
         data, total = read_alignment(data, data_type, seq_type)
         pfm, _ = count_to_pfm(data)
-        ic = calc_relative_information(pfm, total)
+        ic = calc_relative_information(pfm, total,seq_type=seq_type)
     elif data_type in [
             'alignace', 'meme', 'mast', 'transfac', 'pfm', 'sites', 'jaspar'
     ]:

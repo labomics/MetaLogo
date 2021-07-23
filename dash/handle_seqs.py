@@ -92,7 +92,7 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
             if len(dna_set) < len(set(seq) | dna_set):
                 base_err = True
                 break
-        if sequence_type.upper()  == 'PROTEIN':
+        if sequence_type.upper()  == 'AA':
             if len(protein_set) < len(set(seq) | protein_set):
                 base_err = True
                 break
@@ -109,8 +109,12 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
     
     if len(seqs) == 0:
         return {'successful':False, 'msg':f'No sequences parsed, please check', 'res': {'seqs':seqs}}
-
-    return {'successful':successful, 'msg':msg, 'res': {'seqs':seqs}}
+    if sequence_type.upper() == 'AUTO':
+        if not_dna:
+            sequence_type = 'aa'
+        if not_protein:
+            sequence_type = 'dna'
+    return {'successful':successful, 'msg':msg, 'res': {'seqs':seqs,'sequence_type':sequence_type}}
             
 
             

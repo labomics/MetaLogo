@@ -98,11 +98,11 @@ sequence_type_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="sequence_type_dropdown",
             options=[
-                {"label": "Auto", "value": 'Auto'},
-                {"label": "DNA", "value": 'DNA'},
-                {"label": "Protein", "value": 'Protein'},
+                {"label": "Auto", "value": 'auto'},
+                {"label": "DNA", "value": 'dna'},
+                {"label": "Protein", "value": 'aa'},
             ],
-            value='Auto'
+            value='auto'
         ),
     ]
 )
@@ -799,6 +799,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
     if not response['successful']:
         return '','Error',response['msg'],True,'',''
     seqs = response['res']['seqs']
+    sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
@@ -821,6 +822,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
                 --max_length {max_len_input} --min_length {min_len_input}  \
                  --align_metric {align_metric} --align_threshold {align_threshold} \
+                --sequence_type {sequence_type} \
                 --output_name {uid}.{download_format_dropdown} ' 
     
     if align:

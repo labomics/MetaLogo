@@ -11,13 +11,15 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
-    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
+    #parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
+    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='vllogo/dash/examples/bug.fa')
     parser.add_argument('--input_file_type',type=str,help='The type of input file',default='fasta')
+    parser.add_argument('--sequence_type',type=str,help='The type of sequences',default='dna')
 
     
     #sequences
-    parser.add_argument('--min_length',type=int,help='The minimum length of sequences to be included',default=25)
-    parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=30)
+    parser.add_argument('--min_length',type=int,help='The minimum length of sequences to be included',default=8)
+    parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=20)
 
     #tmp
     parser.add_argument('--tmp_path',type=str,help='The location to store tmp files',default='tmp/')
@@ -73,7 +75,8 @@ if __name__ == '__main__':
     groups = grouping(seqs,group_by=args.group_strategy)
     check_group(groups)
     #print('groups:', groups)
-    bits = compute_bits(groups,args.tmp_path)
+    print('in entry: seq_type: ',args.sequence_type)
+    bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
 
     #print('bits: ',bits)
     #print(groups)
