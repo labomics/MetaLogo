@@ -63,7 +63,7 @@ if __name__ == '__main__':
     #read seqs
     print(args.input_file)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
-    print('seqs:', seqs)
+    #print('seqs:', seqs)
     #if len(seqs) == 0:
     #    print('no sequences detected')
     #group seqs
@@ -72,12 +72,12 @@ if __name__ == '__main__':
 
     groups = grouping(seqs,group_by=args.group_strategy)
     check_group(groups)
-    print('groups:', groups)
+    #print('groups:', groups)
     bits = compute_bits(groups,args.tmp_path)
 
     #print('bits: ',bits)
     #print(groups)
-    print('align: ',args.align)
+    #print('align: ',args.align)
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold)
     logogroup.draw()
