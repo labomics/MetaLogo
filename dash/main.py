@@ -801,6 +801,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
 
+
+    print(seqs)
+
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
     if len(seqs) == 0:

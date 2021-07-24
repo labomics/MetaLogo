@@ -83,8 +83,9 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
             msg = 'No sequences parsed, please check!'
 
     base_err = False 
-    not_dna = False
-    not_protein = False
+    is_dna = False
+    is_protein = False
+    base_set = set()
     for seqname,seq in seqs:
         dna_set = {'A','T','G','C','N','-'}
         protein_set = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-'}
@@ -96,24 +97,29 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
             if len(protein_set) < len(set(seq) | protein_set):
                 base_err = True
                 break
-        if sequence_type.upper() == 'AUTO':
-            if len(dna_set) < len(set(seq) | dna_set):
-                not_dna = True
-            if len(protein_set) < len(set(seq) | protein_set):
-                not_protein = True
+        base_set |= set(seq)
+
+    print('base_set: ', base_set)
+    if sequence_type.upper() == 'AUTO':
+       if base_set.issubset(dna_set):
+           is_dna = True
+       elif base_set.issubset(protein_set):
+           is_protein = True
+
     if base_err:
         return {'successful':False, 'msg':f'{sequence_type} sequences not valid, please check', 'res': {'seqs':seqs}}
     
-    if (sequence_type.upper() == 'AUTO') and (not_dna) and (not_protein) :
+    if (sequence_type.upper() == 'AUTO') and (not is_dna) and (not is_protein) :
         return {'successful':False, 'msg':f'Unclear sequence type (DNA or Protein), please check', 'res': {'seqs':seqs}}
     
     if len(seqs) == 0:
         return {'successful':False, 'msg':f'No sequences parsed, please check', 'res': {'seqs':seqs}}
+
     if sequence_type.upper() == 'AUTO':
-        if not_dna:
-            sequence_type = 'aa'
-        if not_protein:
+        if is_dna:
             sequence_type = 'dna'
+        elif is_protein:
+            sequence_type = 'aa'
     return {'successful':successful, 'msg':msg, 'res': {'seqs':seqs,'sequence_type':sequence_type}}
             
 
