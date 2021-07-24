@@ -31,7 +31,7 @@ PNG_DIR = '../../test'
 FA_DIR = 'tmp'
 
 def fig_to_uri(in_fig, close_all=True, **save_args):
-    # type: (plt.Figure) -> str
+    ## type: (plt.Figure) -> str
     """
     Save a figure as a URI
     :param in_fig:
@@ -100,6 +100,7 @@ sequence_type_dropdown = dbc.FormGroup(
             options=[
                 {"label": "Auto", "value": 'auto'},
                 {"label": "DNA", "value": 'dna'},
+                {"label": "RNA", "value": 'rna'},
                 {"label": "Protein", "value": 'aa'},
             ],
             value='auto'
@@ -800,9 +801,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
         return '','Error',response['msg'],True,'',''
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
-
-
-    print(seqs)
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 

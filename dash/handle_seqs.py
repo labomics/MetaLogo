@@ -83,33 +83,38 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
             msg = 'No sequences parsed, please check!'
 
     base_err = False 
-    is_dna = False
-    is_protein = False
     base_set = set()
     for seqname,seq in seqs:
         dna_set = {'A','T','G','C','N','-'}
+        rna_set = {'A','U','G','C','N','-'}
         protein_set = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-'}
-        if sequence_type.upper()  == 'DNA':
-            if len(dna_set) < len(set(seq) | dna_set):
-                base_err = True
-                break
-        if sequence_type.upper()  == 'AA':
-            if len(protein_set) < len(set(seq) | protein_set):
-                base_err = True
-                break
         base_set |= set(seq)
 
-    print('base_set: ', base_set)
+    if sequence_type.upper()  == 'DNA':
+        if not base_set.issubset(dna_set):
+            base_err = True
+    elif sequence_type.upper()  == 'AA':
+        if not base_set.issubset(protein_set):
+            base_err = True
+    elif sequence_type.upper()  == 'RNA':
+        if not base_set.issubset(rna_set):
+            base_err = True
+    if base_err:
+        return {'successful':False, 'msg':f'{sequence_type} sequences not valid, please check', 'res': {'seqs':seqs}}
+
+    is_dna = False
+    is_rna = False
+    is_protein = False
+
     if sequence_type.upper() == 'AUTO':
        if base_set.issubset(dna_set):
            is_dna = True
+       if base_set.issubset(rna_set):
+           is_rna = True
        elif base_set.issubset(protein_set):
            is_protein = True
-
-    if base_err:
-        return {'successful':False, 'msg':f'{sequence_type} sequences not valid, please check', 'res': {'seqs':seqs}}
     
-    if (sequence_type.upper() == 'AUTO') and (not is_dna) and (not is_protein) :
+    if (sequence_type.upper() == 'AUTO') and (not is_dna) and (not is_protein) and (not is_rna) :
         return {'successful':False, 'msg':f'Unclear sequence type (DNA or Protein), please check', 'res': {'seqs':seqs}}
     
     if len(seqs) == 0:
@@ -118,6 +123,8 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
     if sequence_type.upper() == 'AUTO':
         if is_dna:
             sequence_type = 'dna'
+        elif is_rna:
+            sequence_type = 'rna'
         elif is_protein:
             sequence_type = 'aa'
     return {'successful':successful, 'msg':msg, 'res': {'seqs':seqs,'sequence_type':sequence_type}}
