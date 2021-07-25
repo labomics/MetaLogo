@@ -69,20 +69,20 @@ if __name__ == '__main__':
     check_group(groups)
     bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
 
-
+    print('args.color_scheme: ', args.color_scheme)
     #get color
     try:
-        parsed_scheme = json.loads(args.color_scheme)
-        if type(parsed_scheme) ==  type({}):
-            color_scheme = parsed_scheme
-        elif get_color_scheme(args.color_scheme) is not None:
-            color_scheme = get_color_scheme(args.color_scheme)
-        else:
-            color_scheme = get_color_scheme('basic_aa_color')
+        color_scheme = get_color_scheme(args.color_scheme)
+        if color_scheme is None:
+            parsed_scheme = json.loads(args.color_scheme)
+            if type(parsed_scheme) ==  type({}):
+                color_scheme = parsed_scheme
+            else:
+                color_scheme = get_color_scheme('basic_aa_color')
     except Exception as e:
-        print(e)
         color_scheme = get_color_scheme('basic_aa_color')
     
+    print('color_scheme: ', color_scheme)
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, 
                           align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,

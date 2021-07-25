@@ -124,7 +124,8 @@ min_len_input = dbc.FormGroup(
 )
 
 seqinput_form = html.Div([
-    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example",href='#',id="load_example")]),
+    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example, ",href='#',id="load_example"),
+                html.A(" example2",href='#',id="load_example2")]),
     dcc.Textarea(
         placeholder='',
         value='',
@@ -631,11 +632,22 @@ def change_color_scheme(seqtype):
 #def close_modal(n):
 #    return False
 
-@app.callback(Output("seq_textarea","value"), Input("load_example","n_clicks"),prevent_initial_call=True)
-def load_example(nclicks):
-    if nclicks > 0:
-        if os.path.exists(f'example2.fa'):
-            f = open('example2.fa','r')
+@app.callback(Output("seq_textarea","value"), 
+    [Input("load_example","n_clicks"), Input("load_example2","n_clicks")],
+    prevent_initial_call=True)
+def load_example(nclicks1,nclicks2):
+    ctx = dash.callback_context
+    print(ctx.triggered)
+    if not ctx.triggered:
+        return
+    else:
+        example_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if example_id == 'load_example':
+            fa = 'examples/example2.fa'
+        if example_id == 'load_example2':
+            fa = 'examples/example3.fa'
+        if os.path.exists(fa):
+            f = open(fa,'r')
             return ''.join(f.readlines())
         else:
             example = """\
