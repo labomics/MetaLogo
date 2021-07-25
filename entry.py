@@ -5,6 +5,8 @@ from .logo import LogoGroup
 from .utils import read_file
 from .utils import grouping,check_group
 from .utils import compute_bits
+from .colors import get_color_scheme
+import json
 
 
 if __name__ == '__main__':
@@ -58,31 +60,33 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     
-    #parser.set_defaults(align=True)
     args = parser.parse_args()
 
     print('args: ',args)
-    #read seqs
-    print(args.input_file)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
-    #print('seqs:', seqs)
-    #if len(seqs) == 0:
-    #    print('no sequences detected')
-    #group seqs
-    #print(args.input_file, args.input_file_type, args.min_length, args.max_length,seqs)
-    #print('logotype:',args.type)
 
     groups = grouping(seqs,group_by=args.group_strategy)
     check_group(groups)
-    #print('groups:', groups)
-    print('in entry: seq_type: ',args.sequence_type)
     bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
 
-    #print('bits: ',bits)
-    #print(groups)
-    #print('align: ',args.align)
 
-    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold)
+    #get color
+    try:
+        parsed_scheme = json.loads(args.color_scheme)
+        if type(parsed_scheme) ==  type({}):
+            color_scheme = parsed_scheme
+        elif get_color_scheme(args.color_scheme) is not None:
+            color_scheme = get_color_scheme(args.color_scheme)
+        else:
+            color_scheme = get_color_scheme('basic_aa_color')
+    except Exception as e:
+        print(e)
+        color_scheme = get_color_scheme('basic_aa_color')
+    
+
+    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, 
+                          align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,
+                          color=color_scheme)
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
     if not args.output_name.endswith('.png'):

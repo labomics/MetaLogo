@@ -14,6 +14,7 @@ from handle_seqs import save_seqs
 import uuid
 import os
 import time
+import json
 
 from flask import Flask, send_from_directory
 
@@ -30,22 +31,6 @@ import base64
 PNG_DIR = '../../test'
 FA_DIR = 'tmp'
 
-def fig_to_uri(in_fig, close_all=True, **save_args):
-    ## type: (plt.Figure) -> str
-    """
-    Save a figure as a URI
-    :param in_fig:
-    :return:
-    """
-    out_img = BytesIO()
-    in_fig.savefig(out_img, format='png', **save_args)
-    if close_all:
-        in_fig.clf()
-        plt.close('all')
-    out_img.seek(0)  # rewind file
-    encoded = base64.b64encode(out_img.read()).decode("ascii").replace("\n", "")
-    return "data:image/png;base64,{}".format(encoded)
-
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -56,6 +41,10 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP]
 )
 app.title = "Modern Sequence Logo"
+
+#
+
+aa_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']
 
 
 nav = dbc.Nav(
@@ -426,14 +415,14 @@ color_scheme_dropdown = dbc.FormGroup(
             options=[
                 {"label": "DNA Basic", "value": 'dna_basic'},
                 {"label": "Protein Basic", "value": 'protein_basic'},
-                {"label": "Custom (click color pickers to choose)", "value": 'Custom'},
+                {"label": "Custom (click color pickers to choose)", "value": 'custom'},
             ],
             value='dna_basic'
         ),
     ]
 )
 #generate dna basic scheme
-dna_basic_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
+dna_basic_scheme = {'A':'#009980','T':'#1A1A1A','U':'#1A1A1A', 'G':'#E69B04','C':'#59B3E6','N':'grey'}
 dna_basic_spans = []
 for base in 'ATGCN':
     dna_basic_spans.append(html.Span(base,id=f"basic_dna_{base}",
@@ -444,7 +433,29 @@ for base in 'ATGCN':
     ))
 dna_basic_panel = html.Div(dna_basic_spans)
 
-protein_basic_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
+#protein_basic_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
+protein_basic_scheme = {
+    "A":"#CCFF00",
+    "C":"#FFFF00",
+    "D":"#FF0000",
+    "E":"#FF0066",
+    "F":"#00FF66",
+    "G":"#FF9900",
+    "H":"#0066FF",
+    "I":"#66FF00",
+    "K":"#6600FF",
+    "L":"#33FF00",
+    "M":"#00FF00",
+    "N":"#CC00FF",
+    "P":"#FFCC00",
+    "Q":"#FF00CC",
+    "R":"#0000FF",
+    "S":"#FF3300",
+    "T":"#FF6600",
+    "V":"#99FF00",
+    "W":"#00CCFF",
+    "Y":"#00FFCC"
+}
 protein_basic_spans = []
 for aa in 'ARNDCQEGHILKMFPSTWYV':
     protein_basic_spans.append(html.Span(aa,id=f"basic_protein_{aa}",
@@ -457,7 +468,8 @@ protein_basic_panel = html.Div(protein_basic_spans)
 
 custom_basic_scheme = {}
 custom_basic_groups = []
-for alphabet in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']:
+#for alphabet in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']:
+for alphabet in aa_list:
     colorpicker = dbc.Col(
         dbc.FormGroup(
         [
@@ -605,6 +617,13 @@ app.layout = dbc.Container(children=[
 
 
 
+@app.callback(Output("color_dropdown","value"), Input("sequence_type_dropdown","value"), prevent_initial_call=True)
+def change_color_scheme(seqtype):
+    if  seqtype in ['dna','rna']:
+        return 'dna_basic'
+    if seqtype == 'aa':
+        return 'protein_basic'
+    return 'protein_basic'
 
 
 
@@ -664,7 +683,7 @@ def hidden(color_scheme):
 
 @app.callback(Output("custom_basic_groups", "style"), Input("color_dropdown", "value"))
 def hidden(color_scheme):
-    if color_scheme == 'Custom':
+    if color_scheme == 'custom':
         return {"display":""}
     else:
         return {"display":"none"}
@@ -734,7 +753,6 @@ def udpate_download(n_clicks,uid,format,src):
         )
 
 
-
 @app.callback(
     [
         Output("loading-output", "children"),
@@ -775,7 +793,7 @@ def udpate_download(n_clicks,uid,format,src):
         State('showxy_check_input','value'),
         State('download_format_dropdown','value'),
         State('color_dropdown','value'),
-    ] + [State(f'colorpicker_{base}', 'value') for base in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']],
+    ] + [State(f'colorpicker_{base}', 'value') for base in aa_list],
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
@@ -814,17 +832,26 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
 
     align = align_dropdown == 'Yes'
 
-    print('sortby_dropdown: ', sortby_dropdown)
-    print('align: ',align)
-    print('align_dropdown: ',align_dropdown)
-
+    #print('sortby_dropdown: ', sortby_dropdown)
+    #print('align: ',align)
+    #print('align_dropdown: ',align_dropdown)
+    if color_dropdown == 'dna_basic':
+        color = 'basic_dna_color'
+    elif color_dropdown == 'protein_basic':
+        color = 'basic_aa_color'
+    elif color_dropdown == 'custom':
+        color = f'\'{json.dumps(dict(zip(aa_list,args)))}\''
+    
+    #print('color: ', color)
+    
     cmd = f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
                 --max_length {max_len_input} --min_length {min_len_input}  \
                  --align_metric {align_metric} --align_threshold {align_threshold} \
                 --sequence_type {sequence_type} \
-                --output_name {uid}.{download_format_dropdown} ' 
+                --output_name {uid}.{download_format_dropdown} \
+                --color_scheme {color} ' 
     
     if align:
         cmd += '--align'

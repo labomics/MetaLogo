@@ -15,10 +15,12 @@ from .item import Item
 from .colors import get_color_scheme
 from .utils import rotate
 
+basic_dna_color = get_color_scheme('basic_dna_color')
+
 class Character(Item):
 
     def __init__(self, char, ax=None, start_pos=(0,0),  width=1, height=1, limited_width=None, 
-                    logo_type='Horizontal', font = 'Arial', color = 'basic_dna_color', alpha = 1, 
+                    logo_type='Horizontal', font = 'Arial', color = basic_dna_color, alpha = 1, 
                     parent_start=(0,0), deg=np.pi/2, origin=(0,0), *args, **kwargs):
         super(Character, self).__init__(*args, **kwargs)
         self.char = char
@@ -32,7 +34,8 @@ class Character(Item):
         self.deg = deg
         self.path = None
         self.patch = None
-        self.color_map = get_color_scheme(color)
+        self.color_map = color
+        #print(self.color_map)
         if ax == None:
             self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
@@ -98,9 +101,9 @@ class Character(Item):
 
         self.path = transformation.transform_path(tmp_path)
         self.patch = PathPatch(self.path, linewidth=0, 
-                                facecolor=self.color_map.get(self.char,self.color_map['other']),                              
+                                facecolor=self.color_map.get(self.char,self.color_map.get('other','grey')),                              
                                 alpha=self.alpha,
-                                edgecolor=self.color_map.get(self.char,self.color_map['other']))
+                                edgecolor=self.color_map.get(self.char,self.color_map.get('other','grey')))
         
 
     def draw(self):

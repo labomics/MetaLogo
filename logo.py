@@ -19,11 +19,15 @@ from numpy import radians as rad
 import math
 import re
 
+from .colors import get_color_scheme
+
+basic_dna_color = get_color_scheme('basic_dna_color')
 
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', color='b', *args, **kwargs):
+                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', 
+                 help_color='b', color=basic_dna_color, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
@@ -35,6 +39,7 @@ class Logo(Item):
         self.origin = origin
         self.id = id
         self.color = color
+        self.help_color = help_color
         self.columns = []
 
         if ax == None:
@@ -51,7 +56,8 @@ class Logo(Item):
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
             weights = [x[1] for x in bit]
-            column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,origin=self.origin)
+            column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,
+                            origin=self.origin, color=self.color)
             self.columns.append(column)
     
     def draw(self):
@@ -89,7 +95,7 @@ class Logo(Item):
 
         space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
         space_coor = get_coor_by_angle(self.radius ,space_deg)
-        self.ax.scatter(space_coor[0],space_coor[1],color=self.color)
+        self.ax.scatter(space_coor[0],space_coor[1],color=self.help_color)
 
         space_coor2 = get_coor_by_angle(self.radius + self.get_height() ,space_deg)
         #self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]],zorder=-1)
@@ -172,7 +178,8 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, radiation_head_n = 5, threed_interval = 4,  *args, **kwargs):
+                 logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, 
+                 radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -186,12 +193,13 @@ class LogoGroup(Item):
         self.ceiling_pos = (0,1)
         self.align_metric = align_metric
         self.align_threshold = align_threshold
+        self.color = color
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
     
     def generate_components(self):
-        self.color_palette = sns.color_palette("hls", len(self.seq_bits))
+        self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
         try:
             if self.group_order.lower() == 'length':
@@ -208,7 +216,9 @@ class LogoGroup(Item):
 
         for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
-            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,origin=self.start_pos,id=group_id,color=self.color_palette[index])
+            logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,
+                        origin=self.start_pos,id=group_id,
+                        help_color=self.help_color_palette[index], color=self.color)
             self.logos.append(logo)
 
     def set_font(self):
@@ -278,7 +288,7 @@ class LogoGroup(Item):
         #https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
         legend_elements = []
         for logo in self.logos[::-1]:
-            legend_elements.append( Line2D([0], [0], marker='o', color=logo.color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
+            legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
         self.ax.legend(handles=legend_elements)
 
     def draw_radiation_help(self):
