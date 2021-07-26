@@ -18,7 +18,6 @@ from matplotlib.patches import Arc, RegularPolygon
 from numpy import radians as rad
 import math
 import re
-import matplotlib.pylab as pylab
 
 
 from .colors import get_color_scheme
@@ -68,33 +67,34 @@ class Logo(Item):
         for col in self.columns:
             col.draw()
     
-    def draw_help(self,show_id=True, **kwargs):
+    def draw_help(self,show_id=True,group_id_size=10, **kwargs):
 
         if self.logo_type == 'Threed': 
-            self.draw_3d_help(show_id=show_id, **kwargs)
+            self.draw_3d_help(show_id=show_id, group_id_size=group_id_size, **kwargs)
        
         if self.logo_type == 'Horizontal': 
-            self.draw_hz_help(show_id=show_id, **kwargs)
+            self.draw_hz_help(show_id=show_id, group_id_size=group_id_size,**kwargs)
         
         if self.logo_type == 'Circle':
-            self.draw_circle_help(show_id=show_id, **kwargs)
+            self.draw_circle_help(show_id=show_id, group_id_size=group_id_size,**kwargs)
         
         if self.logo_type == 'Radiation':
-            self.draw_rad_help(show_id=show_id, **kwargs)
+            self.draw_rad_help(show_id=show_id, group_id_size=group_id_size,**kwargs)
     
-    def draw_rad_help(self, show_id=True, **kwargs):
+    def draw_rad_help(self, show_id=True, group_id_size=10, **kwargs):
         if show_id:
             label_radius = (self.start_pos[0] + self.get_width() ) 
             label_x = label_radius * np.cos(self.deg)
             label_y = label_radius * np.sin(self.deg)
-            self.id_txt = self.ax.text(label_x,label_y, f'{self.id}',rotation=math.degrees(self.deg))
+            self.id_txt = self.ax.text(label_x,label_y, f'{self.id}',rotation=math.degrees(self.deg),fontsize=group_id_size)
     
-    def draw_hz_help(self,show_id=True, **kwargs):
+    def draw_hz_help(self,show_id=True,group_id_size=10, **kwargs):
         if show_id:
-            self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'{self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
+            self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1,
+                                     f'{self.id}', fontsize=group_id_size, clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
 
         
-    def draw_circle_help(self,show_id=True, draw_arrow=False,**kwargs):
+    def draw_circle_help(self,show_id=True, group_id_size=10,draw_arrow=False,**kwargs):
         self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
 
         space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
@@ -125,9 +125,9 @@ class Logo(Item):
             )
 
     
-    def draw_3d_help(self,z_height_3d=2, show_id=True, **kwargs):
+    def draw_3d_help(self,z_height_3d=2, show_id=True, group_id_size=10,**kwargs):
         if show_id:
-            self.ax.text(0, self.start_pos[2], z_height_3d, f'{self.id}', 'z')
+            self.ax.text(0, self.start_pos[2], z_height_3d, f'{self.id}', 'z',fontsize=group_id_size)
 
 
 
@@ -265,7 +265,8 @@ class LogoGroup(Item):
         z_height_3d = max([logo.get_height() for logo in self.logos]+[0])
         for index,logo in enumerate(self.logos):
             logo.draw()
-            logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d, show_id=self.show_group_id)
+            logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d, show_id=self.show_group_id,
+                            group_id_size=self.group_id_size)
         
         #draw connect
 
@@ -275,7 +276,9 @@ class LogoGroup(Item):
         self.draw_help()
         self.compute_xy()
         self.set_figsize()
-        self.ax.set_title(self.task_name)
+        self.ax.set_title(self.task_name,fontsize=self.title_size)
+
+        self.ax.tick_params(labelsize=self.tick_size)
 
 
         self.ax.spines['left'].set_visible(not self.hide_left_axis)
@@ -303,18 +306,11 @@ class LogoGroup(Item):
         if self.show_grid:
             self.ax.grid(True)
         
-        self.ax.set_xlabel(self.x_label) 
-        self.ax.set_ylabel(self.y_label) 
+        self.ax.set_xlabel(self.x_label,fontsize=self.label_size) 
+        self.ax.set_ylabel(self.y_label,fontsize=self.label_size) 
 
         if self.logo_type == 'Threed':
-            self.ax.set_zlabel(self.z_label)
-
-        params = {'legend.fontsize': self.group_id_size,
-                 'axes.labelsize': self.label_size,
-                 'axes.titlesize':self.title_size,
-                 'xtick.labelsize':self.tick_size,
-                 'ytick.labelsize':self.tick_size}
-        pylab.rcParams.update(params)
+            self.ax.set_zlabel(self.z_label,fontsize=self.label_size)
 
 
     
@@ -364,8 +360,9 @@ class LogoGroup(Item):
         if self.show_group_id:
             legend_elements = []
             for logo in self.logos[::-1]:
-                legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
-            self.ax.legend(handles=legend_elements)
+                legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', 
+                                        markersize=5) )
+            self.ax.legend(handles=legend_elements,fontsize=self.group_id_size)
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
