@@ -7,17 +7,20 @@ from .utils import grouping,check_group
 from .utils import compute_bits
 from .colors import get_color_scheme
 import json
+import os
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
-    #parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
-    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='vllogo/dash/examples/bug.fa')
+    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
+    #parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='vllogo/dash/examples/bug.fa')
     parser.add_argument('--input_file_type',type=str,help='The type of input file',default='fasta')
     parser.add_argument('--sequence_type',type=str,help='The type of sequences',default='dna')
 
+    #task
+    parser.add_argument('--task_name',type=str,help='The name to displayed on the figure',default='MetaLogo')
     
     #sequences
     parser.add_argument('--min_length',type=int,help='The minimum length of sequences to be included',default=8)
@@ -62,7 +65,6 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    print('args: ',args)
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
 
     groups = grouping(seqs,group_by=args.group_strategy)
@@ -86,12 +88,11 @@ if __name__ == '__main__':
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, 
                           align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,
-                          color=color_scheme)
+                          color=color_scheme, task_name=args.task_name)
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
     if not args.output_name.endswith('.png'):
         base = '.'.join(args.output_name.split('.')[:-1]) 
         logogroup.savefig(f'{args.output_dir}/{base}.png')
     
-
 

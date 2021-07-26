@@ -179,7 +179,8 @@ class Logo(Item):
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, 
-                 radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, *args, **kwargs):
+                 radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
+                 *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
@@ -194,6 +195,7 @@ class LogoGroup(Item):
         self.align_metric = align_metric
         self.align_threshold = align_threshold
         self.color = color
+        self.task_name = task_name
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
@@ -227,7 +229,7 @@ class LogoGroup(Item):
     def draw(self):
         self.compute_positions()
 
-        z_height_3d = max([logo.get_height() for logo in self.logos])
+        z_height_3d = max([logo.get_height() for logo in self.logos]+[0])
         for index,logo in enumerate(self.logos):
             logo.draw()
             logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d)
@@ -241,6 +243,7 @@ class LogoGroup(Item):
         self.draw_help()
         self.compute_xy()
         self.set_figsize()
+        self.ax.set_title(self.task_name)
         self.ax.grid()
     
     def draw_help(self):

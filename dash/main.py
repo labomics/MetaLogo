@@ -497,11 +497,20 @@ style_submit =  html.Div(
     style={'marginTop':'10px','textAlign':'right'}
 )
 
+title_input = dbc.FormGroup(
+    [
+        dbc.Label("Figure Title",html_for='input'),
+        dbc.Input(type="string", value='MetaLogo',id="title_input"),
+    ]
+)
 style_panel = dbc.Card(
     [
         dbc.CardHeader("Step4. Set Output Style"),
         dbc.CardBody(
             [
+                dbc.Row([
+                    dbc.Col(title_input)
+                ]),
                 dbc.Row([
                     dbc.Col(xlabel_input),
                     dbc.Col(ylabel_input),
@@ -643,7 +652,8 @@ def load_example(nclicks1,nclicks2):
     else:
         example_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if example_id == 'load_example':
-            fa = 'examples/example2.fa'
+            #fa = 'examples/example2.fa'
+            fa = 'examples/ectf.fa'
         if example_id == 'load_example2':
             fa = 'examples/example3.fa'
         if os.path.exists(fa):
@@ -781,6 +791,7 @@ def udpate_download(n_clicks,uid,format,src):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('title_input','value'),
         State('input_format_dropdown', 'value'),
         State('sequence_type_dropdown', 'value'),
         State('grouping_by_dropdown', 'value'),
@@ -808,7 +819,7 @@ def udpate_download(n_clicks,uid,format,src):
     ] + [State(f'colorpicker_{base}', 'value') for base in aa_list],
     prevent_initial_call=True
 )
-def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
+def submit(nclicks1,nclicks2,nclicks3,nclicks4, title_input, input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
             seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,align_dropdown,align_metric, align_threshold, logo_margin_input, column_margin_input,
             char_margin_input, xlabel_input, ylabel_input, width_input, height_input, showid_check_input, showgrid_check_input,
             showxy_check_input, download_format_dropdown, color_dropdown, *args):
@@ -855,6 +866,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
         color = f'\'{json.dumps(dict(zip(aa_list,args)))}\''
     
     #print('color: ', color)
+
+    task_name = f"\'{title_input}\'"
     
     cmd = f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
@@ -863,10 +876,10 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, input_format_dropdown, sequence_
                  --align_metric {align_metric} --align_threshold {align_threshold} \
                 --sequence_type {sequence_type} \
                 --output_name {uid}.{download_format_dropdown} \
-                --color_scheme {color} ' 
+                --color_scheme {color} --task_name {task_name}' 
     
     if align:
-        cmd += '--align'
+        cmd += ' --align'
                 
         
     print('cmd:', cmd)
