@@ -220,6 +220,20 @@ align_threshold = dbc.FormGroup(
     ]
 )
 
+align_mismatch_score = dbc.FormGroup(
+    [
+        dbc.Label("Mismatch Score",html_for='input'),
+        dbc.Input(type="float",  max=0,  value=-1,id="mismatch_score"),
+    ]
+)
+
+align_gap_score = dbc.FormGroup(
+    [
+        dbc.Label("Gap Score",html_for='input'),
+        dbc.Input(type="float", max=0, value=-1,id="gap_score"),
+    ]
+)
+
 style_submit =  html.Div(
     [
         dbc.Button(
@@ -238,6 +252,10 @@ algrithm_panel = dbc.Card([
             dbc.Col(align_dropdown),
             dbc.Col(align_metric),
             dbc.Col(align_threshold)
+        ]),
+        dbc.Row([
+            dbc.Col(align_mismatch_score),
+            dbc.Col(align_gap_score),
         ]),
         dbc.Row(dbc.Col(style_submit))
     ])
@@ -898,6 +916,8 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('mismatch_score','value'),
+        State('gap_score','value'),
         State('align_color','value'),
         State('align_alpha','value'),
         State('title_size','value'),
@@ -934,6 +954,7 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            mismatch_score,  gap_score,
             align_color, align_alpha,
             title_size, tick_size, label_size, id_size,  
             title_input, input_format_dropdown, 
@@ -1036,6 +1057,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                 --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} --char_margin_ratio {char_margin_input} \
                 --figure_size_x {width_input} --figure_size_y {height_input} \
                 --align_color {align_color} --align_alpha {align_alpha} \
+                --mismatch_score {mismatch_score}  --gap_score {gap_score}\
                 ' 
     
     if align:

@@ -2,15 +2,15 @@
 from scipy.stats import spearmanr,pearsonr
 import numpy as np
 
-def get_connect(bits_array, align_metric = 'sort_diff'):
-    print('len of bits: ', len(bits_array))
+def get_connect(bits_array, align_metric = 'sort_diff', mismatch_score=-1,gap_score=-1):
     connected = {}
     for index,bit in enumerate(bits_array):
         if index == len(bits_array) - 1:
             break
         bits1 = bit
         bits2 = bits_array[index + 1]
-        align1,align2 = needle(bits1,bits2, align_metric=align_metric)
+        align1,align2 = needle(bits1,bits2, align_metric=align_metric, 
+                                delete=mismatch_score,insert=mismatch_score,gap_penalty=gap_score)
 
         connected[index] = {}
 
@@ -67,6 +67,9 @@ def match_score(bit1, bit2, align_metric='sort_consistency'):
 
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
 def needle(seq1, seq2, gap_penalty=-1,delete=-1,insert=-1, align_metric='sort_consistency'):
+    print('delete: ', delete)
+    print('insert: ', insert)
+    print('gajp_penalty: ', gap_penalty)
     m, n = len(seq1), len(seq2)  # length of two sequences
     
     # Generate DP table and traceback path pointer matrix

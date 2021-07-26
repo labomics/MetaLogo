@@ -51,6 +51,9 @@ if __name__ == '__main__':
     parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
     parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
 
+    parser.add_argument('--mismatch_score',type=float,help='The mismatch score for alignment',default=-1.0)
+    parser.add_argument('--gap_score',type=float,help='The gap score for alignment',default=-1.0)
+
     #layout
 
     parser.add_argument('--logo_margin_ratio',type=float,help='Margin ratio between the logos',default=0.1)
@@ -125,7 +128,8 @@ if __name__ == '__main__':
                           title_size=args.title_size, label_size=args.label_size, group_id_size=args.group_id_size,
                           tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
                           figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
-                          char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha 
+                          char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
+                          mismatch_score = args.mismatch_score,  gap_score = args.gap_score,
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

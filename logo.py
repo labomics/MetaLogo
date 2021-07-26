@@ -8,7 +8,7 @@ from .character import Character
 from .column import Column
 from .item import Item
 from .utils import get_coor_by_angle,  link_edges, rotate, text3d
-from .connect import get_connect
+from .connect import get_connect, match_score
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
@@ -192,7 +192,7 @@ class LogoGroup(Item):
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
-                 figure_size_x=-1, figure_size_y=-1,
+                 figure_size_x=-1, figure_size_y=-1,mismatch_score=-1,gap_score=-1,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
@@ -214,6 +214,9 @@ class LogoGroup(Item):
 
         self.align_color = align_color
         self.align_alpha = align_alpha
+
+        self.mismatch_score = mismatch_score
+        self.gap_score = gap_score
 
         self.hide_left_axis = hide_left_axis
         self.hide_right_axis = hide_right_axis
@@ -335,7 +338,8 @@ class LogoGroup(Item):
             self.draw_circle_help()
     
     def draw_connect(self):
-        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric)
+        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
+                                      mismatch_score=self.mismatch_score, gap_score=self.gap_score)
         #print('connected: ', self.connected)
         #for index,logo in enumerate(self.logos):
         i = -1
