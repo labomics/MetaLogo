@@ -51,6 +51,12 @@ if __name__ == '__main__':
     parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
     parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
 
+    #layout
+
+    parser.add_argument('--logo_margin_ratio',type=float,help='Margin ratio between the logos',default=0.1)
+    parser.add_argument('--column_margin_ratio',type=float,help='Margin ratio between the columns',default=0.05)
+    parser.add_argument('--char_margin_ratio',type=float,help='Margin ratio between the chars',default=0.05)
+
     #style
 
     parser.add_argument('--hide_left_axis',action='store_true',dest='hide_left_axis',help='If show left axis')
@@ -74,6 +80,12 @@ if __name__ == '__main__':
     parser.add_argument('--label_size',type=int,help='The size of figure xy labels',default=10)
     parser.add_argument('--tick_size',type=int,help='The size of figure ticks',default=10)
     parser.add_argument('--group_id_size',type=int,help='The size of group labels',default=10)
+
+    parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=10)
+    parser.add_argument('--figure_size_y',type=float,help='The height of figure',default=10)
+
+    parser.add_argument('--align_color',type=str,help='The color of alignment',default=10)
+    parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default=10)
 
     #output 
     parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
@@ -111,7 +123,9 @@ if __name__ == '__main__':
                           hide_x_ticks = args.hide_x_ticks, hide_y_ticks = args.hide_y_ticks, hide_z_ticks=args.hide_z_ticks,
                           x_label=args.x_label, y_label=args.y_label, z_label=args.z_label,
                           title_size=args.title_size, label_size=args.label_size, group_id_size=args.group_id_size,
-                          tick_size=args.tick_size
+                          tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
+                          figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
+                          char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha 
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

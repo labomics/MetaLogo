@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import genericpath
 from matplotlib.colors import get_named_colors_mapping
+from matplotlib.pyplot import figure
 import numpy as np
 from matplotlib.patches import Circle
 from .character import Character
@@ -27,7 +28,7 @@ basic_dna_color = get_color_scheme('basic_dna_color')
 
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
-                 column_margin_ratio=0.1, parent_start = (0,0), origin = (0,0), id='', 
+                 column_margin_ratio=0.1, char_margin_ratio = 0.1, parent_start = (0,0), origin = (0,0), id='', 
                  help_color='b', color=basic_dna_color, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
@@ -36,6 +37,7 @@ class Logo(Item):
         self.logo_type = logo_type
         self.parent_start = parent_start
         self.column_margin_ratio = column_margin_ratio
+        self.char_margin_ratio = char_margin_ratio
         self.column_width = column_width
         self.origin = origin
         self.id = id
@@ -58,7 +60,7 @@ class Logo(Item):
             chars = [x[0] for x in bit]
             weights = [x[1] for x in bit]
             column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,
-                            origin=self.origin, color=self.color)
+                            origin=self.origin, color=self.color, char_margin_ratio=self.char_margin_ratio)
             self.columns.append(column)
     
     def draw(self):
@@ -183,18 +185,22 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
-                 logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, 
+                 logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
+                 align = True, align_metric='sort_consistency', align_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
                  x_label = 'Position', y_label = 'bits',z_label = 'bits', show_grid = True, show_group_id = True,
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
-                 title_size=20, label_size=10, tick_size=10, group_id_size=10,
+                 title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
+                 figure_size_x=-1, figure_size_y=-1,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
         self.group_order = group_order
         self.start_pos = start_pos
-        self.logo_margin = logo_margin
+        self.logo_margin_ratio = logo_margin_ratio
+        self.column_margin_ratio = column_margin_ratio
+        self.char_margin_ratio = char_margin_ratio
         self.logo_type = logo_type
         self.init_radius = init_radius
         self.radiation_head_n = 5
@@ -205,6 +211,9 @@ class LogoGroup(Item):
         self.align_threshold = align_threshold
         self.color = color
         self.task_name = task_name
+
+        self.align_color = align_color
+        self.align_alpha = align_alpha
 
         self.hide_left_axis = hide_left_axis
         self.hide_right_axis = hide_right_axis
@@ -226,6 +235,9 @@ class LogoGroup(Item):
 
         self.show_group_id = show_group_id
         self.show_grid = show_grid
+
+        self.figure_size_x = figure_size_x
+        self.figure_size_y = figure_size_y
 
         print('self.show_grid: ', show_grid)
 
@@ -253,7 +265,8 @@ class LogoGroup(Item):
             bits = self.seq_bits[group_id]
             logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,
                         origin=self.start_pos,id=group_id,
-                        help_color=self.help_color_palette[index], color=self.color)
+                        help_color=self.help_color_palette[index], color=self.color,
+                        column_margin_ratio=self.column_margin_ratio, char_margin_ratio=self.char_margin_ratio)
             self.logos.append(logo)
 
     def set_font(self):
@@ -345,14 +358,19 @@ class LogoGroup(Item):
         nodes2 = column2.get_edge()
 
         if self.logo_type == 'Threed':
-            link_edges((nodes1[0],nodes1[1]), (nodes2[0],nodes2[1]) , self.ax, threed=True, x=0,y=2,z=1)
+            link_edges((nodes1[0],nodes1[1]), (nodes2[0],nodes2[1]) , self.ax, threed=True, x=0,y=2,z=1, 
+                        color=self.align_color, alpha=self.align_alpha)
         else:
             if self.logo_type == 'Radiation':
-                link_edges((nodes1[0],nodes1[1]), (nodes2[3],nodes2[2]) , self.ax)
+                link_edges((nodes1[0],nodes1[1]), (nodes2[3],nodes2[2]) , self.ax,
+                            color=self.align_color, alpha=self.align_alpha)
             else:
-                link_edges((nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax)
-            link_edges((nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax)
-            link_edges((nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax)
+                link_edges((nodes1[3],nodes1[2]), (nodes2[0],nodes2[1]) , self.ax,
+                            color=self.align_color, alpha=self.align_alpha)
+            link_edges((nodes2[0],nodes2[1]), (nodes2[3],nodes2[2]) , self.ax,
+                        color=self.align_color, alpha=self.align_alpha)
+            link_edges((nodes1[0],nodes1[1]), (nodes1[3],nodes1[2]) , self.ax,
+                        color=self.align_color, alpha=self.align_alpha)
 
 
     def draw_circle_help(self):           
@@ -413,7 +431,7 @@ class LogoGroup(Item):
                     #start_pos = (start_pos[0], start_pos[1], start_pos[2] + self.threed_interval)
                     start_pos = (start_pos[0], start_pos[1], start_pos[2] + logo.get_height())
                 else:
-                    start_pos = (start_pos[0], start_pos[1] + logo.get_height() + self.logo_margin)
+                    start_pos = (start_pos[0], start_pos[1] + logo.get_height()*(1+self.logo_margin_ratio))
             self.ceiling_pos = start_pos
     
     def get_height(self):
@@ -479,9 +497,13 @@ class LogoGroup(Item):
 
     
     def set_figsize(self):
-        if self.logo_type == 'Circle':
-            self.ax.get_figure().set_figheight(10)
-            self.ax.get_figure().set_figwidth(10)
-        if self.logo_type == 'Horizontal':
-            self.ax.get_figure().set_figheight(6)
-            self.ax.get_figure().set_figwidth(12)
+        if self.figure_size_x != -1 and self.figure_size_y != -1:
+            self.ax.get_figure().set_figwidth(self.figure_size_x)
+            self.ax.get_figure().set_figheight(self.figure_size_y)
+        else:
+            if self.logo_type == 'Circle':
+                self.ax.get_figure().set_figheight(10)
+                self.ax.get_figure().set_figwidth(10)
+            if self.logo_type == 'Horizontal':
+                self.ax.get_figure().set_figheight(6)
+                self.ax.get_figure().set_figwidth(12)

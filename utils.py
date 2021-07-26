@@ -162,7 +162,7 @@ def straight_connect(p1,p2,p3,p4,**kargs):
     patch = PathPatch(path, **kargs)
     return patch
 
-def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1):
+def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1, color='blue',alpha=0.1):
     if ax is None:
         _, ax = plt.subplots(1, 1,figsize=(10,10))
     
@@ -181,10 +181,10 @@ def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1):
         patch = straight_connect((p1[x],p1[y]),
                                  (p2[x],p2[y]),
                                  (p3[x],p3[y]),
-                                 (p4[x],p4[y]), fill=True,alpha=0.1,color='blue',linewidth=0)
+                                 (p4[x],p4[y]), fill=True,alpha=alpha,color=color,linewidth=0)
 
     else:
-        patch = straight_connect(p1,p2,p3,p4, fill=True,alpha=0.1,color='blue',linewidth=0)
+        patch = straight_connect(p1,p2,p3,p4, fill=True,alpha=alpha,color=color,linewidth=0)
 
 
     ax.add_patch(patch)

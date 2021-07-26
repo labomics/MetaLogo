@@ -367,13 +367,13 @@ zlabel_input = dbc.FormGroup(
 width_input = dbc.FormGroup(
     [
         dbc.Label("Figure Width (inch)",html_for='input'),
-        dbc.Input(type="number", min=1, max=20, value=10,id="width_input"),
+        dbc.Input(type="number", min=1,  value=10,id="width_input"),
     ]
 )
 height_input = dbc.FormGroup(
     [
         dbc.Label("Figure Height (inch)",html_for='input'),
-        dbc.Input(type="number", min=1, max=20, value=10, id="height_input")
+        dbc.Input(type="number", min=1,  value=10, id="height_input")
     ]
     
 )
@@ -542,6 +542,22 @@ idsize_input = dbc.FormGroup(
         dbc.Input(type="number", min=0, value=10,id="id_size"),
     ]
 )
+align_alpha_input = dbc.FormGroup(
+    [
+        dbc.Label("Alignment Transparency",html_for='input'),
+        dbc.Input(type="float", min=0, max=1, value=0.1,id="align_alpha"),
+    ]
+)
+align_color_picker =  dbc.FormGroup(
+        [
+            dbc.Label("Alignment Color"),
+            dbc.Input(
+                type="color",
+                id=f"align_color",
+                value="#007bff",
+                style={"width": 50, "height": 50, "margin":"auto"},
+            ),
+        ],style={"textAlign":"center"})
 
 style_panel = dbc.Card(
     [
@@ -564,7 +580,8 @@ style_panel = dbc.Card(
 
                     dbc.Col(width_input),
                     dbc.Col(height_input),
-                    dbc.Col(download_format_dropdown),
+                    dbc.Col(align_color_picker),
+                    dbc.Col(align_alpha_input)
                     ]),
                 dbc.Row([
                     dbc.Col(showxy_checklist),
@@ -583,7 +600,9 @@ style_panel = dbc.Card(
                 dbc.Row(
                     custom_basic_groups
                 ,style={'padding':'20px'},id='custom_basic_groups'),
-
+                dbc.Row(
+                    dbc.Col(download_format_dropdown),
+                ),
                 dbc.Row([dbc.Col(''),dbc.Col(style_submit)],justify='end'),
 
             ]
@@ -842,6 +861,25 @@ def change_labels(logo_shape):
     if logo_shape == 'Threed':
         return 'Position','','Bits',['hideyticks']
 
+@app.callback(
+    [
+        Output("width_input","value"),
+        Output("height_input","value"),
+    ],
+    Input("logo_shape_dropdown","value")
+)
+def change_figure_size(logo_shape):
+
+    if logo_shape == 'Circle':
+        return 10,10
+    if logo_shape == 'Horizontal':
+        return 20,10
+    if logo_shape == 'Radiation':
+        return 10,10
+    if logo_shape == 'Threed':
+        return 10,10
+   
+
 
 
 @app.callback(
@@ -860,6 +898,8 @@ def change_labels(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('align_color','value'),
+        State('align_alpha','value'),
         State('title_size','value'),
         State('tick_size','value'),
         State('label_size','value'),
@@ -894,6 +934,7 @@ def change_labels(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            align_color, align_alpha,
             title_size, tick_size, label_size, id_size,  
             title_input, input_format_dropdown, 
             sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
@@ -979,7 +1020,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if 'hidezticks' in hidexy_check_input:
         hidezticks = True
     
-
+    align_color = f"\'{align_color}\'"
     
     cmd = f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
@@ -992,6 +1033,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                 --x_label {xlabel} --y_label {ylabel} --z_label {zlabel}\
                 --title_size {title_size} --tick_size {tick_size} --label_size {label_size} \
                 --group_id_size {id_size} \
+                --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} --char_margin_ratio {char_margin_input} \
+                --figure_size_x {width_input} --figure_size_y {height_input} \
+                --align_color {align_color} --align_alpha {align_alpha} \
                 ' 
     
     if align:
