@@ -18,6 +18,8 @@ from matplotlib.patches import Arc, RegularPolygon
 from numpy import radians as rad
 import math
 import re
+import matplotlib.pylab as pylab
+
 
 from .colors import get_color_scheme
 
@@ -66,31 +68,33 @@ class Logo(Item):
         for col in self.columns:
             col.draw()
     
-    def draw_help(self,**kwargs):
+    def draw_help(self,show_id=True, **kwargs):
 
         if self.logo_type == 'Threed': 
-            self.draw_3d_help(**kwargs)
+            self.draw_3d_help(show_id=show_id, **kwargs)
        
         if self.logo_type == 'Horizontal': 
-            self.draw_hz_help(**kwargs)
+            self.draw_hz_help(show_id=show_id, **kwargs)
         
         if self.logo_type == 'Circle':
-            self.draw_circle_help(**kwargs)
+            self.draw_circle_help(show_id=show_id, **kwargs)
         
         if self.logo_type == 'Radiation':
-            self.draw_rad_help(**kwargs)
+            self.draw_rad_help(show_id=show_id, **kwargs)
     
-    def draw_rad_help(self, **kwargs):
-        label_radius = (self.start_pos[0] + self.get_width() ) 
-        label_x = label_radius * np.cos(self.deg)
-        label_y = label_radius * np.sin(self.deg)
-        self.id_txt = self.ax.text(label_x,label_y, f'{self.id}',rotation=math.degrees(self.deg))
+    def draw_rad_help(self, show_id=True, **kwargs):
+        if show_id:
+            label_radius = (self.start_pos[0] + self.get_width() ) 
+            label_x = label_radius * np.cos(self.deg)
+            label_y = label_radius * np.sin(self.deg)
+            self.id_txt = self.ax.text(label_x,label_y, f'{self.id}',rotation=math.degrees(self.deg))
     
-    def draw_hz_help(self,**kwargs):
-        self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'{self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
+    def draw_hz_help(self,show_id=True, **kwargs):
+        if show_id:
+            self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1, f'{self.id}', clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
 
         
-    def draw_circle_help(self,draw_arrow=False,**kwargs):
+    def draw_circle_help(self,show_id=True, draw_arrow=False,**kwargs):
         self.ax.add_patch(Circle(self.parent_start,self.radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
 
         space_deg = self.degs[0] + (self.degs[-1] - self.degs[0])/2
@@ -121,8 +125,9 @@ class Logo(Item):
             )
 
     
-    def draw_3d_help(self,z_height_3d=2, **kwargs):
-        self.ax.text(0, self.start_pos[2], z_height_3d, f'{self.id}', 'z')
+    def draw_3d_help(self,z_height_3d=2, show_id=True, **kwargs):
+        if show_id:
+            self.ax.text(0, self.start_pos[2], z_height_3d, f'{self.id}', 'z')
 
 
 
@@ -180,6 +185,10 @@ class LogoGroup(Item):
     def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin = 0.1, align = True, align_metric='sort_consistency', align_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
+                 x_label = 'Position', y_label = 'bits',z_label = 'bits', show_grid = True, show_group_id = True,
+                 hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
+                 hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
+                 title_size=20, label_size=10, tick_size=10, group_id_size=10,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
@@ -196,6 +205,30 @@ class LogoGroup(Item):
         self.align_threshold = align_threshold
         self.color = color
         self.task_name = task_name
+
+        self.hide_left_axis = hide_left_axis
+        self.hide_right_axis = hide_right_axis
+        self.hide_bottom_axis = hide_bottom_axis
+        self.hide_top_axis = hide_top_axis
+
+        self.hide_x_ticks = hide_x_ticks
+        self.hide_y_ticks = hide_y_ticks
+        self.hide_z_ticks = hide_z_ticks
+
+        self.x_label = x_label
+        self.y_label = y_label
+        self.z_label = z_label
+
+        self.tick_size = tick_size
+        self.title_size = title_size
+        self.label_size = label_size
+        self.group_id_size = group_id_size
+
+        self.show_group_id = show_group_id
+        self.show_grid = show_grid
+
+        print('self.show_grid: ', show_grid)
+
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
@@ -232,8 +265,7 @@ class LogoGroup(Item):
         z_height_3d = max([logo.get_height() for logo in self.logos]+[0])
         for index,logo in enumerate(self.logos):
             logo.draw()
-            logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d)
-        
+            logo.draw_help(draw_arrow=index==0,z_height_3d=z_height_3d, show_id=self.show_group_id)
         
         #draw connect
 
@@ -244,7 +276,47 @@ class LogoGroup(Item):
         self.compute_xy()
         self.set_figsize()
         self.ax.set_title(self.task_name)
-        self.ax.grid()
+
+
+        self.ax.spines['left'].set_visible(not self.hide_left_axis)
+        self.ax.spines['right'].set_visible(not self.hide_right_axis)
+        self.ax.spines['top'].set_visible(not self.hide_top_axis)
+        self.ax.spines['bottom'].set_visible(not self.hide_bottom_axis)
+
+
+        if  self.hide_x_ticks:
+            if self.show_grid:
+                self.ax.set_xticklabels([])
+            else:
+                self.ax.set_xticks([])
+        if  self.hide_y_ticks:
+            if self.show_grid:
+                self.ax.set_yticklabels([])
+            else:
+                self.ax.set_yticks([])
+        if self.hide_z_ticks and self.logo_type == 'Threed':
+            if self.show_grid:
+                self.ax.set_zticklabels([])
+            else:
+                self.ax.set_zticks([])
+        
+        if self.show_grid:
+            self.ax.grid(True)
+        
+        self.ax.set_xlabel(self.x_label) 
+        self.ax.set_ylabel(self.y_label) 
+
+        if self.logo_type == 'Threed':
+            self.ax.set_zlabel(self.z_label)
+
+        params = {'legend.fontsize': self.group_id_size,
+                 'axes.labelsize': self.label_size,
+                 'axes.titlesize':self.title_size,
+                 'xtick.labelsize':self.tick_size,
+                 'ytick.labelsize':self.tick_size}
+        pylab.rcParams.update(params)
+
+
     
     def draw_help(self):
         if self.logo_type == 'Radiation':
@@ -289,10 +361,11 @@ class LogoGroup(Item):
 
     def draw_circle_help(self):           
         #https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.legend.html
-        legend_elements = []
-        for logo in self.logos[::-1]:
-            legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
-        self.ax.legend(handles=legend_elements)
+        if self.show_group_id:
+            legend_elements = []
+            for logo in self.logos[::-1]:
+                legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', markersize=5) )
+            self.ax.legend(handles=legend_elements)
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
@@ -360,17 +433,18 @@ class LogoGroup(Item):
             self.ax.set_xlim(self.start_pos[0]-1,self.start_pos[0] + self.get_width()+1)
             self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
 
-            r = self.ax.get_figure().canvas.get_renderer()
-            x_range = 0
-            for i in range(len(self.logos)):
-                text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
-                logo_width = self.logos[i].get_width()
-                _range = text_width + 1 + logo_width
-                #print('text_width,logo_width,range',text_width,logo_width, _range)
-                if _range > x_range:
-                    x_range = _range
+            if self.show_group_id:
+                r = self.ax.get_figure().canvas.get_renderer()
+                x_range = 0
+                for i in range(len(self.logos)):
+                    text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
+                    logo_width = self.logos[i].get_width()
+                    _range = text_width + 1 + logo_width
+                    #print('text_width,logo_width,range',text_width,logo_width, _range)
+                    if _range > x_range:
+                        x_range = _range
             
-            self.ax.set_xlim(self.start_pos[0],x_range)
+                self.ax.set_xlim(self.start_pos[0],x_range)
 
 
         elif self.logo_type == 'Circle':
@@ -387,21 +461,19 @@ class LogoGroup(Item):
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + max(lims+[0]))
             self.ax.set_ylim(self.start_pos[1], self.start_pos[1] + self.radiation_radius + max(lims+[0]))
 
-            print('before: ', max(lims))
+            if self.show_group_id:
+                r = self.ax.get_figure().canvas.get_renderer()
+                x_range = 0
+                for i,logo in enumerate(self.logos):
+                    lim = lims[i]
+                    text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
+                    text_lim = max(text_width*np.sin(logo.deg), text_width*np.cos(logo.deg))
+                    _range = text_width + text_lim + lim
+                    if _range > x_range:
+                        x_range = _range
 
-            r = self.ax.get_figure().canvas.get_renderer()
-            x_range = 0
-            for i,logo in enumerate(self.logos):
-                lim = lims[i]
-                text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
-                text_lim = max(text_width*np.sin(logo.deg), text_width*np.cos(logo.deg))
-                _range = text_width + text_lim + lim
-                if _range > x_range:
-                    x_range = _range
-            print('after: ', x_range)
-
-            self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
-            self.ax.set_ylim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
+                self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
+                self.ax.set_ylim(self.start_pos[0], self.start_pos[0] + self.radiation_radius + x_range)
 
         elif self.logo_type == 'Threed':
             self.ax.set_xlim(self.start_pos[0], self.start_pos[0] + self.get_width())

@@ -52,18 +52,35 @@ if __name__ == '__main__':
     parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
 
     #style
-    parser.add_argument('--hide_X',action='store_true',dest='hide_X',help='If hide X axis')
-    parser.add_argument('--hide_X_ticks',action='store_true',dest='hide_X_ticks',help='If hide ticks of X axis')
-    parser.add_argument('--hide_Y',action='store_true',dest='hide_Y',help='If hide Y axis')
-    parser.add_argument('--hide_Y_ticks',action='store_true',dest='hide_Y_ticks',help='If hide ticks of Y axis')
-    parser.add_argument('--X_label', action='store_true',dest='X_label', help='The label for X axis')
-    parser.add_argument('--Y_label', action='store_true',dest='Y_label', help='The label for Y axis')
+
+    parser.add_argument('--hide_left_axis',action='store_true',dest='hide_left_axis',help='If show left axis')
+    parser.add_argument('--hide_right_axis',action='store_true',dest='hide_right_axis',help='If show right axis')
+    parser.add_argument('--hide_top_axis',action='store_true',dest='hide_top_axis',help='If show top axis')
+    parser.add_argument('--hide_bottom_axis',action='store_true',dest='hide_bottom_axis',help='If show bottom axis')
+
+    parser.add_argument('--hide_x_ticks',action='store_true',dest='hide_x_ticks',help='If show ticks of X axis')
+    parser.add_argument('--hide_y_ticks',action='store_true',dest='hide_y_ticks',help='If show ticks of Y axis')
+    parser.add_argument('--hide_z_ticks',action='store_true',dest='hide_z_ticks',help='If show ticks of Z axis')
+
+    parser.add_argument('--x_label', type=str, help='The label for X axis')
+    parser.add_argument('--y_label', type=str, help='The label for Y axis')
+    parser.add_argument('--z_label', type=str, help='The label for Z axis')
+
+    parser.add_argument('--show_group_id',action='store_true',dest='show_group_id',help='If show group ids')
+    parser.add_argument('--show_grid',action='store_true',dest='show_grid',help='If show background grid')
+
+
+    parser.add_argument('--title_size',type=int,help='The size of figure title',default=20)
+    parser.add_argument('--label_size',type=int,help='The size of figure xy labels',default=10)
+    parser.add_argument('--tick_size',type=int,help='The size of figure ticks',default=10)
+    parser.add_argument('--group_id_size',type=int,help='The size of group labels',default=10)
 
     #output 
     parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     
     args = parser.parse_args()
+    print('args: ', args)
 
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
 
@@ -88,7 +105,14 @@ if __name__ == '__main__':
 
     logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, 
                           align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,
-                          color=color_scheme, task_name=args.task_name)
+                          color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
+                          hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
+                          hide_top_axis = args.hide_top_axis, show_grid = args.show_grid, show_group_id = args.show_group_id,
+                          hide_x_ticks = args.hide_x_ticks, hide_y_ticks = args.hide_y_ticks, hide_z_ticks=args.hide_z_ticks,
+                          x_label=args.x_label, y_label=args.y_label, z_label=args.z_label,
+                          title_size=args.title_size, label_size=args.label_size, group_id_size=args.group_id_size,
+                          tick_size=args.tick_size
+                          )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
     if not args.output_name.endswith('.png'):

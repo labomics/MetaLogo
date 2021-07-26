@@ -329,14 +329,19 @@ layout_panel = dbc.Card(
 )
 showxy_checklist = dbc.FormGroup(
     [
-        dbc.Label("X,Y axis"),
+        dbc.Label("Hide axis border and ticks "),
         dbc.Checklist(
             options=[
-                {"label": "Show X", "value": 'showx'},
-                {"label": "Show Y", "value": 'showy'},
+                {"label": "left", "value": 'hideleft'},
+                {"label": "right", "value": 'hideright'},
+                {"label": "bottom", "value": 'hidebottom'},
+                {"label": "top", "value": 'hidetop'},
+                {"label": "x ticks", "value": 'hidexticks'},
+                {"label": "y ticks", "value": 'hideyticks'},
+                {"label": "z ticks", "value": 'hidezticks'},
             ],
-            value=['showx','showy'],
-            id="showxy_check_input",
+            value=[],
+            id="hidexy_check_input",
             inline=True,
         ),
     ]
@@ -351,6 +356,12 @@ ylabel_input = dbc.FormGroup(
     [
         dbc.Label("Ylabel",html_for='input'),
         dbc.Input(type="str",  value='Bits',id="ylabel_input"),
+    ]
+)
+zlabel_input = dbc.FormGroup(
+    [
+        dbc.Label("Zlabel",html_for='input'),
+        dbc.Input(type="str",  value='',id="zlabel_input"),
     ]
 )
 width_input = dbc.FormGroup(
@@ -503,25 +514,62 @@ title_input = dbc.FormGroup(
         dbc.Input(type="string", value='MetaLogo',id="title_input"),
     ]
 )
+labelsize_input = dbc.FormGroup(
+    [
+        dbc.Label("XY Label Size",html_for='input'),
+        dbc.Input(type="number",min=0, value=10,id="label_size"),
+    ]
+)
+
+ticksize_input = dbc.FormGroup(
+    [
+        dbc.Label("Ticks Size",html_for='input'),
+        dbc.Input(type="number",min=0, value=10,id="tick_size"),
+    ]
+)
+
+titlesize_input = dbc.FormGroup(
+    [
+        dbc.Label("Title Size",html_for='input'),
+        dbc.Input(type="number", min=0,value=20,id="title_size"),
+    ]
+)
+
+
+idsize_input = dbc.FormGroup(
+    [
+        dbc.Label("Group Label Size",html_for='input'),
+        dbc.Input(type="number", min=0, value=10,id="id_size"),
+    ]
+)
+
 style_panel = dbc.Card(
     [
         dbc.CardHeader("Step4. Set Output Style"),
         dbc.CardBody(
             [
                 dbc.Row([
-                    dbc.Col(title_input)
-                ]),
-                dbc.Row([
+                    dbc.Col(title_input),
                     dbc.Col(xlabel_input),
                     dbc.Col(ylabel_input),
+                    dbc.Col(zlabel_input),
+                ]),
+                dbc.Row([
+                    dbc.Col(titlesize_input),
+                    dbc.Col(labelsize_input),
+                    dbc.Col(ticksize_input),
+                    dbc.Col(idsize_input),
+                ]),
+                dbc.Row([
+
                     dbc.Col(width_input),
                     dbc.Col(height_input),
+                    dbc.Col(download_format_dropdown),
                     ]),
                 dbc.Row([
                     dbc.Col(showxy_checklist),
                     dbc.Col(show_groupid_checklist),
                     dbc.Col(show_grid_checklist),
-                    dbc.Col(download_format_dropdown),
                 ]),
                 dbc.Row([
                     dbc.Col(color_scheme_dropdown),
@@ -773,6 +821,27 @@ def udpate_download(n_clicks,uid,format,src):
         return dcc.send_file(
         f"{PNG_DIR}/{uid}.{format}"
         )
+@app.callback(
+    [
+        Output("xlabel_input","value"),
+        Output("ylabel_input","value"),
+        Output("zlabel_input","value"),
+        Output("hidexy_check_input","value")
+    ],
+    [
+        Input("logo_shape_dropdown","value")
+    ]
+)
+def change_labels(logo_shape):
+    if logo_shape == 'Circle':
+        return '','','',['hidexticks','hideyticks']
+    if logo_shape == 'Horizontal':
+        return 'Position','Bits','',[]
+    if logo_shape == 'Radiation':
+        return '','','',['hidexticks','hideyticks']
+    if logo_shape == 'Threed':
+        return 'Position','','Bits',['hideyticks']
+
 
 
 @app.callback(
@@ -791,6 +860,10 @@ def udpate_download(n_clicks,uid,format,src):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('title_size','value'),
+        State('tick_size','value'),
+        State('label_size','value'),
+        State('id_size','value'),
         State('title_input','value'),
         State('input_format_dropdown', 'value'),
         State('sequence_type_dropdown', 'value'),
@@ -809,21 +882,28 @@ def udpate_download(n_clicks,uid,format,src):
         State('char_margin_input', 'value'),
         State('xlabel_input','value'),
         State('ylabel_input','value'),
+        State('zlabel_input','value'),
         State('width_input','value'),
         State('height_input','value'),
         State('showid_check_input','value'),
         State('showgrid_check_input','value'),
-        State('showxy_check_input','value'),
+        State('hidexy_check_input','value'),
         State('download_format_dropdown','value'),
         State('color_dropdown','value'),
     ] + [State(f'colorpicker_{base}', 'value') for base in aa_list],
     prevent_initial_call=True
 )
-def submit(nclicks1,nclicks2,nclicks3,nclicks4, title_input, input_format_dropdown, sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
-            seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,align_dropdown,align_metric, align_threshold, logo_margin_input, column_margin_input,
-            char_margin_input, xlabel_input, ylabel_input, width_input, height_input, showid_check_input, showgrid_check_input,
-            showxy_check_input, download_format_dropdown, color_dropdown, *args):
+def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            title_size, tick_size, label_size, id_size,  
+            title_input, input_format_dropdown, 
+            sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
+            seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,
+            align_dropdown,align_metric, align_threshold, logo_margin_input, column_margin_input,
+            char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
+            showid_check_input, showgrid_check_input,
+            hidexy_check_input, download_format_dropdown, color_dropdown, *args):
     print('in submit')
+
 
     #print('xxxx',max_len_input,min_len_input)
 
@@ -865,9 +945,41 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, title_input, input_format_dropdo
     elif color_dropdown == 'custom':
         color = f'\'{json.dumps(dict(zip(aa_list,args)))}\''
     
-    #print('color: ', color)
 
     task_name = f"\'{title_input}\'"
+
+    xlabel = f"\'{xlabel_input}\'"
+    ylabel = f"\'{ylabel_input}\'"
+    zlabel = f"\'{zlabel_input}\'"
+    
+
+    showgrid = False
+    if 'showgrid' in showgrid_check_input:
+        showgrid = True
+    
+    showid = False
+    if 'showid' in showid_check_input:
+        showid = True
+    
+    hideleft,hideright,hidebottom,hidetop = [False]*4
+    hidexticks,hideyticks,hidezticks = [False]*3
+
+    if 'hideleft' in hidexy_check_input:
+        hideleft = True
+    if 'hideright' in hidexy_check_input:
+        hideright = True
+    if 'hidetop' in hidexy_check_input:
+        hidetop = True
+    if 'hidebottom' in hidexy_check_input:
+        hidebottom = True
+    if 'hidexticks' in hidexy_check_input:
+        hidexticks = True
+    if 'hideyticks' in hidexy_check_input:
+        hideyticks = True
+    if 'hidezticks' in hidexy_check_input:
+        hidezticks = True
+    
+
     
     cmd = f'cd ../..;\
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
@@ -876,11 +988,32 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4, title_input, input_format_dropdo
                  --align_metric {align_metric} --align_threshold {align_threshold} \
                 --sequence_type {sequence_type} \
                 --output_name {uid}.{download_format_dropdown} \
-                --color_scheme {color} --task_name {task_name}' 
+                --color_scheme {color} --task_name {task_name} \
+                --x_label {xlabel} --y_label {ylabel} --z_label {zlabel}\
+                --title_size {title_size} --tick_size {tick_size} --label_size {label_size} \
+                --group_id_size {id_size} \
+                ' 
     
     if align:
         cmd += ' --align'
-                
+    if hideleft:
+        cmd += ' --hide_left_axis'
+    if hideright:
+        cmd += ' --hide_right_axis'
+    if hidetop:
+        cmd += ' --hide_top_axis'
+    if hidebottom:
+        cmd += ' --hide_bottom_axis'
+    if hidexticks:
+        cmd += ' --hide_x_ticks'
+    if hideyticks:
+        cmd += ' --hide_y_ticks'
+    if hidezticks:
+        cmd += ' --hide_z_ticks'
+    if showid:
+        cmd += ' --show_group_id'
+    if showgrid:
+        cmd += ' --show_grid'
         
     print('cmd:', cmd)
     os.system(cmd)
