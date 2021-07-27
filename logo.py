@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import genericpath
+from matplotlib import transforms
 from matplotlib.colors import get_named_colors_mapping
 from matplotlib.pyplot import figure, get
 import numpy as np
@@ -196,7 +197,7 @@ class LogoGroup(Item):
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
-                 figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False,
+                 figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
@@ -246,6 +247,8 @@ class LogoGroup(Item):
 
         self.figure_size_x = figure_size_x
         self.figure_size_y = figure_size_y
+
+        self.hide_version_tag = hide_version_tag
 
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
@@ -342,6 +345,24 @@ class LogoGroup(Item):
 
         if self.logo_type == 'Threed':
             self.ax.set_zlabel(self.z_label,fontsize=self.label_size)
+        
+        if not self.hide_version_tag:
+            if self.logo_type == 'Threed':
+                #self.ax.text2D(1.005, 0, 'Created by MetaLogo')
+                self.ax.text2D(1.005, 0, 'Created by MetaLogo', transform=self.ax.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    rotation='vertical',
+                    color='#6c757d')
+
+            else:
+                self.ax.text(1.005, 0, 'Created by MetaLogo',
+                    horizontalalignment='left',
+                    verticalalignment='bottom',
+                    rotation='vertical',
+                    transform=self.ax.transAxes,
+                    color='#6c757d')
+
 
 
     

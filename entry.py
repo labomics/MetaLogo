@@ -62,6 +62,8 @@ if __name__ == '__main__':
 
     #style
 
+    parser.add_argument('--hide_version_tag',action='store_true',dest='hide_version_tag',help='If show versiontag')
+
     parser.add_argument('--hide_left_axis',action='store_true',dest='hide_left_axis',help='If show left axis')
     parser.add_argument('--hide_right_axis',action='store_true',dest='hide_right_axis',help='If show right axis')
     parser.add_argument('--hide_top_axis',action='store_true',dest='hide_top_axis',help='If show top axis')
@@ -134,6 +136,7 @@ if __name__ == '__main__':
                           char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
                           gap_score = args.gap_score,
                           padding_align = args.padding_align,
+                          hide_version_tag=args.hide_version_tag,
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

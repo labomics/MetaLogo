@@ -428,6 +428,19 @@ show_grid_checklist = dbc.FormGroup(
         ),
     ]
 )
+hide_version_checklist = dbc.FormGroup(
+    [
+        dbc.Label("Version Tag"),
+        dbc.Checklist(
+            options=[
+                {"label": "Hide Version", "value": 'hideversion'},
+            ],
+            value=[],
+            id="hide_version_checklist",
+            inline=True,
+        ),
+    ]
+)
 download_format_dropdown = dbc.FormGroup(
     [
         dbc.Label("Download Format", html_for="dropdown"),
@@ -612,6 +625,7 @@ style_panel = dbc.Card(
                     dbc.Col(showxy_checklist),
                     dbc.Col(show_groupid_checklist),
                     dbc.Col(show_grid_checklist),
+                    dbc.Col(hide_version_checklist),
                 ]),
                 dbc.Row([
                     dbc.Col(color_scheme_dropdown),
@@ -923,6 +937,7 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('hide_version_checklist','value'),
         State('padding_align_dropdown','value'),
         State('gap_score','value'),
         State('align_color','value'),
@@ -961,6 +976,7 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            hide_version_checklist,
             padding_align,
             gap_score,
             align_color, align_alpha,
@@ -1091,6 +1107,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         cmd += ' --show_group_id'
     if showgrid:
         cmd += ' --show_grid'
+    
+    if 'hideversion' in hide_version_checklist:
+        cmd += ' --hide_version_tag'
     
         
     print('cmd:', cmd)
