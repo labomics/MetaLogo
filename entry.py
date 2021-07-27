@@ -1,10 +1,9 @@
 #!/usr/bin/python
 import argparse
+from typing import Sequence
 
 from .logo import LogoGroup
 from .utils import read_file
-from .utils import grouping,check_group
-from .utils import compute_bits
 from .colors import get_color_scheme
 import json
 import os
@@ -102,9 +101,9 @@ if __name__ == '__main__':
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
     #print('seqs: ', seqs)
 
-    groups = grouping(seqs,group_by=args.group_strategy)
-    check_group(groups)
-    bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
+    #groups = grouping(seqs,group_by=args.group_strategy)
+    #check_group(groups)
+    #bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
 
     #print('bits: ',bits)
 
@@ -123,7 +122,7 @@ if __name__ == '__main__':
     
     print('color_scheme: ', color_scheme)
 
-    logogroup = LogoGroup(bits, args.group_order, logo_type = args.type, 
+    logogroup = LogoGroup(seqs, args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
                           align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,
                           color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
                           hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
@@ -137,6 +136,7 @@ if __name__ == '__main__':
                           gap_score = args.gap_score,
                           padding_align = args.padding_align,
                           hide_version_tag=args.hide_version_tag,
+                          tmp_path = args.tmp_path, sequence_type = args.sequence_type
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

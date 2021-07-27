@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import genericpath
+from typing import Sequence
 from matplotlib import transforms
 from matplotlib.colors import get_named_colors_mapping
 from matplotlib.pyplot import figure, get
@@ -21,7 +22,9 @@ from numpy import radians as rad
 import math
 import re
 
-
+from .utils import grouping,check_group
+from .logobits import compute_bits, compute_prob
+#from .utils import compute_bits
 from .colors import get_color_scheme
 
 basic_dna_color = get_color_scheme('basic_dna_color')
@@ -189,7 +192,7 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seq_bits, group_order, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
+    def __init__(self,  seqs, group_order, group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', align_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
@@ -198,10 +201,12 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
+                 tmp_path = 'test', sequence_type = 'dna',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
-        self.seq_bits = seq_bits
+        self.seqs = seqs
         self.group_order = group_order
+        self.group_strategy = group_strategy
         self.start_pos = start_pos
         self.logo_margin_ratio = logo_margin_ratio
         self.column_margin_ratio = column_margin_ratio
@@ -250,9 +255,28 @@ class LogoGroup(Item):
 
         self.hide_version_tag = hide_version_tag
 
+        self.tmp_path = tmp_path
+        self.sequence_type = sequence_type
+
         self.logos = []
+
+
+        self.compute_bits()
+
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
+    
+    def compute_bits(self):
+
+        self.groups = grouping(self.seqs,group_by=self.group_strategy)
+        check_group(self.groups)
+
+        self.probs = compute_prob(self.groups)
+        self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
+        #self.seq_bits = compute_bits(self.groups, tmp_path=self.tmp_path,seq_type= self.sequence_type)
+
+
+
     
     def generate_components(self):
 
@@ -362,10 +386,7 @@ class LogoGroup(Item):
                     rotation='vertical',
                     transform=self.ax.transAxes,
                     color='#6c757d')
-
-
-
-    
+        
     def draw_help(self):
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
@@ -487,6 +508,9 @@ class LogoGroup(Item):
         if self.logo_type == 'Horizontal':
             self.ax.set_xlim(self.start_pos[0]-1,self.start_pos[0] + self.get_width()+1)
             self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
+
+            print('start_pos: ', self.start_pos)
+            print('ceiling_pos: ', self.ceiling_pos)
 
             if self.show_group_id:
                 r = self.ax.get_figure().canvas.get_renderer()

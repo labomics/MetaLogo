@@ -33,7 +33,7 @@ class Column(Item):
         self.generate_components()
 
     def generate_components(self):
-        for base,weight in zip(self.bases,self.weights):
+        for base,weight in sorted(zip(self.bases,self.weights),key=lambda d:d[1]):
             character = Character(base,width=self.width,height=weight,ax=self.ax,
                                     logo_type=self.logo_type, parent_start=self.start_pos,
                                     origin=self.origin,color=self.color)
@@ -76,7 +76,7 @@ class Column(Item):
     
     def get_height(self):
         height = sum([char.get_height() * (1+self.char_margin_ratio) for char in self.characters[:-1]]) 
-        if len(self.characters) > 1:
+        if len(self.characters) > 0:
             height += self.characters[-1].get_height()
         return height
 
