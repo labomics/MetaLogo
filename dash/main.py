@@ -185,6 +185,20 @@ input_panel = dbc.Card(
         )
     ],style={'marginBottom':'10px'}
 )
+
+height_algrithm_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Height Algrithm", html_for="dropdown"),
+        dcc.Dropdown(
+            id="height_algrithm_dropdown",
+            options=[
+                {"label": "Bits", "value": 'bits'},
+                {"label": "Probabilities", "value": 'probabilities'}
+            ],
+            value='bits'
+        ),
+    ]
+)
 align_dropdown = dbc.FormGroup(
     [
         dbc.Label("Adjacent alignment?", html_for="dropdown"),
@@ -217,9 +231,9 @@ align_metric = dbc.FormGroup(
         dcc.Dropdown(
             id="score_metric",
             options=[
-                {"label": "Correlation", "value": 'correlation'},
-                {"label": "1-diff", "value": 'diff'},
-                {"label": "sort_consistency", "value": 'sort_consistency'},
+                {"label": "Dot Production", "value": 'dot_product'},
+                {"label": "Aligned Dot Production", "value": 'sort_consistency'},
+                {"label": "Jensen Shannon", "value": 'js_divergence'},
             ],
             value='sort_consistency'
         ),
@@ -229,7 +243,7 @@ align_metric = dbc.FormGroup(
 align_threshold = dbc.FormGroup(
     [
         dbc.Label("Align threshold",html_for='input'),
-        dbc.Input(type="number", min=0, max=1, step=0.01, value=0.8,id="align_threshold"),
+        dbc.Input(type="number", min=0, step=0.01, value=0.8,id="align_threshold"),
     ]
 )
 
@@ -256,12 +270,13 @@ algrithm_panel = dbc.Card([
     dbc.CardHeader("Step2. Choose Algrithm"),
     dbc.CardBody([
         dbc.Row([
+            dbc.Col(height_algrithm_dropdown),
             dbc.Col(align_dropdown),
             dbc.Col(padding_align_dropdown),
             dbc.Col(align_metric),
-            dbc.Col(align_threshold)
         ]),
         dbc.Row([
+            dbc.Col(align_threshold),
             dbc.Col(align_gap_score),
         ]),
         dbc.Row(dbc.Col(style_submit))
@@ -937,6 +952,7 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('height_algrithm_dropdown','value'),
         State('hide_version_checklist','value'),
         State('padding_align_dropdown','value'),
         State('gap_score','value'),
@@ -976,6 +992,7 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            height_algrithm_dropdown,
             hide_version_checklist,
             padding_align,
             gap_score,
@@ -1080,7 +1097,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                 --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} --char_margin_ratio {char_margin_input} \
                 --figure_size_x {width_input} --figure_size_y {height_input} \
                 --align_color {align_color} --align_alpha {align_alpha} \
-                --gap_score {gap_score}\
+                --gap_score {gap_score} --height_algrithm {height_algrithm_dropdown} \
                 ' 
     
     if align_dropdown == 'Yes':

@@ -100,7 +100,8 @@ class Logo(Item):
     
     def draw_hz_help(self,show_id=True,group_id_size=10, **kwargs):
         if show_id:
-            self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1,
+            #self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1,
+            self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+self.get_height()*0.1,
                                      f'{self.id}', fontsize=group_id_size, clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
 
         
@@ -201,7 +202,7 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-                 tmp_path = 'test', sequence_type = 'dna',
+                 tmp_path = 'test', sequence_type = 'dna', height_algrithm = 'bits',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -221,6 +222,8 @@ class LogoGroup(Item):
         self.align_threshold = align_threshold
         self.color = color
         self.task_name = task_name
+
+        self.height_algrithm = height_algrithm
 
         self.align_color = align_color
         self.align_alpha = align_alpha
@@ -272,16 +275,12 @@ class LogoGroup(Item):
         check_group(self.groups)
 
         self.probs = compute_prob(self.groups)
-        self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
+        if self.height_algrithm == 'probabilities':
+            self.seq_bits = self.probs
+        elif self.height_algrithm == 'bits':
+            self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
+
         #self.seq_bits = compute_bits(self.groups, tmp_path=self.tmp_path,seq_type= self.sequence_type)
-
-
-
-    
-    def generate_components(self):
-
-
-        self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
         try:
             if self.group_order.lower() == 'length':
@@ -295,6 +294,24 @@ class LogoGroup(Item):
         except Exception as e:
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
+        
+        if self.height_algrithm == 'bits':
+            to_del_ids = []
+            for gid in self.group_ids:
+                total = sum([sum([x[1] for x in col]) for col in self.seq_bits[gid]])
+                if total == 0:
+                    to_del_ids.append(gid)
+
+            for gid in to_del_ids: 
+                self.group_ids.remove(gid)
+                del self.probs[gid]
+                del self.seq_bits[gid]
+
+    def generate_components(self):
+
+
+        self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
+
 
         if self.padding_align:
             seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
@@ -395,10 +412,12 @@ class LogoGroup(Item):
             self.draw_circle_help()
     
     def draw_connect(self):
-        self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
+        if self.align_metric == 'js_divergence':
+            self.connected = get_connect([self.probs[gid] for gid in self.group_ids], self.align_metric, 
                                        gap_score=self.gap_score,msa_input=self.padding_align)
-        #print('connected: ', self.connected)
-        #for index,logo in enumerate(self.logos):
+        else:
+            self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
+                                       gap_score=self.gap_score,msa_input=self.padding_align)
         i = -1
         for group_id  in self.connected:
             i += 1
@@ -508,9 +527,6 @@ class LogoGroup(Item):
         if self.logo_type == 'Horizontal':
             self.ax.set_xlim(self.start_pos[0]-1,self.start_pos[0] + self.get_width()+1)
             self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
-
-            print('start_pos: ', self.start_pos)
-            print('ceiling_pos: ', self.ceiling_pos)
 
             if self.show_group_id:
                 r = self.ax.get_figure().canvas.get_renderer()

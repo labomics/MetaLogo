@@ -1,8 +1,9 @@
 #!/usr/bin/python
 from scipy.stats import spearmanr,pearsonr
 import numpy as np
+from scipy.spatial import distance
 
-def get_score_mat(bits_array, align_metric = 'sort_diff',  gap_score=-1):
+def get_score_mat(bits_array, align_metric = 'sort_consistency',  gap_score=-1):
     scores_mat = {}
     for i in range(len(bits_array)):
         for j in range(len(bits_array)):
@@ -24,7 +25,7 @@ def get_score_mat(bits_array, align_metric = 'sort_diff',  gap_score=-1):
             scores_mat[i][j] = score/len(align1)
     return scores_mat
 
-def msa(bits_array, scores_mat, align_metric = 'sort_diff', gap_score=-1):
+def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1):
 
     #find the nearast couple
     max_score = max([max(scores_mat[x].values()) for x in scores_mat])
@@ -87,7 +88,7 @@ def msa(bits_array, scores_mat, align_metric = 'sort_diff', gap_score=-1):
 
 
 
-def get_connect(bits_array, align_metric = 'sort_diff', gap_score=-1, msa_input=False):
+def get_connect(bits_array, align_metric = 'sort_consistency', gap_score=-1, msa_input=False):
     connected = {}
     for index,bit in enumerate(bits_array):
         if index == len(bits_array) - 1:
@@ -110,25 +111,51 @@ def get_connect(bits_array, align_metric = 'sort_diff', gap_score=-1, msa_input=
     return connected
 
 def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1):
+
     if len(bit1) == 0 or len(bit2) == 0:
         return 0
-    if align_metric == 'diff':
+
+    if align_metric not in ['dot_product','sort_consistency','js_divergence']:
+        align_metric = 'dot_product'
+
+    if align_metric == 'dot_product':
         bit1 = dict(bit1)
         bit2 = dict(bit2)
         keys = sorted(list(bit1.keys()|bit2.keys()))
-        err = 0
+
+        product = 0
+        len_1 = 0
+        len_2 = 0
         for key in keys:
-            err += abs(bit1.get(key,0) - bit2.get(key,0))
-        return 1-err
+            product += bit1.get(key,0) * bit2.get(key,0)
+            len_1 += bit1.get(key,0)**2
+            len_2 += bit2.get(key,0)**2
+        len_1 = len_1 ** 0.5
+        len_2 = len_2 ** 0.5
+
+        return product
+
     if align_metric == 'sort_consistency':
         bit1 = sorted(bit1, key=lambda d:d[1],reverse=True)
         bit2 = sorted(bit2, key=lambda d:d[1],reverse=True)
         score = 0
         for i in range(min(len(bit1),len(bit2))):
             if bit1[i][0] == bit2[i][0]:
-                #score += (bit1[i][1] + bit2[i][1])/2
-                score += np.sqrt(bit1[i][1] * bit2[i][1])
+                score += bit1[i][1] * bit2[i][1]
         return score
+    
+    if align_metric =='js_divergence': #noted, here must input probabilites rather than bits.
+        q1 = []
+        q2 = []
+        bit1 = dict(bit1)
+        bit2 = dict(bit2)
+        keys = sorted(list(bit1.keys()|bit2.keys()))
+        for key in keys:
+            q1.append(bit1.get(key,0))
+            q2.append(bit2.get(key,0))
+        return 1-distance.jensenshannon(q1,q2)
+
+
     if align_metric == 'correlation':
 
         bit1 = dict(bit1)
@@ -139,19 +166,13 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1):
         for i in range(len(keys)):
             v1 = bit1.get(keys[i],0)
             v2 = bit2.get(keys[i],0)
-            #if v1 < 0.01:
-            #    v1 = 0
-            #if v2 < 0.01:
-            #    v2 = 0
             if v1 == v2 == 0:
                 continue
             a1.append(v1)
             a2.append(v2)
-        
         coor,pval = pearsonr(a1,a2)
         if pval > 0.05:
-            corr = 0
-        #print(a1,a2,coor)
+            coor = 0
         return coor
 
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py

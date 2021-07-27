@@ -45,6 +45,8 @@ if __name__ == '__main__':
     parser.add_argument('--font',type=str,help='The font of sequence characters')
 
     #align
+    parser.add_argument('--height_algrithm',type=str,help='The algrithm for character height',default='bits')
+
     parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of adjacent sequence logo')
     parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')
 
@@ -136,7 +138,8 @@ if __name__ == '__main__':
                           gap_score = args.gap_score,
                           padding_align = args.padding_align,
                           hide_version_tag=args.hide_version_tag,
-                          tmp_path = args.tmp_path, sequence_type = args.sequence_type
+                          tmp_path = args.tmp_path, sequence_type = args.sequence_type,
+                          height_algrithm=args.height_algrithm
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

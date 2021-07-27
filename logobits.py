@@ -29,24 +29,20 @@ def compute_prob(groups):
     return probs
     
 def compute_bits(groups, probs, seq_type='dna'):
+    print('in compute_bites: seq_type: ',seq_type)
     bits = {}
     for gid,prob in probs.items():
-        print('gid: ', gid)
         if seq_type.lower() in ['dna','rna']:
             e = np.log2(4) - (4-1)/(np.log(2)*2*len(groups[gid]))
         elif seq_type.lower() == 'aa':
             e = np.log2(20) - (20-1)/(np.log(2)*2*len(groups[gid]))
-        print('e:',e)
         bit = [] 
         for i in range(len(prob)):
-            print('pos: ',i)
-            print(prob[i])
             h = 0
             for base,p in prob[i]:
                 if base == '-':
                     continue
                 h -= p*np.log2(p) 
-            print('h: ', h)
             _bit = [] 
             for base,p in prob[i]:
                 height = max(p * (e - h),0)
