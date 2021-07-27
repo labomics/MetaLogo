@@ -37,10 +37,10 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 #app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app = dash.Dash(
     __name__,
-    title="Modern Sequence Logo",
+    title="MetaLogo",
     external_stylesheets=[dbc.themes.BOOTSTRAP]
 )
-app.title = "Modern Sequence Logo"
+app.title = "MetaLogo"
 
 #
 
@@ -60,7 +60,7 @@ nav = dbc.Nav(
 toppanel = html.Div(
     [
         dbc.Row([
-            dbc.Col(html.H1(['Modern Sequence Logo'])),
+            dbc.Col(html.H1(['MetaLogo'])),
             ],
         ),
         dbc.Row(nav)
@@ -187,7 +187,7 @@ input_panel = dbc.Card(
 )
 align_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Align logos?", html_for="dropdown"),
+        dbc.Label("Adjacent alignment?", html_for="dropdown"),
         dcc.Dropdown(
             id="align_dropdown",
             options=[
@@ -195,6 +195,19 @@ align_dropdown = dbc.FormGroup(
                 {"label": "No", "value": 'No'}
             ],
             value='Yes'
+        ),
+    ]
+)
+padding_align_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Global alignment with padding?", html_for="dropdown"),
+        dcc.Dropdown(
+            id="padding_align_dropdown",
+            options=[
+                {"label": "Yes", "value": 'Yes'},
+                {"label": "No", "value": 'No'}
+            ],
+            value='No'
         ),
     ]
 )
@@ -220,12 +233,6 @@ align_threshold = dbc.FormGroup(
     ]
 )
 
-align_mismatch_score = dbc.FormGroup(
-    [
-        dbc.Label("Mismatch Score",html_for='input'),
-        dbc.Input(type="float",  max=0,  value=-1,id="mismatch_score"),
-    ]
-)
 
 align_gap_score = dbc.FormGroup(
     [
@@ -250,11 +257,11 @@ algrithm_panel = dbc.Card([
     dbc.CardBody([
         dbc.Row([
             dbc.Col(align_dropdown),
+            dbc.Col(padding_align_dropdown),
             dbc.Col(align_metric),
             dbc.Col(align_threshold)
         ]),
         dbc.Row([
-            dbc.Col(align_mismatch_score),
             dbc.Col(align_gap_score),
         ]),
         dbc.Row(dbc.Col(style_submit))
@@ -916,7 +923,7 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
-        State('mismatch_score','value'),
+        State('padding_align_dropdown','value'),
         State('gap_score','value'),
         State('align_color','value'),
         State('align_alpha','value'),
@@ -954,7 +961,8 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
-            mismatch_score,  gap_score,
+            padding_align,
+            gap_score,
             align_color, align_alpha,
             title_size, tick_size, label_size, id_size,  
             title_input, input_format_dropdown, 
@@ -995,7 +1003,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     seq_file = f"{FA_DIR}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
-    align = align_dropdown == 'Yes'
 
     #print('sortby_dropdown: ', sortby_dropdown)
     #print('align: ',align)
@@ -1057,11 +1064,15 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                 --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} --char_margin_ratio {char_margin_input} \
                 --figure_size_x {width_input} --figure_size_y {height_input} \
                 --align_color {align_color} --align_alpha {align_alpha} \
-                --mismatch_score {mismatch_score}  --gap_score {gap_score}\
+                --gap_score {gap_score}\
                 ' 
     
-    if align:
+    if align_dropdown == 'Yes':
         cmd += ' --align'
+    
+    if padding_align=='Yes':
+        cmd += ' --padding_align'
+
     if hideleft:
         cmd += ' --hide_left_axis'
     if hideright:
@@ -1080,6 +1091,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         cmd += ' --show_group_id'
     if showgrid:
         cmd += ' --show_grid'
+    
         
     print('cmd:', cmd)
     os.system(cmd)

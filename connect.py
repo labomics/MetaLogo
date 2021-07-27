@@ -2,16 +2,104 @@
 from scipy.stats import spearmanr,pearsonr
 import numpy as np
 
-def get_connect(bits_array, align_metric = 'sort_diff', mismatch_score=-1,gap_score=-1):
+def get_score_mat(bits_array, align_metric = 'sort_diff',  gap_score=-1):
+    scores_mat = {}
+    for i in range(len(bits_array)):
+        for j in range(len(bits_array)):
+            if i >= j:
+                continue
+            bits1 = bits_array[i]
+            bits2 = bits_array[j]
+            align1,align2 = needle(bits1,bits2, align_metric=align_metric, 
+                                    gap_penalty=gap_score)
+            score = 0
+            for pos1, pos2 in zip(align1,align2):
+                if pos1 == '-' or pos2 == '-':
+                    score += gap_score
+                else:
+                    score += match_score(bits1[pos1],bits2[pos2], align_metric=align_metric)
+
+            if i not in scores_mat:
+                scores_mat[i] = {}
+            scores_mat[i][j] = score/len(align1)
+    return scores_mat
+
+def msa(bits_array, scores_mat, align_metric = 'sort_diff', gap_score=-1):
+
+    #find the nearast couple
+    max_score = max([max(scores_mat[x].values()) for x in scores_mat])
+    findij = False
+    for i in scores_mat:
+        for j in scores_mat[i]:
+            #if abs(scores_mat[i][j] - max_score) < 0.00001:
+            if scores_mat[i][j] == max_score:
+                findij = True
+                break
+        if findij:
+            break
+    
+    #align the first two
+    align1,align2 = needle(bits_array[i],bits_array[j], align_metric=align_metric, 
+                              gap_penalty=gap_score)
+    
+    pools = [i,j]
+    new_bits_array = []
+    new_bits_array.append([bits_array[i][pos] if pos!= '-' else [] for pos in align1])
+    new_bits_array.append([bits_array[j][pos] if pos!= '-' else [] for pos in align2])
+
+    while len(pools) < len(bits_array):
+        left = set(range(len(bits_array))) - set(pools)
+        max_score = -1
+        max_i= -1
+        max_j = -1
+
+        for i in pools:
+            for j in left:
+                score = scores_mat[min(i,j)][max(i,j)]
+                if score > max_score:
+                    max_score = score
+                    max_i = i
+                    max_j = j
+        
+        #
+        bits1 = new_bits_array[pools.index(max_i)]
+        bits2 = bits_array[max_j]
+        align1,align2 = needle(bits1,bits2, align_metric=align_metric, 
+                              gap_penalty=gap_score)
+        
+        for i in range(len(new_bits_array)):
+            _arr = []
+            for pos in align1:
+                if pos == '-':
+                    _arr.append([])
+                else:
+                    _arr.append(new_bits_array[i][pos])
+            new_bits_array[i] = _arr
+
+        new_bits_array.append([bits2[pos] if pos!= '-' else [] for pos in align2]) 
+        pools.append(max_j)
+    
+    sorted_bits_array = []
+    for i in range(len(pools)):
+        sorted_bits_array.append(new_bits_array[pools.index(i)])
+    
+    return sorted_bits_array
+
+
+
+def get_connect(bits_array, align_metric = 'sort_diff', gap_score=-1, msa_input=False):
     connected = {}
     for index,bit in enumerate(bits_array):
         if index == len(bits_array) - 1:
             break
         bits1 = bit
         bits2 = bits_array[index + 1]
-        align1,align2 = needle(bits1,bits2, align_metric=align_metric, 
-                                delete=mismatch_score,insert=mismatch_score,gap_penalty=gap_score)
-
+        if msa_input:
+            align1 = list(range(len(bits1)))
+            align2 = list(range(len(bits2)))
+        else:
+            align1,align2 = needle(bits1,bits2, align_metric=align_metric, 
+                                gap_penalty=gap_score)
         connected[index] = {}
 
         for pos1, pos2 in zip(align1,align2):
@@ -21,8 +109,9 @@ def get_connect(bits_array, align_metric = 'sort_diff', mismatch_score=-1,gap_sc
             connected[index][pos1] = [score, [pos2]]
     return connected
 
-def match_score(bit1, bit2, align_metric='sort_consistency'):
-
+def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1):
+    if len(bit1) == 0 or len(bit2) == 0:
+        return 0
     if align_metric == 'diff':
         bit1 = dict(bit1)
         bit2 = dict(bit2)
@@ -66,10 +155,7 @@ def match_score(bit1, bit2, align_metric='sort_consistency'):
         return coor
 
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
-def needle(seq1, seq2, gap_penalty=-1,delete=-1,insert=-1, align_metric='sort_consistency'):
-    print('delete: ', delete)
-    print('insert: ', insert)
-    print('gajp_penalty: ', gap_penalty)
+def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency'):
     m, n = len(seq1), len(seq2)  # length of two sequences
     
     # Generate DP table and traceback path pointer matrix

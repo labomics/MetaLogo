@@ -46,12 +46,12 @@ if __name__ == '__main__':
     parser.add_argument('--font',type=str,help='The font of sequence characters')
 
     #align
-    parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of different sequence logo')
+    parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of adjacent sequence logo')
+    parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')
 
     parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
     parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
 
-    parser.add_argument('--mismatch_score',type=float,help='The mismatch score for alignment',default=-1.0)
     parser.add_argument('--gap_score',type=float,help='The gap score for alignment',default=-1.0)
 
     #layout
@@ -98,12 +98,15 @@ if __name__ == '__main__':
     print('args: ', args)
 
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
+    #print('seqs: ', seqs)
 
     groups = grouping(seqs,group_by=args.group_strategy)
     check_group(groups)
     bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
 
-    print('args.color_scheme: ', args.color_scheme)
+    #print('bits: ',bits)
+
+    #print('args.color_scheme: ', args.color_scheme)
     #get color
     try:
         color_scheme = get_color_scheme(args.color_scheme)
@@ -129,7 +132,8 @@ if __name__ == '__main__':
                           tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
                           figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
                           char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
-                          mismatch_score = args.mismatch_score,  gap_score = args.gap_score,
+                          gap_score = args.gap_score,
+                          padding_align = args.padding_align,
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

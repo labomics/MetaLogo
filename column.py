@@ -81,7 +81,7 @@ class Column(Item):
         return height
 
     def get_width(self):
-        return max([char.get_width()  for char in self.characters])
+        return max([char.get_width()  for char in self.characters]+[0])
     
     def get_edge(self):
 

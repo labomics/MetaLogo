@@ -1,14 +1,14 @@
 #!/usr/bin/python
 import genericpath
 from matplotlib.colors import get_named_colors_mapping
-from matplotlib.pyplot import figure
+from matplotlib.pyplot import figure, get
 import numpy as np
 from matplotlib.patches import Circle
 from .character import Character
 from .column import Column
 from .item import Item
 from .utils import get_coor_by_angle,  link_edges, rotate, text3d
-from .connect import get_connect, match_score
+from .connect import get_connect, get_score_mat, msa
 from matplotlib.patches import Circle, PathPatch
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
@@ -54,11 +54,15 @@ class Logo(Item):
 
 
     def generate_components(self):
-        assert len({len(seq) for seq in self.bits}) == 1 , 'seqs in one group have different lengths'
+        #print(self.bits)
+        #assert len({len(seq) for seq in self.bits}) == 1 , 'seqs in one group have different lengths'
 
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
             weights = [x[1] for x in bit]
+            if chars == []:
+                chars = ['-']
+                weights = [0]
             column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,
                             origin=self.origin, color=self.color, char_margin_ratio=self.char_margin_ratio)
             self.columns.append(column)
@@ -192,7 +196,7 @@ class LogoGroup(Item):
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
-                 figure_size_x=-1, figure_size_y=-1,mismatch_score=-1,gap_score=-1,
+                 figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seq_bits = seq_bits
@@ -215,7 +219,8 @@ class LogoGroup(Item):
         self.align_color = align_color
         self.align_alpha = align_alpha
 
-        self.mismatch_score = mismatch_score
+        self.padding_align = padding_align
+
         self.gap_score = gap_score
 
         self.hide_left_axis = hide_left_axis
@@ -242,13 +247,13 @@ class LogoGroup(Item):
         self.figure_size_x = figure_size_x
         self.figure_size_y = figure_size_y
 
-        print('self.show_grid: ', show_grid)
-
         self.logos = []
         self.generate_ax(threed=(self.logo_type=='Threed'))
         self.generate_components()
     
     def generate_components(self):
+
+
         self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
         try:
@@ -263,6 +268,15 @@ class LogoGroup(Item):
         except Exception as e:
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
+
+        if self.padding_align:
+            seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
+            self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
+            new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+            self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
+        
+        for bt in self.seq_bits:
+            print(bt, len(self.seq_bits[bt]))
 
         for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
@@ -285,6 +299,7 @@ class LogoGroup(Item):
                             group_id_size=self.group_id_size)
         
         #draw connect
+
 
         if self.align:
             self.draw_connect()
@@ -339,7 +354,7 @@ class LogoGroup(Item):
     
     def draw_connect(self):
         self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
-                                      mismatch_score=self.mismatch_score, gap_score=self.gap_score)
+                                       gap_score=self.gap_score,msa_input=self.padding_align)
         #print('connected: ', self.connected)
         #for index,logo in enumerate(self.logos):
         i = -1
