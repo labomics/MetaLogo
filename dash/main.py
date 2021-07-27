@@ -111,14 +111,14 @@ grouping_by_dropdown = dbc.FormGroup(
 )
 max_len_input = dbc.FormGroup(
     [
-        dbc.Label("Maximum length",html_for='input'),
+        dbc.Label("Maximum Length",html_for='input'),
         dbc.Input(type="number", min=0, max=100, step=1, value=20, id="max_len_input"),
     ]
 )
 
 min_len_input = dbc.FormGroup(
     [
-        dbc.Label("Minimum length",html_for='input'),
+        dbc.Label("Minimum Length",html_for='input'),
         dbc.Input(type="number", min=0, max=100, step=1, value=10,id="min_len_input"),
     ]
 )
@@ -201,7 +201,7 @@ height_algrithm_dropdown = dbc.FormGroup(
 )
 align_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Adjacent alignment?", html_for="dropdown"),
+        dbc.Label("Adjacent Alignment?", html_for="dropdown"),
         dcc.Dropdown(
             id="align_dropdown",
             options=[
@@ -214,7 +214,7 @@ align_dropdown = dbc.FormGroup(
 )
 padding_align_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Global alignment with padding?", html_for="dropdown"),
+        dbc.Label("Global Alignment with Padding?", html_for="dropdown"),
         dcc.Dropdown(
             id="padding_align_dropdown",
             options=[
@@ -227,7 +227,7 @@ padding_align_dropdown = dbc.FormGroup(
 )
 align_metric = dbc.FormGroup(
     [
-        dbc.Label("Score metric", html_for="dropdown"),
+        dbc.Label("Score Metric", html_for="dropdown"),
         dcc.Dropdown(
             id="score_metric",
             options=[
@@ -242,7 +242,7 @@ align_metric = dbc.FormGroup(
 
 align_threshold = dbc.FormGroup(
     [
-        dbc.Label("Align threshold",html_for='input'),
+        dbc.Label("Connect Threshold",html_for='input'),
         dbc.Input(type="number", min=0, step=0.01, value=0.8,id="align_threshold"),
     ]
 )
@@ -250,7 +250,7 @@ align_threshold = dbc.FormGroup(
 
 align_gap_score = dbc.FormGroup(
     [
-        dbc.Label("Gap Score",html_for='input'),
+        dbc.Label("Gap Penalty",html_for='input'),
         dbc.Input(type="float", max=0, value=-1,id="gap_score"),
     ]
 )
@@ -273,11 +273,11 @@ algrithm_panel = dbc.Card([
             dbc.Col(height_algrithm_dropdown),
             dbc.Col(align_dropdown),
             dbc.Col(padding_align_dropdown),
-            dbc.Col(align_metric),
         ]),
         dbc.Row([
-            dbc.Col(align_threshold),
+            dbc.Col(align_metric),
             dbc.Col(align_gap_score),
+            dbc.Col(align_threshold),
         ]),
         dbc.Row(dbc.Col(style_submit))
     ])
@@ -302,7 +302,7 @@ logo_type_dropdown = dbc.FormGroup(
 
 sort_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Sort by", html_for="dropdown"),
+        dbc.Label("Sort By", html_for="dropdown"),
         dcc.Dropdown(
             id="sortby_dropdown",
             options=[
@@ -318,21 +318,21 @@ sort_dropdown = dbc.FormGroup(
 
 logo_margin_input = dbc.FormGroup(
     [
-        dbc.Label("Logo margin ratio",html_for='input'),
+        dbc.Label("Logo Margin Ratio",html_for='input'),
         dbc.Input(type="number", min=0, max=1, step=0.01, value=0.1,id="logo_margin_input"),
     ]
 )
 
 column_margin_input = dbc.FormGroup(
     [
-        dbc.Label("Column margin ratio",html_for='input'),
+        dbc.Label("Column Margin Ratio",html_for='input'),
         dbc.Input(type="number", min=0, max=1, step=0.01, value=0.05,id="column_margin_input"),
     ]
 )
 
 character_margin_input = dbc.FormGroup(
     [
-        dbc.Label("Character margin ratio",html_for='input'),
+        dbc.Label("Character Margin Ratio",html_for='input'),
         dbc.Input(type="number", min=0, max=1, step=0.01, value=0.05,id="char_margin_input"),
     ]
 )
@@ -369,7 +369,7 @@ layout_panel = dbc.Card(
 )
 showxy_checklist = dbc.FormGroup(
     [
-        dbc.Label("Hide axis border and ticks "),
+        dbc.Label("Hide Axis Border and Ticks "),
         dbc.Checklist(
             options=[
                 {"label": "left", "value": 'hideleft'},
@@ -406,13 +406,13 @@ zlabel_input = dbc.FormGroup(
 )
 width_input = dbc.FormGroup(
     [
-        dbc.Label("Figure Width (inch)",html_for='input'),
+        dbc.Label("Figure Width",html_for='input'),
         dbc.Input(type="number", min=1,  value=10,id="width_input"),
     ]
 )
 height_input = dbc.FormGroup(
     [
-        dbc.Label("Figure Height (inch)",html_for='input'),
+        dbc.Label("Figure Height",html_for='input'),
         dbc.Input(type="number", min=1,  value=10, id="height_input")
     ]
     
@@ -432,7 +432,7 @@ show_groupid_checklist = dbc.FormGroup(
 )
 show_grid_checklist = dbc.FormGroup(
     [
-        dbc.Label("Grid background"),
+        dbc.Label("Grid Background"),
         dbc.Checklist(
             options=[
                 {"label": "Show Grid", "value": 'showgrid'},
