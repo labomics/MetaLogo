@@ -195,7 +195,7 @@ class Logo(Item):
 class LogoGroup(Item):
     def __init__(self,  seqs, group_order, group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
-                 align = True, align_metric='sort_consistency', align_threshold=0.8, 
+                 align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
                  x_label = 'Position', y_label = 'bits',z_label = 'bits', show_grid = True, show_group_id = True,
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
@@ -219,7 +219,7 @@ class LogoGroup(Item):
         self.align = align 
         self.ceiling_pos = (0,1)
         self.align_metric = align_metric
-        self.align_threshold = align_threshold
+        self.connect_threshold = connect_threshold
         self.color = color
         self.task_name = task_name
 
@@ -313,7 +313,7 @@ class LogoGroup(Item):
         self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
 
-        if self.padding_align:
+        if self.align and self.padding_align:
             seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
             self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
             new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
@@ -412,12 +412,23 @@ class LogoGroup(Item):
             self.draw_circle_help()
     
     def draw_connect(self):
-        if self.align_metric == 'js_divergence':
+        if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
             self.connected = get_connect([self.probs[gid] for gid in self.group_ids], self.align_metric, 
                                        gap_score=self.gap_score,msa_input=self.padding_align)
         else:
             self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
                                        gap_score=self.gap_score,msa_input=self.padding_align)
+        #self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
+        #                            gap_score=self.gap_score,msa_input=self.padding_align)
+        #print(self.connected)
+        #print(self.seq_bits)
+        if self.connect_threshold < 0:
+            vals = []
+            for group_id in self.connected:
+                for pos,arr in self.connected[group_id].items():
+                    vals.append(arr[0])
+            self.connect_threshold = sorted(vals, reverse=True)[:int(len(vals)*abs(self.connect_threshold))][-1]
+
         i = -1
         for group_id  in self.connected:
             i += 1
@@ -426,7 +437,7 @@ class LogoGroup(Item):
             link = self.connected[i]
             for pos1, arr in link.items():
                 r, targets = arr
-                if r > self.align_threshold:
+                if r > self.connect_threshold:
                     for pos2 in targets:
                         self.link_columns(self.logos[i].columns[pos1], self.logos[i+1].columns[pos2])
 
@@ -460,7 +471,18 @@ class LogoGroup(Item):
             for logo in self.logos[::-1]:
                 legend_elements.append( Line2D([0], [0], marker='o', color=logo.help_color, label=f'{logo.id}', linestyle = 'None', 
                                         markersize=5) )
-            self.ax.legend(handles=legend_elements,fontsize=self.group_id_size)
+            self.legend = self.ax.legend(handles=legend_elements,fontsize=self.group_id_size,
+                            loc='upper right')
+                            #, borderaxespad=0)
+                            #,bbox_to_anchor=(1,1))
+                            #,columnspacing=0,handletextpad=0,labelspacing=0,borderpad=0)
+                            #bbox_transform=self.ax.get_figure().transFigure)
+                            #bbox_to_anchor=(1, 1),
+                            #bbox_transform=self.ax.get_figure().transFigure)
+                            #loc='upper left',bbox_to_anchor=(1.005,1),borderaxespad=0.)
+                            #plt.legend(bbox_to_anchor=(1, 1),
+                            #bbox_transform=plt.gcf().transFigure)
+
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
@@ -544,8 +566,16 @@ class LogoGroup(Item):
 
         elif self.logo_type == 'Circle':
             radius = self.ceiling_pos[1] - self.start_pos[1]
-            self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
-            self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius)
+            #self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
+            #self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius)
+            if self.show_group_id:
+                l = self.legend
+                r = self.ax.get_figure().canvas.get_renderer()
+                bbox = l.get_window_extent(r)
+                bbox2 = bbox.transformed(self.ax.transAxes.inverted())
+                padded = 2*radius/(1-bbox2.width) - 2*radius
+                self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius + padded)
+                self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius + padded)
         elif self.logo_type == 'Radiation':
             ###
             lims = []

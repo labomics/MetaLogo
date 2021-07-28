@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')
 
     parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
-    parser.add_argument('--align_threshold',type=float,help='The align threshold',default=0.8)
+    parser.add_argument('--connect_threshold',type=float,help='The align threshold',default=0.8)
 
     parser.add_argument('--gap_score',type=float,help='The gap score for alignment',default=-1.0)
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     print('color_scheme: ', color_scheme)
 
     logogroup = LogoGroup(seqs, args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
-                          align=args.align, align_metric=args.align_metric, align_threshold = args.align_threshold,
+                          align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
                           color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
                           hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
                           hide_top_axis = args.hide_top_axis, show_grid = args.show_grid, show_group_id = args.show_group_id,

@@ -201,7 +201,7 @@ height_algrithm_dropdown = dbc.FormGroup(
 )
 align_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Adjacent Alignment?", html_for="dropdown"),
+        dbc.Label("Alignment?", html_for="dropdown"),
         dcc.Dropdown(
             id="align_dropdown",
             options=[
@@ -234,16 +234,18 @@ align_metric = dbc.FormGroup(
                 {"label": "Dot Production", "value": 'dot_product'},
                 {"label": "Aligned Dot Production", "value": 'sort_consistency'},
                 {"label": "Jensen Shannon", "value": 'js_divergence'},
+                {"label": "Cosine", "value": 'cosine'},
+                {"label": "Entropy weighted Bhattacharyya Coefficient", "value": 'entropy_bhattacharyya'},
             ],
-            value='sort_consistency'
+            value='dot_product'
         ),
     ]
 )
 
-align_threshold = dbc.FormGroup(
+connect_threshold = dbc.FormGroup(
     [
         dbc.Label("Connect Threshold",html_for='input'),
-        dbc.Input(type="number", min=0, step=0.01, value=0.8,id="align_threshold"),
+        dbc.Input(type="number", min=-1, step=0.01, value=-0.2, id="connect_threshold"),
     ]
 )
 
@@ -277,7 +279,7 @@ algrithm_panel = dbc.Card([
         dbc.Row([
             dbc.Col(align_metric),
             dbc.Col(align_gap_score),
-            dbc.Col(align_threshold),
+            dbc.Col(connect_threshold),
         ]),
         dbc.Row(dbc.Col(style_submit))
     ])
@@ -798,12 +800,19 @@ ATCCATCTATAC
             return example
 
 
-@app.callback([Output("score_metric","disabled"),Output("align_threshold","disabled")], Input("align_dropdown","value"))
+@app.callback([
+                Output("score_metric","disabled"),
+                Output("connect_threshold","disabled"),
+                Output("padding_align_dropdown","disabled"),
+                Output("gap_score","disabled"),
+                Output("padding_align_dropdown","value")
+              ], 
+              Input("align_dropdown","value"))
 def enable_align_detail(align):
     if align == 'Yes':
-        return [False,False]
+        return [False,False,False,False,'No']
     else:
-        return [True,True]
+        return [True,True,True,True,'No']
 
 @app.callback(Output("seq_textarea","placeholder"), Input("input_format_dropdown","value"))
 def change_placeholder(input_format):
@@ -974,7 +983,7 @@ def change_figure_size(logo_shape):
         State('sortby_dropdown', 'value'),
         State('align_dropdown', 'value'),
         State('score_metric', 'value'),
-        State('align_threshold', 'value'),
+        State('connect_threshold', 'value'),
         State('logo_margin_input', 'value'),
         State('column_margin_input', 'value'),
         State('char_margin_input', 'value'),
@@ -1001,7 +1010,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             title_input, input_format_dropdown, 
             sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
             seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,
-            align_dropdown,align_metric, align_threshold, logo_margin_input, column_margin_input,
+            align_dropdown,align_metric, connect_threshold, logo_margin_input, column_margin_input,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
@@ -1087,7 +1096,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                 python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
                 --max_length {max_len_input} --min_length {min_len_input}  \
-                 --align_metric {align_metric} --align_threshold {align_threshold} \
+                 --align_metric {align_metric} --connect_threshold {connect_threshold} \
                 --sequence_type {sequence_type} \
                 --output_name {uid}.{download_format_dropdown} \
                 --color_scheme {color} --task_name {task_name} \
@@ -1136,7 +1145,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
     encoded_image = base64.b64encode(open(png, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
-                #--align {align} --align_metric {align_metric} --align_threshold {align_threshold} \ 
+                #--align {align} --align_metric {align_metric} --connect_threshold {connect_threshold} \ 
 
 
     return '','','',False,src,uid
