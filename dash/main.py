@@ -33,6 +33,12 @@ from plotly.tools import mpl_to_plotly
 from io import BytesIO
 import base64
 
+from MetaLogo.logo import LogoGroup
+from MetaLogo.utils import read_file
+from MetaLogo.colors import get_color_scheme
+import json
+
+
 PNG_DIR = 'figure_output'
 FA_DIR = 'sequence_input'
 EXAMPLE_PATH = 'examples'
@@ -488,28 +494,28 @@ color_scheme_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="color_dropdown",
             options=[
-                {"label": "DNA Basic", "value": 'dna_basic'},
-                {"label": "Protein Basic", "value": 'protein_basic'},
+                {"label": "DNA Basic", "value": 'basic_dna_color'},
+                {"label": "Protein Basic", "value": 'basic_aa_color'},
                 {"label": "Custom (click color pickers to choose)", "value": 'custom'},
             ],
-            value='dna_basic'
+            value='basic_dna_color'
         ),
     ]
 )
 #generate dna basic scheme
-dna_basic_scheme = {'A':'#009980','T':'#1A1A1A','U':'#1A1A1A', 'G':'#E69B04','C':'#59B3E6','N':'grey'}
-dna_basic_spans = []
+basic_dna_color_scheme = {'A':'#009980','T':'#1A1A1A','U':'#1A1A1A', 'G':'#E69B04','C':'#59B3E6','N':'grey'}
+basic_dna_color_spans = []
 for base in 'ATGCN':
-    dna_basic_spans.append(html.Span(base,id=f"basic_dna_{base}",
+    basic_dna_color_spans.append(html.Span(base,id=f"basic_dna_{base}",
                     style = {
-                             "verticalAlign": "middle","color":dna_basic_scheme[base],
+                             "verticalAlign": "middle","color":basic_dna_color_scheme[base],
                             "fontSize":"40px","fontWeight":"bold","padding":"20px"
                             }
     ))
-dna_basic_panel = html.Div(dna_basic_spans)
+basic_dna_color_panel = html.Div(basic_dna_color_spans)
 
-#protein_basic_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
-protein_basic_scheme = {
+#basic_aa_color_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
+basic_aa_color_scheme = {
     "A":"#CCFF00",
     "C":"#FFFF00",
     "D":"#FF0000",
@@ -531,15 +537,15 @@ protein_basic_scheme = {
     "W":"#00CCFF",
     "Y":"#00FFCC"
 }
-protein_basic_spans = []
+basic_aa_color_spans = []
 for aa in 'ARNDCQEGHILKMFPSTWYV':
-    protein_basic_spans.append(html.Span(aa,id=f"basic_protein_{aa}",
+    basic_aa_color_spans.append(html.Span(aa,id=f"basic_protein_{aa}",
                     style = {
-                             "verticalAlign": "middle","color":protein_basic_scheme.get(aa,'grey'),
+                             "verticalAlign": "middle","color":basic_aa_color_scheme.get(aa,'grey'),
                             "fontSize":"40px","fontWeight":"bold","padding":"20px"
                             }
     ))
-protein_basic_panel = html.Div(protein_basic_spans)
+basic_aa_color_panel = html.Div(basic_aa_color_spans)
 
 custom_basic_scheme = {}
 custom_basic_groups = []
@@ -656,11 +662,11 @@ style_panel = dbc.Card(
                     dbc.Col(color_scheme_dropdown),
                 ]),
                 dbc.Row([
-                    dbc.Col(dna_basic_panel)
-                ],id='dna_basic_panel'),
+                    dbc.Col(basic_dna_color_panel)
+                ],id='basic_dna_color_panel'),
                 dbc.Row([
-                    dbc.Col(protein_basic_panel)
-                ],id='protein_basic_panel'),
+                    dbc.Col(basic_aa_color_panel)
+                ],id='basic_aa_color_panel'),
                 dbc.Row(
                     custom_basic_groups
                 ,style={'padding':'20px'},id='custom_basic_groups'),
@@ -761,10 +767,10 @@ app.layout = dbc.Container(children=[
 @app.callback(Output("color_dropdown","value"), Input("sequence_type_dropdown","value"), prevent_initial_call=True)
 def change_color_scheme(seqtype):
     if  seqtype in ['dna','rna']:
-        return 'dna_basic'
+        return 'basic_dna_color'
     if seqtype == 'aa':
-        return 'protein_basic'
-    return 'protein_basic'
+        return 'basic_aa_color'
+    return 'basic_aa_color'
 
 
 
@@ -827,16 +833,16 @@ def change_placeholder(input_format):
     return f"Input sequences as {input_format} format"
 
 
-@app.callback(Output("dna_basic_panel", "style"), Input("color_dropdown", "value"))
+@app.callback(Output("basic_dna_color_panel", "style"), Input("color_dropdown", "value"))
 def hidden(color_scheme):
-    if color_scheme == 'dna_basic':
+    if color_scheme == 'basic_dna_color':
         return {"display":""}
     else:
         return {"display":"none"}
 
-@app.callback(Output("protein_basic_panel", "style"), Input("color_dropdown", "value"))
+@app.callback(Output("basic_aa_color_panel", "style"), Input("color_dropdown", "value"))
 def hidden(color_scheme):
-    if color_scheme == 'protein_basic':
+    if color_scheme == 'basic_aa_color':
         return {"display":""}
     else:
         return {"display":"none"}
@@ -1024,9 +1030,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
     print('in submit')
 
-
-    #print('xxxx',max_len_input,min_len_input)
-
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,'',''
     
@@ -1053,108 +1056,71 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     seq_file = f"{FA_DIR}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
+    if color_dropdown != 'custom':
+        color_scheme = get_color_scheme(color_dropdown)
+    else:
+        color_scheme = dict(zip(aa_list,args))
 
-    #print('sortby_dropdown: ', sortby_dropdown)
-    #print('align: ',align)
-    #print('align_dropdown: ',align_dropdown)
-    if color_dropdown == 'dna_basic':
-        color = 'basic_dna_color'
-    elif color_dropdown == 'protein_basic':
-        color = 'basic_aa_color'
-    elif color_dropdown == 'custom':
-        color = f'\'{json.dumps(dict(zip(aa_list,args)))}\''
-    
+    align = align_dropdown=='Yes'
 
-    task_name = f"\'{title_input}\'"
-
-    xlabel = f"\'{xlabel_input}\'"
-    ylabel = f"\'{ylabel_input}\'"
-    zlabel = f"\'{zlabel_input}\'"
-    
-
-    showgrid = False
-    if 'showgrid' in showgrid_check_input:
-        showgrid = True
-    
-    showid = False
-    if 'showid' in showid_check_input:
-        showid = True
-    
-    hideleft,hideright,hidebottom,hidetop = [False]*4
-    hidexticks,hideyticks,hidezticks = [False]*3
+    hide_left,hide_right,hide_bottom,hide_top = [False]*4
+    hide_x_ticks,hide_y_ticks,hide_z_ticks = [False]*3
+    hide_version_tag = False
 
     if 'hideleft' in hidexy_check_input:
-        hideleft = True
+        hide_left = True
     if 'hideright' in hidexy_check_input:
-        hideright = True
+        hide_right = True
     if 'hidetop' in hidexy_check_input:
-        hidetop = True
+        hide_top = True
     if 'hidebottom' in hidexy_check_input:
-        hidebottom = True
+        hide_bottom = True
     if 'hidexticks' in hidexy_check_input:
-        hidexticks = True
+        hide_x_ticks = True
     if 'hideyticks' in hidexy_check_input:
-        hideyticks = True
+        hide_y_ticks = True
     if 'hidezticks' in hidexy_check_input:
-        hidezticks = True
-    
-    align_color = f"\'{align_color}\'"
-    
-    cmd = f'python -m MetaLogo.entry --input_file {seq_file}  --input_file_type {input_format_dropdown}\
-                --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
-                --max_length {max_len_input} --min_length {min_len_input}  \
-                 --align_metric {align_metric} --connect_threshold {connect_threshold} \
-                --sequence_type {sequence_type} \
-                --output_name {uid}.{download_format_dropdown} \
-                --output_dir {PNG_DIR} \
-                --color_scheme {color} --task_name {task_name} \
-                --x_label {xlabel} --y_label {ylabel} --z_label {zlabel}\
-                --title_size {title_size} --tick_size {tick_size} --label_size {label_size} \
-                --group_id_size {id_size} \
-                --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} --char_margin_ratio {char_margin_input} \
-                --figure_size_x {width_input} --figure_size_y {height_input} \
-                --align_color {align_color} --align_alpha {align_alpha} \
-                --gap_score {gap_score} --height_algrithm {height_algrithm_dropdown} \
-                ' 
-    
-    if align_dropdown == 'Yes':
-        cmd += ' --align'
-    
-    if padding_align=='Yes':
-        cmd += ' --padding_align'
+        hide_z_ticks = True
 
-    if hideleft:
-        cmd += ' --hide_left_axis'
-    if hideright:
-        cmd += ' --hide_right_axis'
-    if hidetop:
-        cmd += ' --hide_top_axis'
-    if hidebottom:
-        cmd += ' --hide_bottom_axis'
-    if hidexticks:
-        cmd += ' --hide_x_ticks'
-    if hideyticks:
-        cmd += ' --hide_y_ticks'
-    if hidezticks:
-        cmd += ' --hide_z_ticks'
-    if showid:
-        cmd += ' --show_group_id'
-    if showgrid:
-        cmd += ' --show_grid'
+    show_grid = False
+    if 'showgrid' in showgrid_check_input:
+        show_grid = True
     
+    show_group_id = False
+    if 'showid' in showid_check_input:
+        show_group_id = True
+
     if 'hideversion' in hide_version_checklist:
-        cmd += ' --hide_version_tag'
+        hide_version_tag = True
     
-        
-    print('cmd:', cmd)
-    os.system(cmd)
 
-    png = f'{PNG_DIR}/{uid}.png'
+    padding_align = padding_align=='Yes'
+
+
+    logogroup = LogoGroup(seqs, sortby_dropdown, logo_type = logo_shape_dropdown, group_strategy = grouping_by_dropdown,
+                          align=align, align_metric=align_metric, connect_threshold = connect_threshold,
+                          color=color_scheme, task_name=title_input, hide_left_axis = hide_left, hide_right_axis = hide_right, 
+                          hide_bottom_axis = hide_bottom, hide_top_axis = hide_top, show_grid = show_grid, show_group_id = show_group_id,
+                          hide_x_ticks = hide_x_ticks, hide_y_ticks = hide_y_ticks, hide_z_ticks=hide_z_ticks,
+                          x_label=xlabel_input, y_label=ylabel_input, z_label=zlabel_input,
+                          title_size=title_size, label_size=label_size, group_id_size=id_size,
+                          tick_size=tick_size, logo_margin_ratio = logo_margin_input, column_margin_ratio = column_margin_input,
+                          figure_size_x=width_input, figure_size_y=height_input,
+                          char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
+                          gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
+                          sequence_type = sequence_type, height_algrithm=height_algrithm_dropdown)
     
-    encoded_image = base64.b64encode(open(png, 'rb').read())
+    logogroup.draw()
+
+    output_name = f'{PNG_DIR}/{uid}.{download_format_dropdown}'
+    logogroup.savefig(output_name)
+
+    if download_format_dropdown != 'png':
+        output_name = f'{PNG_DIR}/{uid}.png'
+        logogroup.savefig(output_name)
+
+    encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
-                #--align {align} --align_metric {align_metric} --connect_threshold {connect_threshold} \ 
-
 
     return '','','',False,src,uid
 

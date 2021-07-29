@@ -202,7 +202,7 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-                 tmp_path = 'test', sequence_type = 'dna', height_algrithm = 'bits',
+                 sequence_type = 'dna', height_algrithm = 'bits',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -258,7 +258,6 @@ class LogoGroup(Item):
 
         self.hide_version_tag = hide_version_tag
 
-        self.tmp_path = tmp_path
         self.sequence_type = sequence_type
 
         self.logos = []
@@ -280,7 +279,6 @@ class LogoGroup(Item):
         elif self.height_algrithm == 'bits':
             self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
 
-        #self.seq_bits = compute_bits(self.groups, tmp_path=self.tmp_path,seq_type= self.sequence_type)
 
         try:
             if self.group_order.lower() == 'length':
