@@ -31,6 +31,7 @@ import base64
 PNG_DIR = '../../test'
 FA_DIR = 'tmp'
 
+server = Flask(__name__)
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -38,7 +39,8 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(
     __name__,
     title="MetaLogo",
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    server=server
 )
 app.title = "MetaLogo"
 
@@ -1140,7 +1142,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         
     print('cmd:', cmd)
     os.system(cmd)
-    #png = f'../../test/{uid}.{download_format_dropdown}.png'
+
     png = f'{PNG_DIR}/{uid}.png'
     
     encoded_image = base64.b64encode(open(png, 'rb').read())

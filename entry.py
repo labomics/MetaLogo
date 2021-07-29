@@ -11,6 +11,8 @@ import os
 
 if __name__ == '__main__':
 
+    print('enter entry.py')
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
     parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='test/test.fa')
