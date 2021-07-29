@@ -3,6 +3,11 @@
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+import os, sys
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -28,8 +33,9 @@ from plotly.tools import mpl_to_plotly
 from io import BytesIO
 import base64
 
-PNG_DIR = '../../test'
-FA_DIR = 'tmp'
+PNG_DIR = 'figure_output'
+FA_DIR = 'sequence_input'
+EXAMPLE_PATH = 'examples'
 
 server = Flask(__name__)
 
@@ -778,9 +784,9 @@ def load_example(nclicks1,nclicks2):
         example_id = ctx.triggered[0]['prop_id'].split('.')[0]
         if example_id == 'load_example':
             #fa = 'examples/example2.fa'
-            fa = 'examples/ectf.fa'
+            fa = f'{EXAMPLE_PATH}/ectf.fa'
         if example_id == 'load_example2':
-            fa = 'examples/example3.fa'
+            fa = f'{EXAMPLE_PATH}/example3.fa'
         if os.path.exists(fa):
             f = open(fa,'r')
             return ''.join(f.readlines())
@@ -1094,13 +1100,13 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
     align_color = f"\'{align_color}\'"
     
-    cmd = f'cd ../..;\
-                python -m vllogo.entry --input_file vllogo/dash/{seq_file}  --input_file_type {input_format_dropdown}\
+    cmd = f'python -m MetaLogo.entry --input_file {seq_file}  --input_file_type {input_format_dropdown}\
                 --type  {logo_shape_dropdown}  --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} \
                 --max_length {max_len_input} --min_length {min_len_input}  \
                  --align_metric {align_metric} --connect_threshold {connect_threshold} \
                 --sequence_type {sequence_type} \
                 --output_name {uid}.{download_format_dropdown} \
+                --output_dir {PNG_DIR} \
                 --color_scheme {color} --task_name {task_name} \
                 --x_label {xlabel} --y_label {ylabel} --z_label {zlabel}\
                 --title_size {title_size} --tick_size {tick_size} --label_size {label_size} \
@@ -1153,5 +1159,11 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     return '','','',False,src,uid
 
 if __name__ == '__main__':
-        app.run_server(debug=True)
+
+    if not os.path.exists(PNG_DIR):
+        os.makedirs(PNG_DIR, exist_ok=True)
+    if not os.path.exists(FA_DIR):
+        os.makedirs(FA_DIR, exist_ok=True)
+
+    app.run_server(debug=True)
 

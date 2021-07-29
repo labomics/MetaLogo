@@ -1,4 +1,4 @@
 *.pyc
-*.fa
-*.fasta
 *.png
+figure_output
+sequence_input

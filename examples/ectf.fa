@@ -1,0 +1,118 @@
+>dinD 32->52
+aactgtatataaatacagtt
+>dinG 15->35 
+tattggctgtttatacagta
+>dinH 77->97
+tcctgttaatccatacagca
+>dinI 19->39
+acctgtataaataaccagta
+>lexA-1 28->48
+tgctgtatatactcacagca
+>lexA-2 7->27
+aactgtatatacacccaggg
+>polB(dinA) 53->73
+gactgtataaaaccacagcc
+>recA 59->79
+tactgtatgagcatacagta
+>recN-1 49->69
+tactgtatataaaaccagtt
+>recN-2 27->47
+tactgtacacaataacagta
+>recN-3 9-29
+TCCTGTATGAAAAACCATTA
+>ruvAB 49->69
+cgctggatatctatccagca
+>sosC 18->38
+tactgatgatatatacaggt
+>sosD 14->34
+cactggatagataaccagca
+>sulA 22->42
+tactgtacatccatacagta
+>umuDC 20->40
+tactgtatataaaaacagta
+>uvrA 83->103 
+tactgtatattcattcaggt
+>uvrB 75->95
+aactgtttttttatccagta
+>uvrD 57->77
+atctgtatatatacccagct
+>hns1
+tAGGCTGATTT
+>hns2
+gAAAATTATTT
+>hns3
+gGGAGTTATTC
+>hns4
+aCAAATTATTT
+>hns5
+gCAACAGAGTA
+>hns6
+aCGCCTGAATA
+>hns7
+tCGAGAAAGTT
+>hns8
+tCGCCGGAATT
+>hns9
+tGGCATGAATA
+>hns10
+aTAAAGGAATC
+>hns11
+cTAATTTAATT
+>hns12
+gCAATTAAATT
+>hns13
+tGACATGAATC
+>hns14
+cTGGCTAATTT
+>hns15
+aCAACTGAATT
+>dnaA_1 rpoH-1
+aatttattcacaagc
+>dnaA_2 rpoH-2
+attttatccacaagt
+>dnaA_3 nrd
+gagttatccacaaag
+>dnaA_4 oriC-R1
+ttgttatccacaggg
+>dnaA_5 oriC-R2
+ggggttatacacaac
+>dnaA_6 oriC-R3
+ttctttggataacta
+>dnaA_7 oriC-R4
+gagttatccacagta
+>dnaA_10   dnaA
+gatttatccacagga
+>argA-1 32->50
+acagaataaaaatacact
+>argA-2 11->29 
+ttcgaataatcatgcaaa
+>argD-1 51->69
+agtgattttttatgcata
+>argD-2 30->48
+tgtggttataatttcaca
+>argECBH-1 26->44, argC 110->128
+tatcaatattcatgcagt
+>argECBH-2 47->65, argC 89->107
+tatgaataaaaatacact
+>argF-1 48->66
+aatgaataattacacata
+>argF-2 27->45
+agtgaattttaattcaat
+>argG-1 73->91
+attaaatgaaaactcatt
+>argG-2 52->70
+tttgcataaaaattcagt
+>argG-3 192->210
+tgtgaatgaatatccagt
+>argI-1 46->64
+aatgaataatcatccata
+>argI-2 25->43
+attgaattttaattcatt
+>argR-1 45->63
+tttgcataaaaattcatc
+>argR-2 24->42
+tatgcacaataatgttgt
+>carAB-1 32->50
+tgtgaattaatatgcaaa
+>carAB-2 11->29
+agtgagtgaatattctct

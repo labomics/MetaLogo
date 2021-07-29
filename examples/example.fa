@@ -1,0 +1,32 @@
+>seq1 group@1-good
+CACCACACACACAGAC
+>seq2 group@1-good
+TGACTTAGACACAGAC
+>seq3 group@1-good
+GTGCATACGCACAGAC
+>seq3 group@1-good
+ATTCATACGCGCAGCC
+>seq3 group@1-good
+CTACATACGCCCAGCC
+>seq3 group@1-good
+ATGCATACGCCCAGCC
+>seq3 group@1-good
+TTACATACGCCCAGCC
+>seq4 group@2-bad
+CTGGATGCAGAC
+>seq5 group@2-bad
+GAACATACACAC
+>seq6 group@2-bad
+AACCCTCTCTAT
+>seq4 group@2-bad
+CTGCATGCAGAT
+>seq5 group@2-bad
+GTACATACACAG
+>seq6 group@2-bad
+ATACATATATCT
+>seq4 group@2-bad
+ACAGATAGCCCA
+>seq5 group@2-bad
+ACAATACAGGCA
+>seq6 group@2-bad
+AGCCGTCAACAC
