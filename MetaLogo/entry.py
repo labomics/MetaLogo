@@ -1,12 +1,10 @@
 #!/usr/bin/python
 import argparse
-from typing import Sequence
 
 from .logo import LogoGroup
 from .utils import read_file
 from .colors import get_color_scheme
 import json
-import os
 
 
 if __name__ == '__main__':

@@ -1,1 +1,1 @@
-# vlsequencelogo
+# MetaLogo
