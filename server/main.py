@@ -53,6 +53,12 @@ if os.path.exists('server.toml'):
     if 'output_png_dir' in paras_dict:
         PNG_DIR = paras_dict['output_png_dir']
 
+if not os.path.exists(PNG_DIR):
+    os.makedirs(PNG_DIR, exist_ok=True)
+if not os.path.exists(FA_DIR):
+    os.makedirs(FA_DIR, exist_ok=True)
+
+
 server = Flask(__name__)
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
