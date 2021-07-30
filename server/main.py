@@ -166,6 +166,7 @@ seqinput_form = html.Div([
     html.Label('Or upload a file (<=5MB)'),
     html.Label('',id='uploaded_label2',style={"color":"orange"}),
     html.Label('',id='uploaded_label',style={"color":"#11FF00"}),
+    html.Label('',id='remove_label',style={"color":"red"}),
     dcc.Upload([
         html.Div('Drag and Drop or Select a File',n_clicks=0,id='upload_div')
         ], 
@@ -339,9 +340,9 @@ sort_dropdown = dbc.FormGroup(
             id="sortby_dropdown",
             options=[
                 {"label": "Length", "value": 'length'},
-                {"label": "Length reverse", "value": 'length_reverse'},
+                {"label": "Length Reverse", "value": 'length_reverse'},
                 {"label": "Group Id", "value": 'identifier'},
-                {"label": "Group Id reverse", "value": 'identifier_reverse'},
+                {"label": "Group Id Reverse", "value": 'identifier_reverse'},
             ],
             value='length'
         ),
@@ -799,7 +800,6 @@ def change_color_scheme(seqtype):
     prevent_initial_call=True)
 def load_example(nclicks1,nclicks2,contents):
     ctx = dash.callback_context
-    print(ctx.triggered)
     if not ctx.triggered:
         return
     else:
@@ -879,16 +879,24 @@ def show_warn_filesize(n_clicks,filename):
     if (n_clicks >= 1) and (filename is None):
         return  '* Warning: Not exceed the size limit' 
 
+@app.callback(
+    Output('file_upload','contents'),
+    Input('remove_label','n_clicks'), prevent_initial_call=True
+)
+def clear_content(n_clicks):
+    if n_clicks > 0:
+        return ''
+    return ''
 
 @app.callback(
-              Output('uploaded_label', 'children'),
+              [Output('uploaded_label', 'children'),Output('remove_label', 'children')],
               Input('file_upload', 'contents'),
               State('file_upload', 'filename'),
-              State('file_upload', 'last_modified'))
+              State('file_upload', 'last_modified'), prevent_initial_call=True)
 def update_output(content, name, date):
-    if content is not None:
-        print('in callback1',name,date)
-        return f"√ {name} uploaded!",""
+    if (content is not None) and len(content)>0:
+        return f"√ {name} uploaded!", "--remove"
+    return '',''
 
 app.clientside_callback(
     """
@@ -1049,11 +1057,14 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,'',''
     
-    if (len(seq_textarea) == 0) and (file_upload_content is None):
+    if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
         return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'',''
     #time.sleep(50)
+
+    print('file_upload_content:', file_upload_content)
+
     seqs = []
-    if file_upload_content is not None:
+    if (file_upload_content is not None) and (len(file_upload_content)>0 and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0)):
         response = handle_seqs_file(file_upload_content,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
@@ -1063,6 +1074,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
+
 
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,'',''

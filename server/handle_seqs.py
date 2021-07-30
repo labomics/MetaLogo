@@ -11,11 +11,8 @@ def save_seqs(seqs, filename):
 def handle_seqs_file(content,format="fasta",sequence_type="dna"):
     print('enter handle seqs')
     try:
-        print('content: ',content)
         data = content.split(";base64,")[1]
-        print('data1:',data)
         data = base64.b64decode(data).decode('utf-8')
-        print('data2: ', data)
         return handle_seqs_str(data,format,sequence_type)
     except Exception as e:
         return {'successful':False, 'msg':f'File processing error: {e}'}
