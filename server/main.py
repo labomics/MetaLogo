@@ -37,11 +37,21 @@ from MetaLogo.logo import LogoGroup
 from MetaLogo.utils import read_file
 from MetaLogo.colors import get_color_scheme
 import json
+import toml
 
-
+#read config file
 PNG_DIR = 'figure_output'
 FA_DIR = 'sequence_input'
 EXAMPLE_PATH = 'examples'
+
+if os.path.exists('server.toml'):
+    paras_dict = toml.load('server.toml')
+    if 'example_dir' in paras_dict:
+        EXAMPLE_PATH = paras_dict['example_dir']
+    if 'output_fa_dir' in paras_dict:
+        FA_DIR = paras_dict['output_fa_dir']
+    if 'output_png_dir' in paras_dict:
+        PNG_DIR = paras_dict['output_png_dir']
 
 server = Flask(__name__)
 

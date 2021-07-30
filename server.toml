@@ -1,0 +1,7 @@
+# This is a TOML document
+
+title = "MetaLogo webserver configure example"
+
+example_dir = 'examples'
+output_png_dir = 'figure_output'
+output_fa_dir = 'sequence_input'
