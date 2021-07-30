@@ -157,7 +157,7 @@ seqinput_form = html.Div([
     html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example, ",href='#',id="load_example"),
                 html.A(" example2",href='#',id="load_example2")]),
     dcc.Textarea(
-        placeholder='',
+        placeholder='Paste sequences in choosen input format',
         value='',
         rows=5,
         style={'width': '100%'},
@@ -795,15 +795,17 @@ def change_color_scheme(seqtype):
 #    return False
 
 @app.callback(Output("seq_textarea","value"), 
-    [Input("load_example","n_clicks"), Input("load_example2","n_clicks")],
+    [Input("load_example","n_clicks"), Input("load_example2","n_clicks"),Input("file_upload","contents")],
     prevent_initial_call=True)
-def load_example(nclicks1,nclicks2):
+def load_example(nclicks1,nclicks2,contents):
     ctx = dash.callback_context
     print(ctx.triggered)
     if not ctx.triggered:
         return
     else:
         example_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if example_id == 'file_upload':
+            return ''
         if example_id == 'load_example':
             #fa = 'examples/example2.fa'
             fa = f'{EXAMPLE_PATH}/ectf.fa'
@@ -844,9 +846,6 @@ def enable_align_detail(align):
     else:
         return [True,True,True,True,'No']
 
-@app.callback(Output("seq_textarea","placeholder"), Input("input_format_dropdown","value"))
-def change_placeholder(input_format):
-    return f"Input sequences as {input_format} format"
 
 
 @app.callback(Output("basic_dna_color_panel", "style"), Input("color_dropdown", "value"))
@@ -881,14 +880,15 @@ def show_warn_filesize(n_clicks,filename):
         return  '* Warning: Not exceed the size limit' 
 
 
-@app.callback(Output('uploaded_label', 'children'),
+@app.callback(
+              Output('uploaded_label', 'children'),
               Input('file_upload', 'contents'),
               State('file_upload', 'filename'),
               State('file_upload', 'last_modified'))
 def update_output(content, name, date):
     if content is not None:
         print('in callback1',name,date)
-        return f"√ {name} uploaded!"
+        return f"√ {name} uploaded!",""
 
 app.clientside_callback(
     """

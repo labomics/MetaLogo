@@ -425,7 +425,8 @@ class LogoGroup(Item):
             for group_id in self.connected:
                 for pos,arr in self.connected[group_id].items():
                     vals.append(arr[0])
-            self.connect_threshold = sorted(vals, reverse=True)[:int(len(vals)*abs(self.connect_threshold))][-1]
+            if len(vals) > 0:
+                self.connect_threshold = sorted(vals, reverse=True)[:int(len(vals)*abs(self.connect_threshold))][-1]
 
         i = -1
         for group_id  in self.connected:

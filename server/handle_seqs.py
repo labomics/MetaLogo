@@ -84,10 +84,12 @@ def handle_seqs_str(content, format="fasta", sequence_type="dna"):
 
     base_err = False 
     base_set = set()
+
+    dna_set = {'A','T','G','C','N','-'}
+    rna_set = {'A','U','G','C','N','-'}
+    protein_set = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-'}
+
     for seqname,seq in seqs:
-        dna_set = {'A','T','G','C','N','-'}
-        rna_set = {'A','U','G','C','N','-'}
-        protein_set = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-'}
         base_set |= set(seq)
 
     if sequence_type.upper()  == 'DNA':

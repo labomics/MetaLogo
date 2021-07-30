@@ -98,6 +98,7 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
 
 
 def get_connect(bits_array, align_metric = 'sort_consistency', gap_score=-1, msa_input=False, seq_type='dna'):
+    print("in get_connect")
     connected = {}
     for index,bit in enumerate(bits_array):
         if index == len(bits_array) - 1:
