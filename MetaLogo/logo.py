@@ -193,7 +193,7 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seqs, group_order, group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
+    def __init__(self,  seqs, group_order='length', group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',

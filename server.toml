@@ -2,6 +2,8 @@
 
 title = "MetaLogo webserver configure example"
 
-example_dir = 'examples'
-output_png_dir = 'figure_output'
-output_fa_dir = 'sequence_input'
+example_path = 'examples'
+output_png_path = 'figure_output'
+output_fa_path = 'sequence_input'
+config_path = 'configs'
+log_path = 'logs'

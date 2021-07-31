@@ -2,3 +2,5 @@
 *.png
 figure_output
 sequence_input
+configs
+*.log

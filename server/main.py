@@ -40,23 +40,28 @@ import json
 import toml
 
 #read config file
-PNG_DIR = 'figure_output'
-FA_DIR = 'sequence_input'
+PNG_PATH = 'figure_output'
+FA_PATH = 'sequence_input'
 EXAMPLE_PATH = 'examples'
+CONFIG_PATH = 'configs'
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
-    if 'example_dir' in paras_dict:
-        EXAMPLE_PATH = paras_dict['example_dir']
+    if 'example_path' in paras_dict:
+        EXAMPLE_PATH = paras_dict['example_path']
     if 'output_fa_dir' in paras_dict:
-        FA_DIR = paras_dict['output_fa_dir']
-    if 'output_png_dir' in paras_dict:
-        PNG_DIR = paras_dict['output_png_dir']
+        FA_PATH = paras_dict['output_fa_dir']
+    if 'output_png_path' in paras_dict:
+        PNG_PATH = paras_dict['output_png_path']
+    if 'config_path' in paras_dict:
+        CONFIG_PATH = paras_dict['config_path']
 
-if not os.path.exists(PNG_DIR):
-    os.makedirs(PNG_DIR, exist_ok=True)
-if not os.path.exists(FA_DIR):
-    os.makedirs(FA_DIR, exist_ok=True)
+if not os.path.exists(PNG_PATH):
+    os.makedirs(PNG_PATH, exist_ok=True)
+if not os.path.exists(FA_PATH):
+    os.makedirs(FA_PATH, exist_ok=True)
+if not os.path.exists(CONFIG_PATH):
+    os.makedirs(CONFIG_PATH, exist_ok=True)
 
 
 server = Flask(__name__)
@@ -764,7 +769,7 @@ app.layout = dbc.Container(children=[
         modal,
         result_modal,
         loading_spinner,
-        html.Div('',id='functional_garbage'),
+        html.Div('',id='functional_garbage',style={'display':'none'}),
         html.Div('',id='garbage',style={'display':'none'}),
        ])
 
@@ -936,7 +941,7 @@ def udpate_download(n_clicks,uid,format,src):
         #        filename=f'{uid}.png'
         #    )]
         return dcc.send_file(
-        f"{PNG_DIR}/{uid}.{format}"
+        f"{PNG_PATH}/{uid}.{format}"
         )
 @app.callback(
     [
@@ -1078,13 +1083,15 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
-    seq_file = f"{FA_DIR}/server-{uid}.fasta"
+    seq_file = f"{FA_PATH}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
     if color_dropdown != 'custom':
         color_scheme = get_color_scheme(color_dropdown)
     else:
         color_scheme = dict(zip(alphabets_list,args))
+    
+    color_scheme['scheme_name'] = color_dropdown
 
     align = align_dropdown=='Yes'
 
@@ -1121,8 +1128,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     padding_align = padding_align=='Yes'
 
-
-    logogroup = LogoGroup(seqs, sortby_dropdown, logo_type = logo_shape_dropdown, group_strategy = grouping_by_dropdown,
+    config = dict(group_strategy = grouping_by_dropdown, group_order = sortby_dropdown, logo_type = logo_shape_dropdown, 
                           align=align, align_metric=align_metric, connect_threshold = connect_threshold,
                           color=color_scheme, task_name=title_input, hide_left_axis = hide_left, hide_right_axis = hide_right, 
                           hide_bottom_axis = hide_bottom, hide_top_axis = hide_top, show_grid = show_grid, show_group_id = show_group_id,
@@ -1133,28 +1139,36 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           figure_size_x=width_input, figure_size_y=height_input,
                           char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
                           gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
-                          sequence_type = sequence_type, height_algrithm=height_algrithm_dropdown)
+                          sequence_type = sequence_type, height_algrithm=height_algrithm_dropdown
+    )
+
+    with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
+        toml.dump(config, f)
+
+    logogroup = LogoGroup(seqs, **config)
     
     logogroup.draw()
 
-    output_name = f'{PNG_DIR}/{uid}.{download_format_dropdown}'
+    output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
     logogroup.savefig(output_name)
 
     if download_format_dropdown != 'png':
-        output_name = f'{PNG_DIR}/{uid}.png'
+        output_name = f'{PNG_PATH}/{uid}.png'
         logogroup.savefig(output_name)
-
+    
     encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+
+
 
     return '','','',False,src,uid
 
 if __name__ == '__main__':
 
-    if not os.path.exists(PNG_DIR):
-        os.makedirs(PNG_DIR, exist_ok=True)
-    if not os.path.exists(FA_DIR):
-        os.makedirs(FA_DIR, exist_ok=True)
+    if not os.path.exists(PNG_PATH):
+        os.makedirs(PNG_PATH, exist_ok=True)
+    if not os.path.exists(FA_PATH):
+        os.makedirs(FA_PATH, exist_ok=True)
 
     app.run_server(debug=True)
 

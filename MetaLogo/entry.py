@@ -123,7 +123,7 @@ if __name__ == '__main__':
     
     print('color_scheme: ', color_scheme)
 
-    logogroup = LogoGroup(seqs, args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
+    logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
                           align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
                           color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
                           hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
