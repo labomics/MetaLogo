@@ -1,12 +1,19 @@
 #!/usr/bin/python
 
-basic_dna_color_map = {'A': '#009980',
+basic_dna_color_scheme = {'A': '#009980',
         'C': '#59B3E6',
         'G': '#E69B04',
         'T': '#1A1A1A',
-        'other': 'grey'}
+        '-': 'grey'}
 
-aa_color_map = {
+basic_rna_color_scheme = {'A': '#009980',
+        'C': '#59B3E6',
+        'G': '#E69B04',
+        'U': '#1A1A1A',
+        '-': 'grey'}
+
+
+basic_aa_color_scheme = {
     "A":"#CCFF00",
     "C":"#FFFF00",
     "D":"#FF0000",
@@ -26,12 +33,15 @@ aa_color_map = {
     "T":"#FF6600",
     "V":"#99FF00",
     "W":"#00CCFF",
-    "Y":"#00FFCC"
+    "Y":"#00FFCC",
+    '-':'grey'
 }
 
 def get_color_scheme(scheme):
     if scheme == 'basic_dna_color':
-        return basic_dna_color_map
+        return basic_dna_color_scheme
+    if scheme == 'basic_rna_color':
+        return basic_rna_color_scheme
     if scheme == 'basic_aa_color':
-        return aa_color_map
+        return basic_aa_color_scheme
     return None

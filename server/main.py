@@ -35,7 +35,7 @@ import base64
 
 from MetaLogo.logo import LogoGroup
 from MetaLogo.utils import read_file
-from MetaLogo.colors import get_color_scheme
+from MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_color_scheme,basic_rna_color_scheme
 import json
 import toml
 
@@ -74,7 +74,7 @@ app.title = "MetaLogo"
 
 #
 
-aa_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']
+alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-','B','J','O','U','X','Z']
 
 
 nav = dbc.Nav(
@@ -284,7 +284,7 @@ connect_threshold = dbc.FormGroup(
 align_gap_score = dbc.FormGroup(
     [
         dbc.Label("Gap Penalty",html_for='input'),
-        dbc.Input(type="float", max=0, value=-1,id="gap_score"),
+        dbc.Input(type="number", max=0, value=-1, step=0.001, id="gap_score"),
     ]
 )
 
@@ -325,7 +325,7 @@ logo_type_dropdown = dbc.FormGroup(
                 {"label": "Horizontal", "value": 'Horizontal'},
                 {"label": "Circular", "value": 'Circle'},
                 {"label": "Radial", "value": 'Radiation'},
-                {"label": "Three Dimensional", "value": 'Threed'},
+                {"label": "3D", "value": 'Threed'},
             ],
             value='Horizontal'
         ),
@@ -512,6 +512,7 @@ color_scheme_dropdown = dbc.FormGroup(
             id="color_dropdown",
             options=[
                 {"label": "DNA Basic", "value": 'basic_dna_color'},
+                {"label": "RNA Basic", "value": 'basic_rna_color'},
                 {"label": "Protein Basic", "value": 'basic_aa_color'},
                 {"label": "Custom (click color pickers to choose)", "value": 'custom'},
             ],
@@ -520,9 +521,8 @@ color_scheme_dropdown = dbc.FormGroup(
     ]
 )
 #generate dna basic scheme
-basic_dna_color_scheme = {'A':'#009980','T':'#1A1A1A','U':'#1A1A1A', 'G':'#E69B04','C':'#59B3E6','N':'grey'}
 basic_dna_color_spans = []
-for base in 'ATGCN':
+for base in basic_dna_color_scheme.keys():
     basic_dna_color_spans.append(html.Span(base,id=f"basic_dna_{base}",
                     style = {
                              "verticalAlign": "middle","color":basic_dna_color_scheme[base],
@@ -531,31 +531,19 @@ for base in 'ATGCN':
     ))
 basic_dna_color_panel = html.Div(basic_dna_color_spans)
 
-#basic_aa_color_scheme = {'A':'#009980','T':'#1A1A1A','G':'#E69B04','C':'#59B3E6','N':'grey'}
-basic_aa_color_scheme = {
-    "A":"#CCFF00",
-    "C":"#FFFF00",
-    "D":"#FF0000",
-    "E":"#FF0066",
-    "F":"#00FF66",
-    "G":"#FF9900",
-    "H":"#0066FF",
-    "I":"#66FF00",
-    "K":"#6600FF",
-    "L":"#33FF00",
-    "M":"#00FF00",
-    "N":"#CC00FF",
-    "P":"#FFCC00",
-    "Q":"#FF00CC",
-    "R":"#0000FF",
-    "S":"#FF3300",
-    "T":"#FF6600",
-    "V":"#99FF00",
-    "W":"#00CCFF",
-    "Y":"#00FFCC"
-}
+basic_rna_color_spans = []
+for base in basic_rna_color_scheme.keys():
+    basic_rna_color_spans.append(html.Span(base,id=f"basic_rna_{base}",
+                    style = {
+                             "verticalAlign": "middle","color":basic_rna_color_scheme[base],
+                            "fontSize":"40px","fontWeight":"bold","padding":"20px"
+                            }
+    ))
+basic_rna_color_panel = html.Div(basic_rna_color_spans)
+
+
 basic_aa_color_spans = []
-for aa in 'ARNDCQEGHILKMFPSTWYV':
+for aa in basic_aa_color_scheme.keys():
     basic_aa_color_spans.append(html.Span(aa,id=f"basic_protein_{aa}",
                     style = {
                              "verticalAlign": "middle","color":basic_aa_color_scheme.get(aa,'grey'),
@@ -566,8 +554,7 @@ basic_aa_color_panel = html.Div(basic_aa_color_spans)
 
 custom_basic_scheme = {}
 custom_basic_groups = []
-#for alphabet in ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-']:
-for alphabet in aa_list:
+for alphabet in alphabets_list:
     colorpicker = dbc.Col(
         dbc.FormGroup(
         [
@@ -631,7 +618,7 @@ idsize_input = dbc.FormGroup(
 align_alpha_input = dbc.FormGroup(
     [
         dbc.Label("Alignment Transparency",html_for='input'),
-        dbc.Input(type="float", min=0, max=1, value=0.1,id="align_alpha"),
+        dbc.Input(type="number", min=0, max=1, value=0.1, step=0.001, id="align_alpha"),
     ]
 )
 align_color_picker =  dbc.FormGroup(
@@ -681,6 +668,9 @@ style_panel = dbc.Card(
                 dbc.Row([
                     dbc.Col(basic_dna_color_panel)
                 ],id='basic_dna_color_panel'),
+                dbc.Row([
+                    dbc.Col(basic_rna_color_panel)
+                ],id='basic_rna_color_panel'),
                 dbc.Row([
                     dbc.Col(basic_aa_color_panel)
                 ],id='basic_aa_color_panel'),
@@ -851,6 +841,13 @@ def enable_align_detail(align):
 @app.callback(Output("basic_dna_color_panel", "style"), Input("color_dropdown", "value"))
 def hidden(color_scheme):
     if color_scheme == 'basic_dna_color':
+        return {"display":""}
+    else:
+        return {"display":"none"}
+
+@app.callback(Output("basic_rna_color_panel", "style"), Input("color_dropdown", "value"))
+def hidden(color_scheme):
+    if color_scheme == 'basic_rna_color':
         return {"display":""}
     else:
         return {"display":"none"}
@@ -1035,7 +1032,7 @@ def change_figure_size(logo_shape):
         State('hidexy_check_input','value'),
         State('download_format_dropdown','value'),
         State('color_dropdown','value'),
-    ] + [State(f'colorpicker_{base}', 'value') for base in aa_list],
+    ] + [State(f'colorpicker_{base}', 'value') for base in alphabets_list],
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
@@ -1087,7 +1084,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if color_dropdown != 'custom':
         color_scheme = get_color_scheme(color_dropdown)
     else:
-        color_scheme = dict(zip(aa_list,args))
+        color_scheme = dict(zip(alphabets_list,args))
 
     align = align_dropdown=='Yes'
 

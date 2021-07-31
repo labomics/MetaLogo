@@ -56,8 +56,11 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
     new_bits_array = []
     new_bits_array.append([bits_array[i][pos] if pos!= '-' else [] for pos in align1])
     new_bits_array.append([bits_array[j][pos] if pos!= '-' else [] for pos in align2])
-
+    repeat = 0
     while len(pools) < len(bits_array):
+        repeat += 1
+        if repeat > len(bits_array) + 1:
+            break
         left = set(range(len(bits_array))) - set(pools)
         max_score = -1
         max_i= -1
@@ -140,22 +143,15 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
             keys = sorted(list(bit1.keys()|bit2.keys()))
             v1 = [bit1.get(key,0) for key in keys]
             v2 = [bit2.get(key,0) for key in keys]
-            #print('v1:', v1)
-            #print('v2:', v2)
             bc = sum([np.sqrt(i1*i2) for i1,i2 in zip(v1,v2)])
-            #print('bc:', bc)
             max_entropy = 0
             if seq_type.lower() in  ['protein','aa']:
                 max_entropy = max_entropy_aa
             if seq_type.lower() in  ['dna','rna']:
                 max_entropy = max_entropy_dna
-
-            #print('max_entropy:', max_entropy)
-
             entropy1 = -sum([bit1.get(key,0)*np.log(bit1.get(key,0)) for key in keys if bit1.get(key,0) > 0])
             entropy2 = -sum([bit2.get(key,0)*np.log(bit2.get(key,0)) for key in keys if bit2.get(key,0) > 0])
             res = bc * np.sqrt((1 - (entropy1/max_entropy)) * (1 - (entropy2/max_entropy)))
-            #print('res:', res)
 
             return res
 
@@ -169,12 +165,13 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
             return dotproduct(v1,v2)
 
         if align_metric == 'cosine':
+            print('in cosine')
             bit1 = dict(bit1)
             bit2 = dict(bit2)
             keys = sorted(list(bit1.keys()|bit2.keys()))
             v1 = [bit1.get(key,0) for key in keys]
             v2 = [bit2.get(key,0) for key in keys]
-            if length(v1)*length(v2)==2:
+            if length(v1)*length(v2)==0:
                 return 0
             return costheta(v1,v2)
 
@@ -196,8 +193,10 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
             for key in keys:
                 q1.append(bit1.get(key,0))
                 q2.append(bit2.get(key,0))
-
+            if sum(q1)*sum(q2) == 0:
+                return 0
             return 1-distance.jensenshannon(q1,q2)
+
     except Exception as e:
         print('exception: ', e)
         return 0
@@ -224,6 +223,7 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
 
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
 def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type='dna'):
+    print('enter needle')
     m, n = len(seq1), len(seq2)  # length of two sequences
     
     # Generate DP table and traceback path pointer matrix
@@ -245,7 +245,11 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
     # Traceback and compute the alignment 
     align1, align2 = [], [] 
     i,j = m,n # start from the bottom right cell
+    repeat = 0
     while i > 0 and j > 0: # end toching the top or the left edge
+        repeat += 1
+        if repeat > (i+1) * (j*1):
+            break 
         score_current = score[i][j]
         score_diagonal = score[i-1][j-1]
         score_up = score[i][j-1]
@@ -267,6 +271,8 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
             align1.append('-')
             align2.append(j-1)
             j -= 1
+        else:
+            break
 
     # Finish tracing up to the top left cell
     while i > 0:

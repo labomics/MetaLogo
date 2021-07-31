@@ -274,6 +274,7 @@ class LogoGroup(Item):
         check_group(self.groups)
 
         self.probs = compute_prob(self.groups)
+
         if self.height_algrithm == 'probabilities':
             self.seq_bits = self.probs
         elif self.height_algrithm == 'bits':
@@ -305,17 +306,70 @@ class LogoGroup(Item):
                 del self.probs[gid]
                 del self.seq_bits[gid]
 
+        if self.align and self.padding_align:
+
+            if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
+                probs_list = [self.probs[gid] for gid in self.group_ids]
+                self.scores_mat = get_score_mat(probs_list,align_metric=self.align_metric,gap_score=self.gap_score)
+                new_probs_list = msa(probs_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                self.probs = dict(zip(self.group_ids, new_probs_list))
+            else:
+                seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
+                self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
+                new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
+            
+            print('before bits: ')
+            print(self.seq_bits)
+
+            
+            self.align_probs_bits()
+
+            print('after bits: ')
+            print(self.seq_bits)
+
+
+    
+    def align_probs_bits(self):
+        new_probs = {}
+        new_bits = {}
+        for gid in self.group_ids:
+            new_probs[gid] = []
+            new_bits[gid] = []
+            prob_i = 0
+            bit_i = 0
+            while prob_i < len(self.probs[gid]) and bit_i < len(self.seq_bits[gid]):
+                if self.probs[gid][prob_i] == []:
+                    new_probs[gid].append([])
+                    new_bits[gid].append([])
+                    prob_i += 1
+                elif self.seq_bits[gid][bit_i] == []:
+                    new_probs[gid].append([])
+                    new_bits[gid].append([])
+                    bit_i += 1
+                else:
+                    new_probs[gid].append(self.probs[gid][prob_i].copy())
+                    new_bits[gid].append(self.seq_bits[gid][bit_i].copy())
+                    bit_i += 1
+                    prob_i += 1
+
+            max_len = max(len(self.probs[gid]),len(self.seq_bits[gid]))
+            
+            for i in range(len(new_probs[gid]),max_len):
+                new_probs[gid].append([])
+            for j in range(len(new_bits[gid]),max_len):
+                new_bits[gid].append([])
+
+        self.probs = new_probs
+        self.seq_bits = new_bits
+
+
     def generate_components(self):
 
 
         self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
 
-        if self.align and self.padding_align:
-            seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
-            self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
-            new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
-            self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
         
         for bt in self.seq_bits:
             print(bt, len(self.seq_bits[bt]))
@@ -416,20 +470,19 @@ class LogoGroup(Item):
         else:
             self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
                                        gap_score=self.gap_score,msa_input=self.padding_align)
-        #self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
-        #                            gap_score=self.gap_score,msa_input=self.padding_align)
-        #print(self.connected)
-        #print(self.seq_bits)
         if self.connect_threshold < 0:
             vals = []
             for group_id in self.connected:
                 for pos,arr in self.connected[group_id].items():
                     vals.append(arr[0])
-            if len(vals) > 0:
-                self.connect_threshold = sorted(vals, reverse=True)[:int(len(vals)*abs(self.connect_threshold))][-1]
+            filtered_sorted_vals = sorted(vals, reverse=True)[:int(len(vals)*abs(self.connect_threshold))]
+            if len(filtered_sorted_vals) > 0:
+                self.connect_threshold = filtered_sorted_vals[-1]
+            else:
+                self.connect_threshold = 1E9
 
         i = -1
-        for group_id  in self.connected:
+        for group_id  in self.group_ids:
             i += 1
             if group_id == self.group_ids[-1]:
                 continue
