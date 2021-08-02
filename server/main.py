@@ -118,6 +118,39 @@ toppanel = html.Div(
         dbc.Row(nav)
     ]
 )
+about_md = dcc.Markdown('''
+**Metalogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can integrate the logo images of sequece of different lengths, and align them through algorithms, so as to display the samples in a more macroscopic view.
+
+Users can choose to group sequences by length, or divide sequences of the same length into multiple groups. For each group, metalogo will draw a sequence logo separately. At the logo level, alignment is performed through a modified version of sequence alignment and multiple sequence alignment algorithms.
+
+There are a total of 4 different logo types for users to choose from, such as horizontal, concentric, radial and three-dimensional logos, which are suitable for different scenes. At the same time, there are many different algorithms to choose from for the logo comparison algorithm.
+
+Users can adjust most of the elements of drawing, including title, axis, ticks, labels, font color, graphic size, etc. At the same time, it can export a variety of formats including PDF, PNG, SVG and so on. Users do not need any programming experience at all to make publication-level pictures.
+
+Due to server resource limitations, this tool has a limit on the number of input sequences. But we also provide a python package that can be run independently, which can facilitate users to integrate the drawing code in their own projects or deploy them on high-performance computing nodes. In addition, we also provide a convenient server dockerfile for users to perform convenient graphical visualization operations locally.
+
+If you think this tool is easy to use, please share it with those who need it. If you have any comments, you can send an email to the maintainer via the feedback button at the top. When our article is published, please remember to cite our work.
+
+
+''')  
+
+about_panel = dbc.Card(
+    [
+        dbc.CardHeader("About MetaLogo"),
+        dbc.CardBody(
+            [
+                dbc.Row([
+                    dbc.Col(html.Div(html.Img(src='/assets/introduction.png',width='100%')))
+                ])
+                ,
+                dbc.Row([
+                    dbc.Col(about_md),
+                ]),
+
+            ]
+        )
+    ],style={'marginBottom':'10px'}
+)
 
 input_format_dropdown = dbc.FormGroup(
     [
@@ -176,8 +209,8 @@ min_len_input = dbc.FormGroup(
 )
 
 seqinput_form = html.Div([
-    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example, ",href='#',id="load_example"),
-                html.A(" example2",href='#',id="load_example2")]),
+    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example1, ",href='#seq_textarea',id="load_example"),
+                html.A(" example2",href='#seq_textarea',id="load_example2")]),
     dcc.Textarea(
         placeholder='Paste sequences in choosen input format',
         value='',
@@ -777,6 +810,7 @@ footer_panel = html.Div([
 app.layout = dbc.Container(children=[
         toppanel,
         html.Hr(),
+        about_panel,
         input_panel,
         algrithm_panel,
         layout_panel,

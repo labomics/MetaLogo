@@ -611,8 +611,6 @@ class LogoGroup(Item):
 
         elif self.logo_type == 'Circle':
             radius = self.ceiling_pos[1] - self.start_pos[1]
-            #self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
-            #self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius)
             if self.show_group_id:
                 l = self.legend
                 r = self.ax.get_figure().canvas.get_renderer()
@@ -621,6 +619,11 @@ class LogoGroup(Item):
                 padded = 2*radius/(1-bbox2.width) - 2*radius
                 self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius + padded)
                 self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius + padded)
+            else:
+                self.ax.set_xlim(self.start_pos[0] - radius,self.start_pos[0] + radius)
+                self.ax.set_ylim(self.start_pos[1] - radius,self.start_pos[1] + radius)
+
+
         elif self.logo_type == 'Radiation':
             ###
             lims = []
