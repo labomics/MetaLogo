@@ -47,6 +47,7 @@ CONFIG_PATH = 'configs'
 GOOGLE_ANALYTICS_ID = ''
 MAX_SEQ_LIMIT = 50000
 MAX_INPUT_SIZE = 5242880
+MAX_SEQ_LEN = 100
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
@@ -64,6 +65,8 @@ if os.path.exists('server.toml'):
         MAX_SEQ_LIMIT = paras_dict['max_seq_limit']
     if 'max_input_size' in paras_dict:
         MAX_INPUT_SIZE = paras_dict['max_input_size']
+    if 'max_seq_len' in paras_dict:
+        MAX_SEQ_LEN = paras_dict['max_seq_len']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
@@ -204,19 +207,19 @@ grouping_by_dropdown = dbc.FormGroup(
 max_len_input = dbc.FormGroup(
     [
         dbc.Label("Maximum Length",html_for='input'),
-        dbc.Input(type="number", min=0, max=100, step=1, value=20, id="max_len_input"),
+        dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=20, id="max_len_input"),
     ]
 )
 
 min_len_input = dbc.FormGroup(
     [
         dbc.Label("Minimum Length",html_for='input'),
-        dbc.Input(type="number", min=0, max=100, step=1, value=10,id="min_len_input"),
+        dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=10,id="min_len_input"),
     ]
 )
 
 seqinput_form = html.Div([
-    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
+    html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
                 html.A(" example2",href='#input_panel',id="load_example2")]),
     dcc.Textarea(
         placeholder='Paste sequences in choosen input format',
@@ -225,7 +228,7 @@ seqinput_form = html.Div([
         style={'width': '100%'},
         id = 'seq_textarea'
     ),  
-    html.Label('Or upload a file (<=5MB)'),
+    html.Label(f'Or upload a file (<={(MAX_INPUT_SIZE/1024)/1024}MB)'),
     html.Label('',id='uploaded_label2',style={"color":"orange"}),
     html.Label('',id='uploaded_label',style={"color":"#11FF00"}),
     html.Label('',id='remove_label',style={"color":"red"}),
