@@ -51,6 +51,8 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
     #align the first two
     align1,align2 = needle(bits_array[i],bits_array[j], align_metric=align_metric, 
                               gap_penalty=gap_score, seq_type=seq_type)
+    #print(align1)#test
+    #print(align2)#test
     
     pools = [i,j]
     new_bits_array = []
@@ -127,7 +129,6 @@ max_entropy_aa = -sum([(1/20)*np.log(1/20) for i in range(20)])
 max_entropy_dna = -sum([(1/4)*np.log(1/4) for i in range(4)])
 
 def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_type='dna'):
-    #print('in match_score: ', bit1,bit2)
 
     try:
 
@@ -162,7 +163,8 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
             keys = sorted(list(bit1.keys()|bit2.keys()))
             v1 = [bit1.get(key,0) for key in keys]
             v2 = [bit2.get(key,0) for key in keys]
-            return dotproduct(v1,v2)
+            val = dotproduct(v1,v2)
+            return val
 
         if align_metric == 'cosine':
             print('in cosine')
@@ -202,25 +204,6 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
         return 0
 
 
-    if align_metric == 'correlation':
-
-        bit1 = dict(bit1)
-        bit2 = dict(bit2)
-        keys = sorted(list(bit1.keys()|bit2.keys()))
-        a1 = []
-        a2 = []
-        for i in range(len(keys)):
-            v1 = bit1.get(keys[i],0)
-            v2 = bit2.get(keys[i],0)
-            if v1 == v2 == 0:
-                continue
-            a1.append(v1)
-            a2.append(v2)
-        coor,pval = pearsonr(a1,a2)
-        if pval > 0.05:
-            coor = 0
-        return coor
-
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
 def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type='dna'):
     print('enter needle')
@@ -234,7 +217,6 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
         score[i][0] = gap_penalty * i
     for j in range(0, n + 1):
         score[0][j] = gap_penalty * j
-    #print(score)
     for i in range(1, m + 1):
         for j in range(1, n + 1):
             match = score[i - 1][j - 1] + match_score(seq1[i-1], seq2[j-1],align_metric=align_metric,seq_type=seq_type)
@@ -242,13 +224,14 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
             insert = score[i][j - 1] + gap_penalty
             score[i][j] = max(match, delete, insert)
 
+
     # Traceback and compute the alignment 
     align1, align2 = [], [] 
     i,j = m,n # start from the bottom right cell
     repeat = 0
     while i > 0 and j > 0: # end toching the top or the left edge
         repeat += 1
-        if repeat > (i+1) * (j*1):
+        if repeat > (m+1) * (n*1):
             break 
         score_current = score[i][j]
         score_diagonal = score[i-1][j-1]
@@ -272,6 +255,7 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
             align2.append(j-1)
             j -= 1
         else:
+            print('in break...')
             break
 
     # Finish tracing up to the top left cell

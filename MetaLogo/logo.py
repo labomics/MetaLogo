@@ -269,7 +269,7 @@ class LogoGroup(Item):
         self.generate_components()
     
     def compute_bits(self):
-
+        
         self.groups = grouping(self.seqs,group_by=self.group_strategy)
         check_group(self.groups)
 

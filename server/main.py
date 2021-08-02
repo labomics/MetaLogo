@@ -108,6 +108,7 @@ alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S
 
 nav = dbc.Nav(
     [
+        dbc.NavItem(dbc.NavLink(["", html.A("Start analysis",href="#input_panel",style={'textDecoration':'none'})])),
         dbc.NavItem(dbc.NavLink("Tutorial",  href="#",target='_blank')),
         dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
         dbc.NavItem(dbc.NavLink("Paper",  href="#",target='_blank')),
@@ -215,8 +216,8 @@ min_len_input = dbc.FormGroup(
 )
 
 seqinput_form = html.Div([
-    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example1, ",href='#seq_textarea',id="load_example"),
-                html.A(" example2",href='#seq_textarea',id="load_example2")]),
+    html.Label(['Paste sequences (<= 50,000 sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
+                html.A(" example2",href='#input_panel',id="load_example2")]),
     dcc.Textarea(
         placeholder='Paste sequences in choosen input format',
         value='',
@@ -276,7 +277,7 @@ input_panel = dbc.Card(
 
             ]
         )
-    ],style={'marginBottom':'10px'}
+    ],style={'marginBottom':'10px'},id='input_panel'
 )
 
 height_algrithm_dropdown = dbc.FormGroup(
@@ -346,7 +347,7 @@ connect_threshold = dbc.FormGroup(
 align_gap_score = dbc.FormGroup(
     [
         dbc.Label("Gap Penalty",html_for='input'),
-        dbc.Input(type="number", max=0, value=-1, step=0.001, id="gap_score"),
+        dbc.Input(type="number",  value=-1, step=0.001, id="gap_score"),
     ]
 )
 
