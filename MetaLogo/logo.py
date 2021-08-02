@@ -319,14 +319,7 @@ class LogoGroup(Item):
                 new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
                 self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
             
-            print('before bits: ')
-            print(self.seq_bits)
-
-            
             self.align_probs_bits()
-
-            print('after bits: ')
-            print(self.seq_bits)
 
 
     

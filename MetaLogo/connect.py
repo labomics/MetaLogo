@@ -47,7 +47,7 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
                 break
         if findij:
             break
-    
+    print('first two:', i,j) 
     #align the first two
     align1,align2 = needle(bits_array[i],bits_array[j], align_metric=align_metric, 
                               gap_penalty=gap_score, seq_type=seq_type)
@@ -62,7 +62,7 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
         if repeat > len(bits_array) + 1:
             break
         left = set(range(len(bits_array))) - set(pools)
-        max_score = -1
+        max_score = -1E9
         max_i= -1
         max_j = -1
 
@@ -73,7 +73,7 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
                     max_score = score
                     max_i = i
                     max_j = j
-        
+        print('continue: ',max_i,max_j) 
         #
         bits1 = new_bits_array[pools.index(max_i)]
         bits2 = bits_array[max_j]

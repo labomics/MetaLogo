@@ -44,6 +44,7 @@ PNG_PATH = 'figure_output'
 FA_PATH = 'sequence_input'
 EXAMPLE_PATH = 'examples'
 CONFIG_PATH = 'configs'
+GOOGLE_ANALYTICS_ID = ''
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
@@ -55,6 +56,8 @@ if os.path.exists('server.toml'):
         PNG_PATH = paras_dict['output_png_path']
     if 'config_path' in paras_dict:
         CONFIG_PATH = paras_dict['config_path']
+    if 'google_analytics_id' in paras_dict:
+        GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
@@ -63,17 +66,32 @@ if not os.path.exists(FA_PATH):
 if not os.path.exists(CONFIG_PATH):
     os.makedirs(CONFIG_PATH, exist_ok=True)
 
+gtag_js = '''
+window.dataLayer = window.dataLayer || [];
+ function gtag(){dataLayer.push(arguments);}
+ gtag('js', new Date());
+ gtag('config', '%s');
+'''%GOOGLE_ANALYTICS_ID
+with open('server/assets/google.js','w') as outpf:
+    outpf.write(gtag_js)
 
 server = Flask(__name__)
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_scripts = [f'https://www.googletagmanager.com/gtag/js?id={GOOGLE_ANALYTICS_ID}'] 
 
 #app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app = dash.Dash(
     __name__,
     title="MetaLogo",
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    server=server
+    external_scripts=external_scripts,
+    server=server,
+    meta_tags=[{
+        'name': 'description',
+        'content': 'A website to plot and align multiple sequences logos on one single figure'
+    }]
+
 )
 app.title = "MetaLogo"
 
@@ -84,12 +102,11 @@ alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S
 
 nav = dbc.Nav(
     [
-        dbc.NavItem(dbc.NavLink("Tutorial",  href="#")),
-        dbc.NavItem(dbc.NavLink("Python package", href="#")),
-        dbc.NavItem(dbc.NavLink("Github", href="#")),
-        dbc.NavItem(dbc.NavLink("Paper",  href="#")),
-        dbc.NavItem(dbc.NavLink("Lab",  href="#")),
-        dbc.NavItem(dbc.NavLink("Feedback",  href="#")),
+        dbc.NavItem(dbc.NavLink("Tutorial",  href="#",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Paper",  href="#",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Lab",  href="http://omicsnet.org",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Feedback", href="mailto:achenge07@163.com", target='_blank')),
     ]
 )
 toppanel = html.Div(
