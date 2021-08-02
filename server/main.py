@@ -146,7 +146,7 @@ about_panel = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row([
-                    dbc.Col(html.Div(html.Img(src='/assets/introduction.png',width='100%')))
+                    dbc.Col(html.Div(html.Img(src='/assets/introduction.PNG',width='100%')))
                 ])
                 ,
                 dbc.Row([
