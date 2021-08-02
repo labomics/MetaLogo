@@ -45,6 +45,8 @@ FA_PATH = 'sequence_input'
 EXAMPLE_PATH = 'examples'
 CONFIG_PATH = 'configs'
 GOOGLE_ANALYTICS_ID = ''
+MAX_SEQ_LIMIT = 50000
+MAX_INPUT_SIZE = 5242880
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
@@ -58,6 +60,10 @@ if os.path.exists('server.toml'):
         CONFIG_PATH = paras_dict['config_path']
     if 'google_analytics_id' in paras_dict:
         GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
+    if 'max_seq_limit' in paras_dict:
+        MAX_SEQ_LIMIT = paras_dict['max_seq_limit']
+    if 'max_input_size' in paras_dict:
+        MAX_INPUT_SIZE = paras_dict['max_input_size']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
@@ -225,7 +231,8 @@ seqinput_form = html.Div([
     dcc.Upload([
         html.Div('Drag and Drop or Select a File',n_clicks=0,id='upload_div')
         ], 
-        max_size = 1024 * 1024 * 5,
+        #max_size = 1024 * 1024 * 5,
+        max_size =  MAX_INPUT_SIZE,
         id='file_upload',
         style_reject = { 'borderStyle': 'solid', 'borderColor': '#c66', 'backgroundColor': 'orange'},
         style={
@@ -1105,16 +1112,13 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
-    print('in submit')
 
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,'',''
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
         return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'',''
-    #time.sleep(50)
 
-    print('file_upload_content:', file_upload_content)
 
     seqs = []
     if (file_upload_content is not None) and (len(file_upload_content)>0 and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0)):
@@ -1128,6 +1132,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
+    if len(seqs) > MAX_SEQ_LIMIT:
+        return '','Error','Sequence number exceed the limitation',True,'',''
 
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,'',''

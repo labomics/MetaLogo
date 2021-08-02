@@ -7,4 +7,6 @@ output_png_path = 'figure_output'
 output_fa_path = 'sequence_input'
 config_path = 'configs'
 log_path = 'logs'
+max_seq_limit = 50000
+max_input_size = 5242880
 google_analytics_id = 'G-0EZX46EYE9'
