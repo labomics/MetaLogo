@@ -48,6 +48,8 @@ GOOGLE_ANALYTICS_ID = ''
 MAX_SEQ_LIMIT = 50000
 MAX_INPUT_SIZE = 5242880
 MAX_SEQ_LEN = 100
+GOOGLE_ANALYTICS_ID = ''
+BAIDU_TONGJI_ID = ''
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
@@ -59,14 +61,16 @@ if os.path.exists('server.toml'):
         PNG_PATH = paras_dict['output_png_path']
     if 'config_path' in paras_dict:
         CONFIG_PATH = paras_dict['config_path']
-    if 'google_analytics_id' in paras_dict:
-        GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
     if 'max_seq_limit' in paras_dict:
         MAX_SEQ_LIMIT = paras_dict['max_seq_limit']
     if 'max_input_size' in paras_dict:
         MAX_INPUT_SIZE = paras_dict['max_input_size']
     if 'max_seq_len' in paras_dict:
         MAX_SEQ_LEN = paras_dict['max_seq_len']
+    if 'google_analytics_id' in paras_dict:
+        GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
+    if 'baidu_tongji_id' in paras_dict:
+        BAIDU_TONGJI_ID = paras_dict['baidu_tongji_id']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
@@ -75,6 +79,7 @@ if not os.path.exists(FA_PATH):
 if not os.path.exists(CONFIG_PATH):
     os.makedirs(CONFIG_PATH, exist_ok=True)
 
+#google
 gtag_js = '''
 window.dataLayer = window.dataLayer || [];
  function gtag(){dataLayer.push(arguments);}
@@ -83,6 +88,20 @@ window.dataLayer = window.dataLayer || [];
 '''%GOOGLE_ANALYTICS_ID
 with open('server/assets/google.js','w') as outpf:
     outpf.write(gtag_js)
+
+#baidu
+tongji_js = '''
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement('script');
+  hm.src = 'https://hm.baidu.com/hm.js?%s';
+  var s = document.getElementsByTagName('script')[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+'''%BAIDU_TONGJI_ID
+with open('server/assets/baidu.js','w') as outpf:
+    outpf.write(tongji_js)
+
 
 server = Flask(__name__)
 
@@ -111,7 +130,6 @@ alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S
 
 nav = dbc.Nav(
     [
-        dbc.NavItem(dbc.NavLink(["", html.A("Start analysis",href="#input_panel",style={'textDecoration':'none'})])),
         dbc.NavItem(dbc.NavLink("Tutorial",  href="#",target='_blank')),
         dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
         dbc.NavItem(dbc.NavLink("Paper",  href="#",target='_blank')),

@@ -11,3 +11,4 @@ max_seq_limit = 50000
 max_seq_len = 200
 max_input_size = 5242880
 google_analytics_id = 'G-0EZX46EYE9'
+baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
