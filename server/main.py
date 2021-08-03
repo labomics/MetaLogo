@@ -142,6 +142,7 @@ toppanel = html.Div(
         dbc.Row([
             dbc.Col(html.H1(['MetaLogo'])),
             ],
+            style={'marginTop':'10px'}
         ),
         dbc.Row(nav)
     ]
