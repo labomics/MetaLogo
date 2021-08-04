@@ -117,7 +117,7 @@ app = dash.Dash(
     server=server,
     meta_tags=[{
         'name': 'description',
-        'content': 'A website to plot and align multiple sequences logos on one single figure'
+        'content': 'A website to plot and align multiple sequences logos on one single figure,it can integrate the logo images of sequece of different lengths, and align them through algorithms, so as to display the samples in a more macroscopic view.'
     }]
 
 )
@@ -649,6 +649,7 @@ for alphabet in alphabets_list:
                 id=f"colorpicker_{alphabet}",
                 value="#000000",
                 style={"width": 50, "height": 50, "margin":"auto"},
+                persistence=True
             ),
         ],style={"textAlign":"center"}
         )
@@ -714,6 +715,7 @@ align_color_picker =  dbc.FormGroup(
                 id=f"align_color",
                 value="#007bff",
                 style={"width": 50, "height": 50, "margin":"auto"},
+                persistence=True
             ),
         ],style={"textAlign":"center"})
 
