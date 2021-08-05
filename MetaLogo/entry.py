@@ -7,13 +7,12 @@ from .colors import get_color_scheme
 import json
 
 
-if __name__ == '__main__':
 
-    print('enter entry.py')
+def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
-    parser.add_argument('--input_file',type=str,help='The input file contain sequences',default='examples/ectf.fa')
+    parser.add_argument('--input_file',type=str,help='The input file contain sequences',required=True)
     parser.add_argument('--input_file_type',type=str,help='The type of input file',default='fasta')
     parser.add_argument('--sequence_type',type=str,help='The type of sequences',default='dna')
 
@@ -93,23 +92,14 @@ if __name__ == '__main__':
     parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default=10)
 
     #output 
-    parser.add_argument('--output_dir',type=str,help='Output name of figure',default='test')
+    parser.add_argument('--output_dir',type=str,help='Output path of figure',required=True)
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     
     args = parser.parse_args()
     print('args: ', args)
 
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
-    #print('seqs: ', seqs)
 
-    #groups = grouping(seqs,group_by=args.group_strategy)
-    #check_group(groups)
-    #bits = compute_bits(groups,args.tmp_path,seq_type=args.sequence_type)
-
-    #print('bits: ',bits)
-
-    #print('args.color_scheme: ', args.color_scheme)
-    #get color
     try:
         color_scheme = get_color_scheme(args.color_scheme)
         if color_scheme is None:
@@ -121,7 +111,6 @@ if __name__ == '__main__':
     except Exception as e:
         color_scheme = get_color_scheme('basic_aa_color')
     
-    print('color_scheme: ', color_scheme)
 
     logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
                           align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
@@ -147,3 +136,6 @@ if __name__ == '__main__':
         logogroup.savefig(f'{args.output_dir}/{base}.png')
     
 
+
+if __name__ == '__main__':
+    main()

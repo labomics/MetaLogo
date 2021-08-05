@@ -87,15 +87,6 @@ def write_to_tmp(seqs,tmp_path = './tmp/'):
             outpf.write(f'{seq}\n')
     return f_name
 
-        
-def compute_bits(groups,tmp_path = './tmp/',seq_type='dna'):
-    print('in compute_bits, seq_type: ',seq_type)
-    ic_table = {}
-    for group_id,group in groups.items():
-        tmpf_name = write_to_tmp(group,tmp_path)
-        _,ic = process_data(tmpf_name,data_type='fasta',seq_type=seq_type)
-        ic_table[group_id] = ic
-    return ic_table
 
 def angle_between(p1, p2=(0,0)):
     ang1 = np.arctan2(*p1[::-1])

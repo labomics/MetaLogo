@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+try: 
+    from setuptools import setup
+except ImportError: 
+    from distutils.core import setup
 
 setup(name='Metalogo',
       version='1.0',
@@ -8,7 +11,7 @@ setup(name='Metalogo',
       author='Yaowen Chen',
       author_email='achenge07@163.com',
       url='https://github.com/labomics/MetaLogo',
-      packages=['MetaLogo', 'MetaLogo.logo'],
+      packages=['MetaLogo'],
       entry_points={
           'console_scripts': ['metalogo=MetaLogo.entry:main']
       },
