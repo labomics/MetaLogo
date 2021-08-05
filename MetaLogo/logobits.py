@@ -29,7 +29,6 @@ def compute_prob(groups):
     return probs
     
 def compute_bits(groups, probs, seq_type='dna'):
-    print('in compute_bites: seq_type: ',seq_type)
     bits = {}
     for gid,prob in probs.items():
         if seq_type.lower() in ['dna','rna']:

@@ -47,7 +47,6 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
                 break
         if findij:
             break
-    print('first two:', i,j) 
     #align the first two
     align1,align2 = needle(bits_array[i],bits_array[j], align_metric=align_metric, 
                               gap_penalty=gap_score, seq_type=seq_type)
@@ -75,7 +74,6 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
                     max_score = score
                     max_i = i
                     max_j = j
-        print('continue: ',max_i,max_j) 
         #
         bits1 = new_bits_array[pools.index(max_i)]
         bits2 = bits_array[max_j]
@@ -103,7 +101,6 @@ def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1,
 
 
 def get_connect(bits_array, align_metric = 'sort_consistency', gap_score=-1, msa_input=False, seq_type='dna'):
-    print("in get_connect")
     connected = {}
     for index,bit in enumerate(bits_array):
         if index == len(bits_array) - 1:
@@ -167,7 +164,6 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
             return val
 
         if align_metric == 'cosine':
-            print('in cosine')
             bit1 = dict(bit1)
             bit2 = dict(bit2)
             keys = sorted(list(bit1.keys()|bit2.keys()))
@@ -206,7 +202,6 @@ def match_score(bit1, bit2, align_metric='sort_consistency',gap_score=-1,seq_typ
 
 #https://github.com/alevchuk/pairwise-alignment-in-python/blob/master/alignment.py
 def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type='dna'):
-    print('enter needle')
     m, n = len(seq1), len(seq2)  # length of two sequences
     
     # Generate DP table and traceback path pointer matrix
@@ -255,7 +250,6 @@ def needle(seq1, seq2, gap_penalty=-1, align_metric='sort_consistency',seq_type=
             align2.append(j-1)
             j -= 1
         else:
-            print('in break...')
             break
 
     # Finish tracing up to the top left cell

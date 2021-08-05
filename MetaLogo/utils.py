@@ -154,17 +154,10 @@ def link_edges(edge1, edge2, ax, threed=False,x=0,y=1,z=-1, color='blue',alpha=0
     if ax is None:
         _, ax = plt.subplots(1, 1,figsize=(10,10))
     
-    #print('in link edges')
-    #print('edge1: ', edge1)
-    #print('edge2: ', edge2)
     
     p1,p2 = edge1
     p4,p3 = edge2
 
-    #ax.scatter(p1[0],p1[1])
-    #ax.scatter(p2[0],p2[1])
-    #ax.scatter(p3[0],p3[1])
-    #ax.scatter(p4[0],p4[1])
     if threed:
         patch = straight_connect((p1[x],p1[y]),
                                  (p2[x],p2[y]),

@@ -58,8 +58,6 @@ class Logo(Item):
 
 
     def generate_components(self):
-        #print(self.bits)
-        #assert len({len(seq) for seq in self.bits}) == 1 , 'seqs in one group have different lengths'
 
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
@@ -72,7 +70,6 @@ class Logo(Item):
             self.columns.append(column)
     
     def draw(self):
-        print('in logo draw')
         self.compute_positions()
         for col in self.columns:
             col.draw()
@@ -115,7 +112,6 @@ class Logo(Item):
         space_coor2 = get_coor_by_angle(self.radius + self.get_height() ,space_deg)
         #self.ax.plot([self.parent_start[0],space_coor[0]],[self.parent_start[1],space_coor[1]],zorder=-1)
 
-        #print(space_coor, space_coor2)
         self.ax.plot([space_coor[0],space_coor2[0]],[space_coor[1],space_coor2[1]],zorder=-1,color='grey')
 
         if draw_arrow == True:
@@ -362,11 +358,6 @@ class LogoGroup(Item):
 
         self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
-
-        
-        for bt in self.seq_bits:
-            print(bt, len(self.seq_bits[bt]))
-
         for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
             logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,
@@ -562,7 +553,6 @@ class LogoGroup(Item):
                 logo.set_deg(c_deg)
                 logo.set_radiation_space(head_ranges[index])
                 logo.compute_positions()
-                print(c_deg)
         else:
             start_pos = self.start_pos
             if self.logo_type == 'Circle':
@@ -602,7 +592,6 @@ class LogoGroup(Item):
                     text_width = self.logos[i].id_txt.get_window_extent(r).transformed(self.ax.transData.inverted()).width
                     logo_width = self.logos[i].get_width()
                     _range = text_width + 1 + logo_width
-                    #print('text_width,logo_width,range',text_width,logo_width, _range)
                     if _range > x_range:
                         x_range = _range
             

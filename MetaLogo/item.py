@@ -7,10 +7,8 @@ class Item():
         pass
 
     def generate_ax(self,threed=False):
-        print(threed)
         if threed:
             fig, ax = plt.subplots(1, 1,figsize=(10,10),subplot_kw=dict(projection="3d"))
-            print('xxx')
         else: 
             fig, ax = plt.subplots(1, 1,figsize=(10,10))
         self.ax = ax    
@@ -19,7 +17,6 @@ class Item():
         pass
     
     def savefig(self,filename):
-        print('in savefig')
         if (hasattr(self,'ax')) and (self.ax is not None):
             self.ax.get_figure().savefig(filename)
 
