@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from .character import Character
 from .item import Item
 from .utils import rotate

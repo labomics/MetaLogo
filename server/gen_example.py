@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import random
 if __name__ == '__main__':
     n = 10

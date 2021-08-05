@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import genericpath
 from typing import Sequence
 from matplotlib import transforms

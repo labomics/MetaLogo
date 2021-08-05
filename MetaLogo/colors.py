@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 basic_dna_color_scheme = {'A': '#009980',
         'C': '#59B3E6',

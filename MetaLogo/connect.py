@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from numpy.core.fromnumeric import product
 from scipy.stats import spearmanr,pearsonr
 import numpy as np
