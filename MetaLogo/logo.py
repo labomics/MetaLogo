@@ -426,14 +426,14 @@ class LogoGroup(Item):
         if not self.hide_version_tag:
             if self.logo_type == 'Threed':
                 #self.ax.text2D(1.005, 0, 'Created by MetaLogo')
-                self.ax.text2D(1.005, 0, 'Created by MetaLogo', transform=self.ax.transAxes,
+                self.ax.text2D(1.005, 0, 'Created by MetaLogo (v1)', transform=self.ax.transAxes,
                     horizontalalignment='left',
                     verticalalignment='bottom',
                     rotation='vertical',
                     color='#6c757d')
 
             else:
-                self.ax.text(1.005, 0, 'Created by MetaLogo',
+                self.ax.text(1.005, 0, 'Created by MetaLogo (v1)',
                     horizontalalignment='left',
                     verticalalignment='bottom',
                     rotation='vertical',

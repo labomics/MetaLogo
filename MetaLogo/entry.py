@@ -10,45 +10,35 @@ import json
 
 def main():
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--type',type=str,help='Choose the type of sequence logo',default='Horizontal')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--type',type=str,help='Choose the layout type of sequence logo',choices=['Horizontal','Circle','Radiation','Threed'],default='Horizontal')
     parser.add_argument('--input_file',type=str,help='The input file contain sequences',required=True)
-    parser.add_argument('--input_file_type',type=str,help='The type of input file',default='fasta')
-    parser.add_argument('--sequence_type',type=str,help='The type of sequences',default='dna')
+    parser.add_argument('--input_file_type',type=str,help='The type of input file', choices=['fasta','fastq'],default='fasta')
+    parser.add_argument('--sequence_type',type=str,help='The type of sequences',choices=['dna','rna','aa'],default='dna')
 
     #task
-    parser.add_argument('--task_name',type=str,help='The name to displayed on the figure',default='MetaLogo')
+    parser.add_argument('--task_name',type=str,help='The title to displayed on the figure',default='MetaLogo')
     
     #sequences
     parser.add_argument('--min_length',type=int,help='The minimum length of sequences to be included',default=8)
     parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=20)
 
-    #tmp
-    parser.add_argument('--tmp_path',type=str,help='The location to store tmp files',default='tmp/')
-
     #group
-    parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',default='length')
-    parser.add_argument('--group_info',type=str,help='The file contains group information of sequences')
-    parser.add_argument('--group_limit',type=str,help='The number of groups to be showed on the figure',default=5)
-    parser.add_argument('--select_group',type=str,help='How to choose the groups, by options: most_seqnum, least_seqnum, longest, shortest, first, last, random',default='most_seqnum')
+    parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',choices=['length','identifier'],default='length')
 
     #sort
-    parser.add_argument('--group_order',type=str,help='The order of groups',default='length')
+    parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_rev','identifier','identifier'],default='length')
 
     #color
-    parser.add_argument('--color_scheme',type=str,help='The color scheme')
-    parser.add_argument('--color_file',type=str,help='The file specify the color scheme')
-
-    #font
-    parser.add_argument('--font',type=str,help='The font of sequence characters')
+    parser.add_argument('--color_scheme',type=str,help='The color scheme',choices=['basic_dna_color','basic_rna_color','basic_aa_color'],default='basic_dna_color')
 
     #align
-    parser.add_argument('--height_algrithm',type=str,help='The algrithm for character height',default='bits')
+    parser.add_argument('--height_algrithm',type=str,help='The algrithm for character height',default='bits',choices=['bits','probabilities'])
 
     parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of adjacent sequence logo')
     parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')
 
-    parser.add_argument('--align_metric',type=str,help='The metric for align score',default='sort_consistency')
+    parser.add_argument('--align_metric',type=str,help='The metric for align score',default='dot_product',choices=['dot_product','js_divergence','cosine','entropy_bhattacharyya'])
     parser.add_argument('--connect_threshold',type=float,help='The align threshold',default=0.8)
 
     parser.add_argument('--gap_score',type=float,help='The gap score for alignment',default=-1.0)
@@ -61,16 +51,16 @@ def main():
 
     #style
 
-    parser.add_argument('--hide_version_tag',action='store_true',dest='hide_version_tag',help='If show versiontag')
+    parser.add_argument('--hide_version_tag',action='store_true',dest='hide_version_tag',help='If show version tag of MetaLogo')
 
-    parser.add_argument('--hide_left_axis',action='store_true',dest='hide_left_axis',help='If show left axis')
-    parser.add_argument('--hide_right_axis',action='store_true',dest='hide_right_axis',help='If show right axis')
-    parser.add_argument('--hide_top_axis',action='store_true',dest='hide_top_axis',help='If show top axis')
-    parser.add_argument('--hide_bottom_axis',action='store_true',dest='hide_bottom_axis',help='If show bottom axis')
+    parser.add_argument('--hide_left_axis',action='store_true',dest='hide_left_axis',help='If hide left axis')
+    parser.add_argument('--hide_right_axis',action='store_true',dest='hide_right_axis',help='If hide right axis')
+    parser.add_argument('--hide_top_axis',action='store_true',dest='hide_top_axis',help='If hide top axis')
+    parser.add_argument('--hide_bottom_axis',action='store_true',dest='hide_bottom_axis',help='If hide bottom axis')
 
-    parser.add_argument('--hide_x_ticks',action='store_true',dest='hide_x_ticks',help='If show ticks of X axis')
-    parser.add_argument('--hide_y_ticks',action='store_true',dest='hide_y_ticks',help='If show ticks of Y axis')
-    parser.add_argument('--hide_z_ticks',action='store_true',dest='hide_z_ticks',help='If show ticks of Z axis')
+    parser.add_argument('--hide_x_ticks',action='store_true',dest='hide_x_ticks',help='If hide ticks of X axis')
+    parser.add_argument('--hide_y_ticks',action='store_true',dest='hide_y_ticks',help='If hide ticks of Y axis')
+    parser.add_argument('--hide_z_ticks',action='store_true',dest='hide_z_ticks',help='If hide ticks of Z axis')
 
     parser.add_argument('--x_label', type=str, help='The label for X axis')
     parser.add_argument('--y_label', type=str, help='The label for Y axis')
@@ -92,7 +82,7 @@ def main():
     parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default=10)
 
     #output 
-    parser.add_argument('--output_dir',type=str,help='Output path of figure',required=True)
+    parser.add_argument('--output_dir',type=str,help='Output path of figure',required=True,default='.')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     
     args = parser.parse_args()
@@ -126,7 +116,7 @@ def main():
                           gap_score = args.gap_score,
                           padding_align = args.padding_align,
                           hide_version_tag=args.hide_version_tag,
-                          tmp_path = args.tmp_path, sequence_type = args.sequence_type,
+                          sequence_type = args.sequence_type,
                           height_algrithm=args.height_algrithm
                           )
     logogroup.draw()
