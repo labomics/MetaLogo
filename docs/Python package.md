@@ -294,6 +294,8 @@ Meanwhile, you could also pass ax to LogoGroup init function when you create Log
 
     paras = {
         'height_algrithm':'probabilities',
+        'align':True,
+        'padding_align':True,
         'task_name':'',
         'xlabel':'',
         'ylabel':'',
