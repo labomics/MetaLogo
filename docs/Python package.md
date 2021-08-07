@@ -233,14 +233,17 @@ Below are a simple example.
 
 After install MetaLogo as a python package, you can import MetaLogo into your scripts or notebook easily. Below is a simple example.
 
+```python
     from MetaLogo import logo
     sequences = [['seq1','ATACAGATACACATCACAG'],['seq2','ATACAGAGATACCAACAGAC'],['seq3','ATACAGAGTTACCCACGGAC']]
     lg = logo.LogoGroup(sequences,height_algrithm='probabilities')
     lg.savefig('test.png')
+```
 
 LogoGroup recieves nearly same parameters as standalone MetaLogo entrypoint we decribed above.
 
-    LogoGroup(self,  seqs, group_order='length', group_strategy='length', start_pos = (0,0), 
+```python
+    LogoGroup(self,  seqs, ax=None, group_order='length', group_strategy='length', start_pos = (0,0), 
               logo_type = 'Horizontal', init_radius=1, 
               logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
               align = True, align_metric='sort_consistency', connect_threshold=0.8, 
@@ -252,6 +255,7 @@ LogoGroup recieves nearly same parameters as standalone MetaLogo entrypoint we d
               figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
               sequence_type = 'dna', height_algrithm = 'bits',
               *args, **kwargs):
+```
  
  Only two differences are the way you pass sequences and color schemes. For sequences, you need to pass a sequence array into LogoGroup as the first positional parameter. In this sequence array, each item is a tuple of sequence name and its dna or protein sequence.  For color scheme, here you need to pass a python dict into LogoGroup rather than any name string or json formatted dict. 
 
@@ -261,10 +265,49 @@ For the structure of MetaLogo, the following figure indicate the class inheritan
 
 When you using MetaLogo in your project, you could get the ax object of matplotlib as follows:
 
+```python
     lg = logo.LogoGroup(sequences,height_algrithm='probabilities')
     lg.draw()
     ax = logo.ax
+```
 
-After that, you could directly operate on the ax object.
+Meanwhile, you could also pass ax to LogoGroup init function when you create LogoGroup instance. Blow is a example.
+```python
+    import matplotlib.pyplot as plt
+    from MetaLogo import logo
 
-Blow is a example.
+    sequences = [
+                    ['seq1','ATACAGATACACATCACAG'],
+                    ['seq2','ATGCAGACACAGATCATAG'],
+                    ['seq3','ATACAGAGATACCAACAGAC'],
+                    ['seq4','ATACAGAGTTACCCACGGAC'],
+                    ['seq5','TTGGAGCGATGCGCCCGGACATC'],
+                    ['seq6','TTGGAGCAAAGGCCGCGAATATC'],
+                    ['seq7','CTAGAGATGC'],
+                    ['seq8','ATAAACAAAC'],
+                ]
+
+    ax1 = plt.subplot(221)
+    ax2 = plt.subplot(222)
+    ax3 = plt.subplot(223)
+    ax4 = plt.subplot(224,projection='3d')
+
+    paras = {
+        'height_algrithm':'probabilities',
+        'task_name':'',
+        'xlabel':'',
+        'ylabel':'',
+        'hide_version_tag':True
+    }
+    lg_horizontal = logo.LogoGroup(sequences,logo_type='Horizontal',ax=ax1,**paras)
+    lg_circle = logo.LogoGroup(sequences,logo_type='Circle',ax=ax2,**paras)
+    lg_radiation = logo.LogoGroup(sequences,logo_type='Radiation',ax=ax3,**paras)
+    lg_3d = logo.LogoGroup(sequences,logo_type='Threed',ax=ax4,**paras)
+
+    lg_horizontal.draw()
+    lg_circle.draw()
+    lg_radiation.draw()
+    lg_3d.draw()
+```
+
+![subplot](../pngs/subplot.PNG) 

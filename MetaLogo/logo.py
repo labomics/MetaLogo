@@ -189,7 +189,7 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seqs, group_order='length', group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
+    def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
@@ -261,7 +261,10 @@ class LogoGroup(Item):
 
         self.compute_bits()
 
-        self.generate_ax(threed=(self.logo_type=='Threed'))
+        if ax is None:
+            self.generate_ax(threed=(self.logo_type=='Threed'))
+        else:
+            self.ax = ax
         self.generate_components()
     
     def compute_bits(self):
