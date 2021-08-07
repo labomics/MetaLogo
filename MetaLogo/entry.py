@@ -27,10 +27,11 @@ def main():
     parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',choices=['length','identifier'],default='length')
 
     #sort
-    parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_rev','identifier','identifier'],default='length')
+    parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_reverse','identifier','identifier_reverse'],default='length')
 
     #color
     parser.add_argument('--color_scheme',type=str,help='The color scheme',choices=['basic_dna_color','basic_rna_color','basic_aa_color'],default='basic_dna_color')
+    parser.add_argument('--color_scheme_json',type=str,help='The json file of color scheme',default=None)
 
     #align
     parser.add_argument('--height_algrithm',type=str,help='The algrithm for character height',default='bits',choices=['bits','probabilities'])
@@ -78,11 +79,11 @@ def main():
     parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=10)
     parser.add_argument('--figure_size_y',type=float,help='The height of figure',default=10)
 
-    parser.add_argument('--align_color',type=str,help='The color of alignment',default=10)
-    parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default=10)
+    parser.add_argument('--align_color',type=str,help='The color of alignment',default='blue')
+    parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default='0.2')
 
     #output 
-    parser.add_argument('--output_dir',type=str,help='Output path of figure',required=True,default='.')
+    parser.add_argument('--output_dir',type=str,help='Output path of figure',default='.')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
     
     args = parser.parse_args()
@@ -90,16 +91,11 @@ def main():
 
     seqs = read_file(args.input_file, args.input_file_type, args.min_length, args.max_length)
 
-    try:
+    if args.color_scheme_json is not None:
+        with open(args.color_scheme_json) as jsinf:
+            color_scheme = json.load(jsinf)
+    else:
         color_scheme = get_color_scheme(args.color_scheme)
-        if color_scheme is None:
-            parsed_scheme = json.loads(args.color_scheme)
-            if type(parsed_scheme) ==  type({}):
-                color_scheme = parsed_scheme
-            else:
-                color_scheme = get_color_scheme('basic_aa_color')
-    except Exception as e:
-        color_scheme = get_color_scheme('basic_aa_color')
     
 
     logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
@@ -121,11 +117,12 @@ def main():
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
+    print(f'{args.output_dir}/{args.output_name}',' saved')
     if not args.output_name.endswith('.png'):
         base = '.'.join(args.output_name.split('.')[:-1]) 
         logogroup.savefig(f'{args.output_dir}/{base}.png')
+        print(f'{args.output_dir}/{base}.png', ' saved')
     
-
 
 if __name__ == '__main__':
     main()

@@ -31,7 +31,7 @@ def read_file(filename, filetype, min_length, max_length):
                     seqname = f'{line[1:]} {ith}'
                     seqnames.append(seqname)
                 else:
-                    seq_dict[seqname]  = seq_dict.get(seqname,'') + line
+                    seq_dict[seqname]  = seq_dict.get(seqname,'') + line.upper()
     elif filetype.lower() == ['fastq','fq']:
         with open(filename,'r') as inpf:
             num = -1
@@ -43,7 +43,7 @@ def read_file(filename, filetype, min_length, max_length):
                     seqname = line[1:]
                     seqnames.append(seqname)
                 if num%4 == 1:
-                    seq_dict[seqname] = line
+                    seq_dict[seqname] = line.upper()
     else:
         pass
 
