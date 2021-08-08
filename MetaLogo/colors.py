@@ -13,30 +13,29 @@ basic_rna_color_scheme = {'A': '#009980',
         '-': 'grey'}
 
 
-basic_aa_color_scheme = {
-    "A":"#CCFF00",
-    "C":"#FFFF00",
-    "D":"#FF0000",
-    "E":"#FF0066",
-    "F":"#00FF66",
-    "G":"#FF9900",
-    "H":"#0066FF",
-    "I":"#66FF00",
-    "K":"#6600FF",
-    "L":"#33FF00",
-    "M":"#00FF00",
-    "N":"#CC00FF",
-    "P":"#FFCC00",
-    "Q":"#FF00CC",
-    "R":"#0000FF",
-    "S":"#FF3300",
-    "T":"#FF6600",
-    "V":"#99FF00",
-    "W":"#00CCFF",
-    "Y":"#00FFCC",
-    '-':'grey'
-}
-
+basic_aa_color_scheme ={ #https://jbloomlab.github.io/dmslogo/dmslogo.colorschemes.html
+        'A': 'black',
+        'C': 'green',
+        'D': 'red',
+        'E': 'red',
+        'F': 'black',
+        'G': 'green',
+        'H': 'blue',
+        'I': 'black',
+        'K': 'blue',
+        'L': 'black',
+        'M': 'black',
+        'N': 'pink',
+        'P': 'black',
+        'Q': 'pink',
+        'R': 'blue',
+        'S': 'green',
+        'T': 'green',
+        'V': 'black',
+        'W': 'black',
+        'Y': 'green'
+    }
+ 
 def get_color_scheme(scheme):
     if scheme == 'basic_dna_color':
         return basic_dna_color_scheme
