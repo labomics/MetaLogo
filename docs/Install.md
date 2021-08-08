@@ -30,6 +30,20 @@ MetaLogo also provides webserver to conviniently make sequence logos. The MetaLo
 
     $pip install .[webserver]
 
+User can specify several options for MetaLogo webserver in server.toml file.
+
+    $ cat server.toml 
+        # This is a TOML document
+        title = "MetaLogo webserver configure example"
+        example_path = 'examples'  #directory for server to load exammple sequences from
+        output_png_path = 'figure_output'  #directory to save figures
+        output_fa_path = 'sequence_input'  #directory to save sequences
+        config_path = 'configs' #directory to save configures for sequnce logos
+        log_path = 'logs'  #directory to save logs
+        max_seq_limit = 50000  
+        max_seq_len = 200
+        max_input_size = 5242880  #1024*1024*5, 5MB
+
 Then you could run a development Dash webserver with Debug mode on:
 
     $cat server.dev.sh

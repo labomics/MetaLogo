@@ -246,7 +246,8 @@ seqinput_form = html.Div([
         value='',
         rows=5,
         style={'width': '100%'},
-        id = 'seq_textarea'
+        id = 'seq_textarea',
+        persistence=True
     ),  
     html.Label(f'Or upload a file (<={(MAX_INPUT_SIZE/1024)/1024}MB)'),
     html.Label('',id='uploaded_label2',style={"color":"orange"}),

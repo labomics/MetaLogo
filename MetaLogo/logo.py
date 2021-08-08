@@ -307,18 +307,19 @@ class LogoGroup(Item):
 
         if self.align and self.padding_align:
 
-            if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
-                probs_list = [self.probs[gid] for gid in self.group_ids]
-                self.scores_mat = get_score_mat(probs_list,align_metric=self.align_metric,gap_score=self.gap_score)
-                new_probs_list = msa(probs_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
-                self.probs = dict(zip(self.group_ids, new_probs_list))
-            else:
-                seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
-                self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
-                new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
-                self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
+            if len(self.group_ids) > 1:
+                if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
+                    probs_list = [self.probs[gid] for gid in self.group_ids]
+                    self.scores_mat = get_score_mat(probs_list,align_metric=self.align_metric,gap_score=self.gap_score)
+                    new_probs_list = msa(probs_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                    self.probs = dict(zip(self.group_ids, new_probs_list))
+                else:
+                    seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
+                    self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
+                    new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                    self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
             
-            self.align_probs_bits()
+                self.align_probs_bits()
 
 
     
