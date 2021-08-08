@@ -1,5 +1,3 @@
-# Tutorial
-
 ## Introduction
 
 MetaLogo is a tool for making sequence logos. A sequence logo is a graphical representation of the sequence conservation of nucleotides or amino acids ([From wikipedia](https://en.wikipedia.org/wiki/Sequence_logo)). For each site, the base (nucleotides or amino acids) frequencies or information contents ([Thomas, 1986](https://pubmed.ncbi.nlm.nih.gov/3525846/)) are calculated. The higher the base, the more conservative it is.

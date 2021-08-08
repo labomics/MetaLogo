@@ -131,7 +131,7 @@ alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S
 
 nav = dbc.Nav(
     [
-        dbc.NavItem(dbc.NavLink("Tutorial",  href="#",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Tutorial",  href="https://github.com/labomics/MetaLogo_wiki/wiki/Web-server",target='_blank')),
         dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
         dbc.NavItem(dbc.NavLink("Paper",  href="#",target='_blank')),
         dbc.NavItem(dbc.NavLink("Lab",  href="http://omicsnet.org",target='_blank')),
@@ -242,7 +242,7 @@ seqinput_form = html.Div([
     html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
                 html.A(" example2",href='#input_panel',id="load_example2")]),
     dcc.Textarea(
-        placeholder='Paste sequences in choosen input format',
+        placeholder='Paste sequences in chosen input format',
         value='',
         rows=5,
         style={'width': '100%'},
