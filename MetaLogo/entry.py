@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=20)
 
     #group
-    parser.add_argument('--group_strategy',type=str,help='The strategy to seperate sequences into groups',choices=['length','identifier'],default='length')
+    parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['length','identifier'],default='length')
 
     #sort
     parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_reverse','identifier','identifier_reverse'],default='length')
@@ -34,7 +34,7 @@ def main():
     parser.add_argument('--color_scheme_json',type=str,help='The json file of color scheme',default=None)
 
     #align
-    parser.add_argument('--height_algrithm',type=str,help='The algrithm for character height',default='bits',choices=['bits','probabilities'])
+    parser.add_argument('--height_algorithm',type=str,help='The algorithm for character height',default='bits',choices=['bits','probabilities'])
 
     parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of adjacent sequence logo')
     parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')
@@ -113,7 +113,7 @@ def main():
                           padding_align = args.padding_align,
                           hide_version_tag=args.hide_version_tag,
                           sequence_type = args.sequence_type,
-                          height_algrithm=args.height_algrithm
+                          height_algorithm=args.height_algorithm
                           )
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')

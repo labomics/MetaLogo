@@ -149,7 +149,7 @@ toppanel = html.Div(
     ]
 )
 about_md = dcc.Markdown('''
-**Metalogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can integrate the logo images of sequece of different lengths, and align them through algorithms, so as to display the samples in a more macroscopic view.
+**Metalogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can integrate the logo images of sequence of different lengths, and align them through algorithms, so as to display the samples in a more macroscopic view.
 
 Users can choose to group sequences by length, or divide sequences of the same length into multiple groups. For each group, metalogo will draw a sequence logo separately. At the logo level, alignment is performed through a modified version of sequence alignment and multiple sequence alignment algorithms.
 
@@ -304,11 +304,11 @@ input_panel = dbc.Card(
     ],style={'marginBottom':'10px'},id='input_panel'
 )
 
-height_algrithm_dropdown = dbc.FormGroup(
+height_algorithm_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Height Algrithm", html_for="dropdown"),
+        dbc.Label("Height Algorithm", html_for="dropdown"),
         dcc.Dropdown(
-            id="height_algrithm_dropdown",
+            id="height_algorithm_dropdown",
             options=[
                 {"label": "Bits", "value": 'bits'},
                 {"label": "Probabilities", "value": 'probabilities'}
@@ -386,11 +386,11 @@ style_submit =  html.Div(
     style={'marginTop':'10px','textAlign':'right'}
 )
 
-algrithm_panel = dbc.Card([
-    dbc.CardHeader("Step2. Choose Algrithm"),
+algorithm_panel = dbc.Card([
+    dbc.CardHeader("Step2. Choose Algorithm"),
     dbc.CardBody([
         dbc.Row([
-            dbc.Col(height_algrithm_dropdown),
+            dbc.Col(height_algorithm_dropdown),
             dbc.Col(align_dropdown),
             dbc.Col(padding_align_dropdown),
         ]),
@@ -846,7 +846,7 @@ app.layout = dbc.Container(children=[
         html.Hr(),
         about_panel,
         input_panel,
-        algrithm_panel,
+        algorithm_panel,
         layout_panel,
         style_panel,
         result_panel,
@@ -1086,7 +1086,7 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
-        State('height_algrithm_dropdown','value'),
+        State('height_algorithm_dropdown','value'),
         State('hide_version_checklist','value'),
         State('padding_align_dropdown','value'),
         State('gap_score','value'),
@@ -1126,7 +1126,7 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
-            height_algrithm_dropdown,
+            height_algorithm_dropdown,
             hide_version_checklist,
             padding_align,
             gap_score,
@@ -1223,7 +1223,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           figure_size_x=width_input, figure_size_y=height_input,
                           char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
                           gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
-                          sequence_type = sequence_type, height_algrithm=height_algrithm_dropdown
+                          sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

@@ -198,7 +198,7 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-                 sequence_type = 'dna', height_algrithm = 'bits',
+                 sequence_type = 'dna', height_algorithm = 'bits',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -219,7 +219,7 @@ class LogoGroup(Item):
         self.color = color
         self.task_name = task_name
 
-        self.height_algrithm = height_algrithm
+        self.height_algorithm = height_algorithm
 
         self.align_color = align_color
         self.align_alpha = align_alpha
@@ -274,9 +274,9 @@ class LogoGroup(Item):
 
         self.probs = compute_prob(self.groups)
 
-        if self.height_algrithm == 'probabilities':
+        if self.height_algorithm == 'probabilities':
             self.seq_bits = self.probs
-        elif self.height_algrithm == 'bits':
+        elif self.height_algorithm == 'bits':
             self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
 
 
@@ -293,7 +293,7 @@ class LogoGroup(Item):
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
         
-        if self.height_algrithm == 'bits':
+        if self.height_algorithm == 'bits':
             to_del_ids = []
             for gid in self.group_ids:
                 total = sum([sum([x[1] for x in col]) for col in self.seq_bits[gid]])

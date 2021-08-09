@@ -6,7 +6,7 @@ First you need to visit http://metalogo.omicsnet.org (could be http://localhost:
 
 ![server_top](../pngs/server_top.PNG)
 
-Just as the top menu indciated, you could visit the tutorial, python packages, Journal paper, our Lab website and email us from the top menu.
+Just as the top menu indicated, you could visit the tutorial, python packages, Journal paper, our Lab website and email us from the top menu.
 
 ## Step1. Input Panel
 
@@ -31,21 +31,21 @@ Users can paste sequences into the textarea or upload a sequence file. Note that
 
 Users can simply load examples by clicking **Load example** or **example2** to load example sequences into textarea, then test and get familiar with MetaLogo.
 
-In Input panel, you can directly submit the job request and just skip the rest parameter settings to get a Logo with default layout and algrithms.
+In Input panel, you can directly submit the job request and just skip the rest parameter settings to get a Logo with default layout and algorithms.
 
-## Step2. Algrithm Panel
+## Step2. Algorithm Panel
 
-![algrithm_panel](../pngs/algrithm_panel.PNG)
+![algorithm_panel](../pngs/algorithm_panel.PNG)
 
-In this panel, users can specify the algrithms to make logos and logo alignment. Before specify parameters in this section, users need to check the Alignment tutorial first.
+In this panel, users can specify the algorithms to make logos and logo alignment. Before specify parameters in this section, users need to check the Alignment tutorial first.
 
-For **Height Algrithm**, user can choose *Bits* or *Probabilities*, which tells MetaLogo how to display sequence logos in the final plot. 
+For **Height Algorithm**, user can choose *Bits* or *Probabilities*, which tells MetaLogo how to display sequence logos in the final plot. 
 
 For **Alignment?**, user can choose *Yes* or *No*, which tells MetaLogo whether to align adjacent sequence logos from different groups.
 
 For **Global Alignment with Padding?**, user can choose *Yes* or *No*, which tells MetaLogo whether to make a global multiple logos alignment and align all logo to a same length with padding inserted into logos.
 
-For **Score Metric**, user can choose from *Dot Production*, *Jensen Shannon*, *Cosine* and *Entropy weighted Bhattacharyya Coefficient*. For explainations please check the Alignment tutorial first. 
+For **Score Metric**, user can choose from *Dot Production*, *Jensen Shannon*, *Cosine* and *Entropy weighted Bhattacharyya Coefficient*. For explanations please check the Alignment tutorial first. 
 
 For **Gap Penalty**, user can specify the gap penalty in the logo alignment process. If you set a small penalty, like 0, MetaLogo will insert gaps as much as possible. In contrast, if you set a large penalty, like -10, MetaLogo will hate gaps and avoid them as much as possible. Below is a explained figure.
 
@@ -89,4 +89,5 @@ For **Download Format**, MetaLogo provides *PNG*, *PDF*, *PS*, *EPS* and *SVG* f
 
 ## Result Panel
 
+![result_panel](../pngs/result_panel.PNG)
 In this Panel, MetaLogo displays result figure and download button for user to download their request format of figure.

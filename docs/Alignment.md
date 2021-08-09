@@ -24,7 +24,7 @@ Another similarity measurement is the Bhattacharyya coefficient. The Bhattachary
 
 ![bha](../pngs/bha.PNG)
 
-However, we should consider the entropy of vectors when we meaure similarity based on probabilities. If one probability vector is [['A',0.25],['T',0.25],['G',0.25],['C',0.25]], which means on this position, each base have a 1/4 frequency. In this scenario, bases are randomly distributed here on this position. Two vectors like this could get a high similarity, which means no conservation at all. Thus, we adjust Bhattacharyya coefficient by considering entropy of vector to it. Below is codes for entropy adjusted Bhattacharyya coefficient.
+However, we should consider the entropy of vectors when we measure similarity based on probabilities. If one probability vector is [['A',0.25],['T',0.25],['G',0.25],['C',0.25]], which means on this position, each base have a 1/4 frequency. In this scenario, bases are randomly distributed here on this position. Two vectors like this could get a high similarity, which means no conservation at all. Thus, we adjust Bhattacharyya coefficient by considering entropy of vector to it. Below is codes for entropy adjusted Bhattacharyya coefficient.
 
 ![adjusted_bc](../pngs/adjusted_bc.PNG)
 

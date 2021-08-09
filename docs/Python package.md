@@ -26,7 +26,7 @@ Below are the parameters you can pass into MetaLogo.
                     [--group_strategy {length,identifier}]
                     [--group_order {length,length_reverse,identifier,identifier_reverse}]
                     [--color_scheme {basic_dna_color,basic_rna_color,basic_aa_color}]
-                    [--height_algrithm {bits,probabilities}] [--align]
+                    [--height_algorithm {bits,probabilities}] [--align]
                     [--padding_align]
                     [--align_metric {dot_product,js_divergence,cosine,entropy_bhattacharyya}]
                     [--connect_threshold CONNECT_THRESHOLD]
@@ -66,14 +66,14 @@ Below are the parameters you can pass into MetaLogo.
                             The maximum length of sequences to be included
                             (default: 20)
       --group_strategy {length,identifier}
-                            The strategy to seperate sequences into groups
+                            The strategy to separate sequences into groups
                             (default: length)
       --group_order {length,length_reverse,identifier,identifier_reverse}
                             The order of groups (default: length)
       --color_scheme {basic_dna_color,basic_rna_color,basic_aa_color}
                             The color scheme (default: basic_dna_color)
-      --height_algrithm {bits,probabilities}
-                            The algrithm for character height (default: bits)
+      --height_algorithm {bits,probabilities}
+                            The algorithm for character height (default: bits)
       --align               If show alignment of adjacent sequence logo (default:
                             False)
       --padding_align       If padding logos to make multiple logo alignment
@@ -127,10 +127,10 @@ Below are the parameters you can pass into MetaLogo.
 Most of the parameters are easy to understand, there are several parameters need to be explained here.
 
       --group_strategy {length,identifier}
-                            The strategy to seperate sequences into groups
+                            The strategy to separate sequences into groups
                             (default: length)
 
-This parameter specifiy the way you group sequences. In default, MetaLogo groups sequences by lengths. However, you could still group sequences by other strategy.  MetaLogo can identify group information of sequences from their sequnce name. Blow is a example:
+This parameter specify the way you group sequences. In default, MetaLogo groups sequences by lengths. However, you could still group sequences by other strategy.  MetaLogo can identify group information of sequences from their sequence name. Blow is a example:
 
     >seq1 group@1-fisrtgroup
     AATATACAGATACCCATAC
@@ -163,8 +163,8 @@ This parameter specify the color scheme for sequence logo. There are four built-
 ![custom_color](../pngs/custom_color.PNG)
 
 
-    --height_algrithm {bits,probabilities}
-                      The algrithm for character height (default: bits)
+    --height_algorithm {bits,probabilities}
+                      The algorithm for character height (default: bits)
 
 This parameter tells MetaLogo to use probabilities or information contents for y axis in sequence logos. If there is only one sequence in one group, the information contents of each positions equal to zeros because error correction. This is the reason why we sometimes use probabilities as height in our tutorial. 
 
@@ -181,13 +181,13 @@ This parameter will make MetaLogo perform multiple logo alignment for all the gr
     --align_metric {dot_product,js_divergence,cosine,entropy_bhattacharyya}
                     The metric for align score (default: dot_product)
 
-This parameter specify the algrithm to measure position similarities between sequence logos. Detailed information could be found in our paper.
+This parameter specify the algorithm to measure position similarities between sequence logos. Detailed information could be found in our paper.
 
 
     --connect_threshold CONNECT_THRESHOLD
                         The align threshold (default: 0.8)
 
-This parameter specify the threshold to connect two postions between two adjcent groups according to logo alignment. If this threshold is positive (>0), MetaLogo will connect two positions if their similarity score is larger than the threshold. If this threshold is negative (>0), MetaLogo will connect two positions if their similarity score is in the top (ratio\*100)% of all pairs, in which ratio equals to -1\*threshold.
+This parameter specify the threshold to connect two positions between two adjacent groups according to logo alignment. If this threshold is positive (>0), MetaLogo will connect two positions if their similarity score is larger than the threshold. If this threshold is negative (>0), MetaLogo will connect two positions if their similarity score is in the top (ratio\*100)% of all pairs, in which ratio equals to -1\*threshold.
 
     --align_color ALIGN_COLOR
                           The color of alignment (default: 10)
@@ -236,11 +236,11 @@ After install MetaLogo as a python package, you can import MetaLogo into your sc
 ```python
     from MetaLogo import logo
     sequences = [['seq1','ATACAGATACACATCACAG'],['seq2','ATACAGAGATACCAACAGAC'],['seq3','ATACAGAGTTACCCACGGAC']]
-    lg = logo.LogoGroup(sequences,height_algrithm='probabilities')
+    lg = logo.LogoGroup(sequences,height_algorithm='probabilities')
     lg.savefig('test.png')
 ```
 
-LogoGroup recieves nearly same parameters as standalone MetaLogo entrypoint we decribed above.
+LogoGroup recieves nearly same parameters as standalone MetaLogo entry point we described above.
 
 ```python
     LogoGroup(self,  seqs, ax=None, group_order='length', group_strategy='length', start_pos = (0,0), 
@@ -253,7 +253,7 @@ LogoGroup recieves nearly same parameters as standalone MetaLogo entrypoint we d
               hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
               title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
               figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-              sequence_type = 'dna', height_algrithm = 'bits',
+              sequence_type = 'dna', height_algorithm = 'bits',
               *args, **kwargs):
 ```
  
@@ -266,7 +266,7 @@ For the structure of MetaLogo, the following figure indicate the class inheritan
 When you using MetaLogo in your project, you could get the ax object of matplotlib as follows:
 
 ```python
-    lg = logo.LogoGroup(sequences,height_algrithm='probabilities')
+    lg = logo.LogoGroup(sequences,height_algorithm='probabilities')
     lg.draw()
     ax = logo.ax
 ```
@@ -293,7 +293,7 @@ Meanwhile, you could also pass ax to LogoGroup init function when you create Log
     ax4 = plt.subplot(224,projection='3d')
 
     paras = {
-        'height_algrithm':'probabilities',
+        'height_algorithm':'probabilities',
         'align':True,
         'padding_align':True,
         'task_name':'',
