@@ -350,7 +350,6 @@ align_metric = dbc.FormGroup(
             id="score_metric",
             options=[
                 {"label": "Dot Production", "value": 'dot_product'},
-                {"label": "Aligned Dot Production", "value": 'sort_consistency'},
                 {"label": "Jensen Shannon", "value": 'js_divergence'},
                 {"label": "Cosine", "value": 'cosine'},
                 {"label": "Entropy weighted Bhattacharyya Coefficient", "value": 'entropy_bhattacharyya'},
