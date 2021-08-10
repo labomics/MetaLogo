@@ -597,12 +597,13 @@ color_scheme_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="color_dropdown",
             options=[
+                {"label": "Auto", "value": 'auto'},
                 {"label": "DNA Basic", "value": 'basic_dna_color'},
                 {"label": "RNA Basic", "value": 'basic_rna_color'},
                 {"label": "Protein Basic", "value": 'basic_aa_color'},
                 {"label": "Custom (click color pickers to choose)", "value": 'custom'},
             ],
-            value='basic_dna_color'
+            value='auto'
         ),
     ]
 )
@@ -889,7 +890,7 @@ def load_example(nclicks1,nclicks2,contents):
             #fa = 'examples/example2.fa'
             fa = f'{EXAMPLE_PATH}/ectf.fa'
         if example_id == 'load_example2':
-            fa = f'{EXAMPLE_PATH}/example3.fa'
+            fa = f'{EXAMPLE_PATH}/cdr3.fa'
         if os.path.exists(fa):
             f = open(fa,'r')
             return ''.join(f.readlines())
@@ -1169,10 +1170,18 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     seq_file = f"{FA_PATH}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 
-    if color_dropdown != 'custom':
-        color_scheme = get_color_scheme(color_dropdown)
+    if color_dropdown.lower() == 'auto':
+        if sequence_type == 'aa':
+            color_scheme = get_color_scheme('basic_aa_color')
+        elif sequence_type == 'dna':
+            color_scheme = get_color_scheme('basic_dna_color')
+        elif sequence_type == 'rna':
+            color_scheme = get_color_scheme('basic_rna_color')
     else:
-        color_scheme = dict(zip(alphabets_list,args))
+        if color_dropdown != 'custom':
+            color_scheme = get_color_scheme(color_dropdown)
+        else:
+            color_scheme = dict(zip(alphabets_list,args))
     
     color_scheme['scheme_name'] = color_dropdown
 

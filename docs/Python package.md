@@ -272,9 +272,12 @@ When you using MetaLogo in your project, you could get the ax object of matplotl
 ```
 
 Meanwhile, you could also pass ax to LogoGroup init function when you create LogoGroup instance. Blow is a example.
+
 ```python
+
     import matplotlib.pyplot as plt
     from MetaLogo import logo
+    from MetaLogo.colors import basic_dna_color_scheme,basic_aa_color_scheme,basic_rna_color_scheme
 
     sequences = [
                     ['seq1','ATACAGATACACATCACAG'],
@@ -293,23 +296,28 @@ Meanwhile, you could also pass ax to LogoGroup init function when you create Log
     ax4 = plt.subplot(224,projection='3d')
 
     paras = {
-        'height_algorithm':'probabilities',
-        'align':True,
+        'height_algrithm':'probabilities',
         'padding_align':True,
         'task_name':'',
-        'xlabel':'',
-        'ylabel':'',
+        'x_label':'',
+        'y_label':'',
+        'z_label':'',
+        'hide_x_ticks':True,
+        'hide_y_ticks':True,
+        'hide_z_ticks':True,
         'hide_version_tag':True
     }
-    lg_horizontal = logo.LogoGroup(sequences,logo_type='Horizontal',ax=ax1,**paras)
-    lg_circle = logo.LogoGroup(sequences,logo_type='Circle',ax=ax2,**paras)
-    lg_radiation = logo.LogoGroup(sequences,logo_type='Radiation',ax=ax3,**paras)
-    lg_3d = logo.LogoGroup(sequences,logo_type='Threed',ax=ax4,**paras)
+    custom_color = {'A':'red','T':'blue','G':'red','C':'black'}
+    lg_horizontal = logo.LogoGroup(sequences,logo_type='Horizontal',color=basic_aa_color_scheme, ax=ax1,**paras)
+    lg_circle = logo.LogoGroup(sequences,logo_type='Circle',ax=ax2,color=basic_dna_color_scheme,**paras)
+    lg_radiation = logo.LogoGroup(sequences,logo_type='Radiation',color=basic_rna_color_scheme, ax=ax3,**paras)
+    lg_3d = logo.LogoGroup(sequences,logo_type='Threed',color=custom_color, ax=ax4,**paras)
 
     lg_horizontal.draw()
     lg_circle.draw()
     lg_radiation.draw()
     lg_3d.draw()
+
 ```
 
 ![subplot](../pngs/subplot.PNG) 
