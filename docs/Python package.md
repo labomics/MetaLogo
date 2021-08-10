@@ -21,7 +21,7 @@ Below are the parameters you can pass into MetaLogo.
 
     usage: metalogo [-h] [--type {Horizontal,Circle,Radiation,Threed}]
                     --input_file INPUT_FILE [--input_file_type {fasta,fastq}]
-                    [--sequence_type {dna,rna,aa}] [--task_name TASK_NAME]
+                    [--sequence_type {auto,dna,rna,aa}] [--task_name TASK_NAME]
                     [--min_length MIN_LENGTH] [--max_length MAX_LENGTH]
                     [--group_strategy {length,identifier}]
                     [--group_order {length,length_reverse,identifier,identifier_reverse}]
@@ -54,8 +54,8 @@ Below are the parameters you can pass into MetaLogo.
                             The input file contain sequences (default: None)
       --input_file_type {fasta,fastq}
                             The type of input file (default: fasta)
-      --sequence_type {dna,rna,aa}
-                            The type of sequences (default: dna)
+      --sequence_type {auto,dna,rna,aa}
+                            The type of sequences (default: auto)
       --task_name TASK_NAME
                             The title to displayed on the figure (default:
                             MetaLogo)

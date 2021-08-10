@@ -36,7 +36,7 @@ def get_score_mat(bits_array, align_metric = 'sort_consistency',  gap_score=-1, 
 
 def msa(bits_array, scores_mat, align_metric = 'sort_consistency', gap_score=-1, seq_type='dna'):
 
-    #find the nearast couple
+    #find the nearest couple
     max_score = max([max(scores_mat[x].values()) for x in scores_mat])
     findij = False
     for i in scores_mat:

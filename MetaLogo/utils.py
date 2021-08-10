@@ -210,3 +210,26 @@ def text3d(ax, xyz, s, zdir="z", size=None, angle=0, usetex=False, **kwargs):
     p1 = PathPatch(trans.transform_path(text_path), **kwargs)
     ax.add_patch(p1)
     art3d.pathpatch_2d_to_3d(p1, z=z1, zdir=zdir)
+
+def detect_seq_type(seqs):
+    
+
+    dna_set = {'A','T','G','C','N','-'}
+    rna_set = {'A','U','G','C','N','-'}
+    protein_set = {'A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-'}
+
+    base_set = set()
+    for _,seq in seqs:
+        base_set |= set(seq)
+
+
+    seq_type = 'aa'
+    if base_set.issubset(dna_set):
+        seq_type = 'dna' 
+    elif base_set.issubset(rna_set):
+        seq_type = 'rna' 
+    elif base_set.issubset(protein_set):
+        seq_type = 'aa' 
+    
+    return seq_type
+    

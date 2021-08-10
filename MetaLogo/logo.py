@@ -22,9 +22,8 @@ from numpy import radians as rad
 import math
 import re
 
-from .utils import grouping,check_group
+from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
-#from .utils import compute_bits
 from .colors import get_color_scheme
 
 basic_dna_color = get_color_scheme('basic_dna_color')
@@ -198,7 +197,7 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-                 sequence_type = 'dna', height_algorithm = 'bits',
+                 sequence_type = 'auto', height_algorithm = 'bits',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -254,7 +253,10 @@ class LogoGroup(Item):
 
         self.hide_version_tag = hide_version_tag
 
-        self.sequence_type = sequence_type
+        if sequence_type == 'auto':
+            self.sequence_type = detect_seq_type(self.seqs)
+        else:
+            self.sequence_type = sequence_type
 
         self.logos = []
 
@@ -310,16 +312,18 @@ class LogoGroup(Item):
             if len(self.group_ids) > 1:
                 if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
                     probs_list = [self.probs[gid] for gid in self.group_ids]
-                    self.scores_mat = get_score_mat(probs_list,align_metric=self.align_metric,gap_score=self.gap_score)
-                    new_probs_list = msa(probs_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                    self.scores_mat = get_score_mat(probs_list,align_metric=self.align_metric,gap_score=self.gap_score,seq_type=self.sequence_type)
+                    new_probs_list = msa(probs_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score,seq_type=self.sequence_type)
                     self.probs = dict(zip(self.group_ids, new_probs_list))
                 else:
                     seq_bits_list = [self.seq_bits[gid] for gid in self.group_ids]
-                    self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score)
-                    new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score)
+                    self.scores_mat = get_score_mat(seq_bits_list,align_metric=self.align_metric,gap_score=self.gap_score,seq_type=self.sequence_type)
+                    new_seq_bits_list = msa(seq_bits_list,self.scores_mat,align_metric=self.align_metric,gap_score=self.gap_score,seq_type=self.sequence_type)
                     self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
             
                 self.align_probs_bits()
+
+            
 
 
     
@@ -454,10 +458,10 @@ class LogoGroup(Item):
     def draw_connect(self):
         if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
             self.connected = get_connect([self.probs[gid] for gid in self.group_ids], self.align_metric, 
-                                       gap_score=self.gap_score,msa_input=self.padding_align)
+                                       gap_score=self.gap_score,msa_input=self.padding_align,seq_type=self.sequence_type)
         else:
             self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
-                                       gap_score=self.gap_score,msa_input=self.padding_align)
+                                       gap_score=self.gap_score,msa_input=self.padding_align,seq_type=self.sequence_type)
         if self.connect_threshold < 0:
             vals = []
             for group_id in self.connected:

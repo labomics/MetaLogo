@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--type',type=str,help='Choose the layout type of sequence logo',choices=['Horizontal','Circle','Radiation','Threed'],default='Horizontal')
     parser.add_argument('--input_file',type=str,help='The input file contain sequences',required=True)
     parser.add_argument('--input_file_type',type=str,help='The type of input file', choices=['fasta','fastq'],default='fasta')
-    parser.add_argument('--sequence_type',type=str,help='The type of sequences',choices=['dna','rna','aa'],default='dna')
+    parser.add_argument('--sequence_type',type=str,help='The type of sequences',choices=['auto','dna','rna','aa'],default='auto')
 
     #task
     parser.add_argument('--task_name',type=str,help='The title to displayed on the figure',default='MetaLogo')
