@@ -5,9 +5,11 @@ try:
 except ImportError: 
     from distutils.core import setup
 
-setup(name='Metalogo',
-      version='1.0',
-      description='Metalogo is a tool for making aligned sequence logos with multiple groups of sequences of different lengths or other characters',
+exec(open('MetaLogo/version.py').read())
+
+setup(name='MetaLogo',
+      version=__version__,
+      description='MetaLogo is a tool for making aligned sequence logos with multiple groups of sequences of different lengths or other characters',
       author='Yaowen Chen',
       author_email='achenge07@163.com',
       url='https://github.com/labomics/MetaLogo',
@@ -15,6 +17,7 @@ setup(name='Metalogo',
       entry_points={
           'console_scripts': ['metalogo=MetaLogo.entry:main']
       },
+      python_requires='>=3.6',                
       install_requires=[
           'biopython>=1.77',
           'matplotlib>=3.3.0',

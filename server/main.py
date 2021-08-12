@@ -17,6 +17,7 @@ from dash.dependencies import Input, Output, State
 
 from .handle_seqs import handle_seqs_str,handle_seqs_file
 from .handle_seqs import save_seqs
+
 import uuid
 import os
 import time
@@ -34,6 +35,7 @@ from plotly.tools import mpl_to_plotly
 from io import BytesIO
 import base64
 
+import MetaLogo
 from MetaLogo.logo import LogoGroup
 from MetaLogo.utils import read_file
 from MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_color_scheme,basic_rna_color_scheme
@@ -141,7 +143,7 @@ nav = dbc.Nav(
 toppanel = html.Div(
     [
         dbc.Row([
-            dbc.Col(html.H1(['MetaLogo'])),
+            dbc.Col(dbc.Row([html.H1(['MetaLogo']),html.Span(MetaLogo.__version__,style={'color':'grey'})])),
             ],
             style={'marginTop':'10px'}
         ),

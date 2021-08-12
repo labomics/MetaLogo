@@ -25,6 +25,7 @@ import re
 from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
 from .colors import get_color_scheme
+from .version import __version__
 
 basic_dna_color = get_color_scheme('basic_dna_color')
 
@@ -434,14 +435,14 @@ class LogoGroup(Item):
         if not self.hide_version_tag:
             if self.logo_type == 'Threed':
                 #self.ax.text2D(1.005, 0, 'Created by MetaLogo')
-                self.ax.text2D(1.005, 0, 'Created by MetaLogo (v1)', transform=self.ax.transAxes,
+                self.ax.text2D(1.005, 0, f'Created by MetaLogo (v{__version__})', transform=self.ax.transAxes,
                     horizontalalignment='left',
                     verticalalignment='bottom',
                     rotation='vertical',
                     color='#6c757d')
 
             else:
-                self.ax.text(1.005, 0, 'Created by MetaLogo (v1)',
+                self.ax.text(1.005, 0, f'Created by MetaLogo (v{__version__})',
                     horizontalalignment='left',
                     verticalalignment='bottom',
                     rotation='vertical',

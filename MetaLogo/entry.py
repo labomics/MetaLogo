@@ -4,6 +4,7 @@ import argparse
 from .logo import LogoGroup
 from .utils import read_file
 from .colors import get_color_scheme
+from .version import __version__
 import json
 
 
@@ -85,6 +86,9 @@ def main():
     #output 
     parser.add_argument('--output_dir',type=str,help='Output path of figure',default='.')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
+
+    parser.add_argument('-v', '--version', action='version', version=__version__)
+
     
     args = parser.parse_args()
     print('args: ', args)
