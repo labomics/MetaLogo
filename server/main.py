@@ -133,7 +133,7 @@ alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S
 
 nav = dbc.Nav(
     [
-        dbc.NavItem(dbc.NavLink("Tutorial",  href="https://github.com/labomics/MetaLogo_wiki/wiki/Web-server",target='_blank')),
+        dbc.NavItem(dbc.NavLink("Tutorial",  href="https://github.com/labomics/MetaLogo/wiki/Web-server/",target='_blank')),
         dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
         dbc.NavItem(dbc.NavLink("Paper",  href="#",target='_blank')),
         dbc.NavItem(dbc.NavLink("Lab",  href="http://omicsnet.org",target='_blank')),

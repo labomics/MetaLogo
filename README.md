@@ -6,7 +6,7 @@ MetaLogo is a tool for making sequence logos. Unlike other sequence logo tools, 
 
 To use MetaLogo, you could visit our public webserver http://metalogo.omicsnet.org. You could also install MetaLogo as a python package to using MetaLogo in your python scripts or in your OS terminal. If you want to provide MetaLogo to people in your local network, you could also setup a webserver by using docker.
 
-Please check the tutorial for detailed usage of MetaLogo package and webserver.
+Please check the [tutorial](https://github.com/labomics/MetaLogo/wiki) for deWeb-servertailed usage of MetaLogo package and webserver.
 
 ![Introduction](./pngs/introduction.PNG)
 
