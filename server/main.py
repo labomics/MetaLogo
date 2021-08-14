@@ -251,6 +251,13 @@ seqinput_form = html.Div([
         id = 'seq_textarea',
         persistence=True
     ),  
+    html.Div([
+        html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 sequences if you choose '),
+        html.Span('Bits ', style={'fontStyle':'italic'}),
+        html.Span('as height algorithm (Default) rather than '),
+        html.Span('Probabilities.', style={'fontStyle':'italic'})
+        ],style={'fontSize':'10px','color':'#ff6f00'}),    
+
     html.Label(f'Or upload a file (<={(MAX_INPUT_SIZE/1024)/1024}MB)'),
     html.Label('',id='uploaded_label2',style={"color":"orange"}),
     html.Label('',id='uploaded_label',style={"color":"#11FF00"}),
