@@ -25,6 +25,8 @@ For **Grouping By**, you could choose from *Length* and *Seq identifier*, which 
 
 Note that in each group, sequence lengths should be the same.
 
+Also note that because of small sample correction, make sure each group (grouping by length or other characteristics) contains >= 2 sequences if you choose *Bits* as height algorithm (Default) rather than *Probabilities*. That is to say, if you input only one sequence for one group, remember to change height algorithm to *Probabilities* in the algorithm panel to get a valid sequence logo for that group, or you will get a blank plot for that group.
+
 **Minimum Length** and **Maximum Length** specify which sequences with certain lengths to be included for making sequence logo.
 
 Users can paste sequences into the textarea or upload a sequence file. Note that for our public MetaLogo webserver, sequence number and file size are limited because of limited computational resources. When user deploy their own MetaLogo server, they can easily adjust these limitations to a acceptable degree.

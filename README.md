@@ -74,6 +74,13 @@ More detailed instructions please check the tutorial of MetaLogo.
 
 MetaLogo is currently in submission. Please remember to cite our work after MetaLogo get published.
 
+Currently you can get a [preprint version of our manuscript](https://www.biorxiv.org/content/10.1101/2021.08.12.456038v1).
+
+    MetaLogo: a generator and aligner for multiple sequence logos
+    Yaowen Chen, Zhen He, Yahui Men, Guohua Dong, Shuofeng Hu, Xiaomin Ying
+    bioRxiv 2021.08.12.456038; doi: https://doi.org/10.1101/2021.08.12.456038
+
+
 
 
 
