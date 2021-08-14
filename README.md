@@ -66,9 +66,9 @@ For a production server, you can build a docker container to provide the service
      CONTAINER ID    IMAGE          COMMAND                  CREATED      STATUS      PORTS       NAMES
      ad598ca936df    metalogo:v1    "/bin/sh -c 'GUNICORN"   2 days ago   Up 2 days   8050/tcp    metalogo
 
-Docker needs to be installed in the system before run the command. This command will build the Docker image and start a Docker container. You could set a [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) layer to redirect network requests to MetaLogo container or you can just simply use the MetaLogo docker to receive outside network traffic from your local network.
+Docker needs to be installed in the system before running the command. This command will build the Docker image and start a Docker container. You could set a [nginx-proxy](https://github.com/nginx-proxy/nginx-proxy) layer to redirect network requests to MetaLogo container or you can just simply use the MetaLogo docker to receive outside network traffic from your local network.
 
-More detailed instructions please check the tutorial of MetaLogo.
+More detailed instructions please check the [tutorial](https://github.com/labomics/MetaLogo/wiki) of MetaLogo.
 
 ## Citation
 
