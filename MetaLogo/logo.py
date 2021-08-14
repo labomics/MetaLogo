@@ -21,6 +21,7 @@ from matplotlib.patches import Arc, RegularPolygon
 from numpy import radians as rad
 import math
 import re
+import time
 
 from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
@@ -33,7 +34,7 @@ basic_dna_color = get_color_scheme('basic_dna_color')
 class Logo(Item):
     def __init__(self, bits, ax = None, start_pos=(0,0), logo_type='Horizontal', column_width=1, 
                  column_margin_ratio=0.1, char_margin_ratio = 0.1, parent_start = (0,0), origin = (0,0), id='', 
-                 help_color='b', color=basic_dna_color, *args, **kwargs):
+                 help_color='b', color=basic_dna_color, limited_char_width=None, path_dict={}, *args, **kwargs):
         super(Logo, self).__init__(*args, **kwargs)
 
         self.bits = bits
@@ -48,17 +49,21 @@ class Logo(Item):
         self.color = color
         self.help_color = help_color
         self.columns = []
+        self.limited_char_width = limited_char_width
+        self.path_dict = path_dict
 
         if ax == None:
             self.ax = self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
+
+        if limited_char_width == None:
+            self.limited_char_width = self.get_limited_char_width()
         
         self.generate_components()
 
 
     def generate_components(self):
-
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
             weights = [x[1] for x in bit]
@@ -66,7 +71,8 @@ class Logo(Item):
                 chars = ['-']
                 weights = [0]
             column = Column(chars,weights,ax=self.ax,width=self.column_width,logo_type=self.logo_type,
-                            origin=self.origin, color=self.color, char_margin_ratio=self.char_margin_ratio)
+                            origin=self.origin, color=self.color, char_margin_ratio=self.char_margin_ratio,
+                            limited_char_width=self.limited_char_width,path_dict=self.path_dict)
             self.columns.append(column)
     
     def draw(self):
@@ -198,7 +204,7 @@ class LogoGroup(Item):
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
-                 sequence_type = 'auto', height_algorithm = 'bits',
+                 sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -220,6 +226,7 @@ class LogoGroup(Item):
         self.task_name = task_name
 
         self.height_algorithm = height_algorithm
+        self.omit_prob = omit_prob
 
         self.align_color = align_color
         self.align_alpha = align_alpha
@@ -254,28 +261,31 @@ class LogoGroup(Item):
 
         self.hide_version_tag = hide_version_tag
 
+
         if sequence_type == 'auto':
             self.sequence_type = detect_seq_type(self.seqs)
         else:
             self.sequence_type = sequence_type
 
+
         self.logos = []
 
 
-        self.compute_bits()
+        self.prepare_bits()
 
         if ax is None:
             self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
         self.generate_components()
+
     
-    def compute_bits(self):
+    def prepare_bits(self):
         
         self.groups = grouping(self.seqs,group_by=self.group_strategy)
         check_group(self.groups)
 
-        self.probs = compute_prob(self.groups)
+        self.probs = compute_prob(self.groups,threshold=self.omit_prob)
 
         if self.height_algorithm == 'probabilities':
             self.seq_bits = self.probs
@@ -367,13 +377,25 @@ class LogoGroup(Item):
 
         self.help_color_palette = sns.color_palette("hls", len(self.seq_bits))
 
+        self.limited_char_width = self.get_limited_char_width()
+        self.generate_all_path()
+
         for index,group_id in enumerate(self.group_ids):
             bits = self.seq_bits[group_id]
             logo = Logo(bits,ax=self.ax,logo_type=self.logo_type,parent_start=self.start_pos,
                         origin=self.start_pos,id=group_id,
                         help_color=self.help_color_palette[index], color=self.color,
-                        column_margin_ratio=self.column_margin_ratio, char_margin_ratio=self.char_margin_ratio)
+                        column_margin_ratio=self.column_margin_ratio, char_margin_ratio=self.char_margin_ratio,
+                        limited_char_width=self.limited_char_width, path_dict=self.path_dict)
             self.logos.append(logo)
+
+    def generate_all_path(self):
+        path_dict = {}
+        for base in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+            tmp_path = TextPath((0,0), base, size=1)
+            bbox = tmp_path.get_extents()
+            path_dict[base] = [tmp_path, bbox]
+        self.path_dict = path_dict
 
     def set_font(self):
         pass
@@ -392,6 +414,7 @@ class LogoGroup(Item):
 
         if self.align:
             self.draw_connect()
+
 
         self.draw_help()
         self.compute_xy()
@@ -448,6 +471,8 @@ class LogoGroup(Item):
                     rotation='vertical',
                     transform=self.ax.transAxes,
                     color='#6c757d')
+        
+
         
     def draw_help(self):
         if self.logo_type == 'Radiation':

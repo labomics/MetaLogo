@@ -13,7 +13,8 @@ basic_dna_color = get_color_scheme('basic_dna_color')
 class Column(Item):
 
     def __init__(self, bases, weights, ax=None, start_pos=(0,0), logo_type = 'Horizontal', char_margin_ratio=0.05,
-                 width=1, parent_start=(0,0), origin=(0,0), color=basic_dna_color, *args, **kwargs):
+                 width=1, parent_start=(0,0), origin=(0,0), color=basic_dna_color, limited_char_width=None, 
+                 path_dict={},*args, **kwargs):
         super(Column, self).__init__(*args, **kwargs)
         self.bases = bases 
         self.weights = weights 
@@ -24,19 +25,27 @@ class Column(Item):
         self.origin = origin
         self.logo_type = logo_type
         self.color = color
+        self.limited_char_width = limited_char_width
+        self.path_dict = path_dict
+
         #self.path_hight, self.init_hight, self.target_height = self.get_heights()
         self.characters = []
         if ax == None:
             self.generate_ax(threed=(self.logo_type=='Threed'))
         else:
             self.ax = ax
+
+        if limited_char_width == None:
+            self.limited_char_width = self.get_limited_char_width()
+
         self.generate_components()
 
     def generate_components(self):
         for base,weight in sorted(zip(self.bases,self.weights),key=lambda d:d[1]):
             character = Character(base,width=self.width,height=weight,ax=self.ax,
                                     logo_type=self.logo_type, parent_start=self.start_pos,
-                                    origin=self.origin,color=self.color)
+                                    origin=self.origin,color=self.color,limited_char_width=self.limited_char_width,
+                                    path_dict=self.path_dict)
             self.characters.append(character)
     
     def draw(self):

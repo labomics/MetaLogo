@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from matplotlib import pyplot as plt
+from matplotlib.textpath import TextPath
 
 class Item():
     def __init__(self, *args, **kwargs) :
@@ -34,3 +35,7 @@ class Item():
 
     def set_radiation_space(self,space):
         self.radiation_space = space
+
+    def get_limited_char_width(self, limited_char='E'):
+        tmp_path = TextPath((0, 0), 'E', size=1)
+        return tmp_path.get_extents().width

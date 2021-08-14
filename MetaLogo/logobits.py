@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 
-def compute_prob(groups):
+def compute_prob(groups,threshold=0):
     counts = {}
     for gid,group in groups.items():
         _counts = {}
@@ -21,7 +21,10 @@ def compute_prob(groups):
             total = sum(_counts[i].values())
             _ps = []
             for base in sorted(_counts[i].keys()):
-                _ps.append([base,_counts[i][base]/total])
+                ration = _counts[i][base]/total
+                if ration < threshold:
+                    continue
+                _ps.append([base,ration])
             _probs.append(_ps)
         
         probs[gid] = _probs
