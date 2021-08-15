@@ -124,7 +124,7 @@ app = dash.Dash(
     }]
 
 )
-app.title = "MetaLogo"
+app.title = "MetaLogo, multiple sequence logos generator and aligner"
 
 #
 
@@ -151,7 +151,7 @@ toppanel = html.Div(
     ]
 )
 about_md = dcc.Markdown('''
-**Metalogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can take multiple sets of sequences as input, with different lengths or other characteristics, integrate the logos into one single figure and align them through certain algorithms, so as to display the total sequence population in a more detailed and dynamic view.
+**MetaLogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can take multiple sets of sequences as input, with different lengths or other characteristics, integrate the logos into one single figure and align them through certain algorithms, so as to display the total sequence population in a more detailed and dynamic view.
 
 Users can choose to group sequences by length, or divide sequences of the same length into multiple groups. For each group, MetaLogo will draw a sequence logo separately. At the logo level, alignment is performed through a modified version of sequence alignment and multiple sequence alignment algorithms.
 
@@ -249,7 +249,7 @@ seqinput_form = html.Div([
         rows=5,
         style={'width': '100%'},
         id = 'seq_textarea',
-        persistence=True
+        persistence='true'
     ),  
     html.Div([
         html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 sequences if you choose '),
@@ -660,7 +660,7 @@ for alphabet in alphabets_list:
                 id=f"colorpicker_{alphabet}",
                 value="#000000",
                 style={"width": 50, "height": 50, "margin":"auto"},
-                persistence=True
+                persistence='true'
             ),
         ],style={"textAlign":"center"}
         )
@@ -726,7 +726,7 @@ align_color_picker =  dbc.FormGroup(
                 id=f"align_color",
                 value="#007bff",
                 style={"width": 50, "height": 50, "margin":"auto"},
-                persistence=True
+                persistence='true'
             ),
         ],style={"textAlign":"center"})
 
