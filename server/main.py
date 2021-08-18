@@ -1045,18 +1045,32 @@ def udpate_download(n_clicks,uid,format,src):
         Output("hidexy_check_input","value")
     ],
     [
-        Input("logo_shape_dropdown","value")
+        Input("logo_shape_dropdown","value"),
+        Input("height_algorithm_dropdown","value"),
     ]
 )
-def change_labels(logo_shape):
-    if logo_shape == 'Circle':
-        return '','','',['hidexticks','hideyticks']
-    if logo_shape == 'Horizontal':
-        return 'Position','Bits','',[]
-    if logo_shape == 'Radiation':
-        return '','','',['hidexticks','hideyticks']
-    if logo_shape == 'Threed':
-        return 'Position','','Bits',['hideyticks']
+def change_labels(logo_shape,height_algorithm):
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    else:
+        example_id = ctx.triggered[0]['prop_id'].split('.')[0]
+        if example_id == 'logo_shape_dropdown':
+            if logo_shape == 'Circle':
+                return '','','',['hidexticks','hideyticks']
+            if logo_shape == 'Horizontal':
+                return 'Position','Bits','',[]
+            if logo_shape == 'Radiation':
+                return '','','',['hidexticks','hideyticks']
+            if logo_shape == 'Threed':
+                return 'Position','','Bits',['hideyticks']
+        if example_id == 'height_algorithm_dropdown':
+            if height_algorithm == 'bits':
+                return dash.no_update, 'Bits', dash.no_update, dash.no_update
+            elif height_algorithm =='probabilities':
+                return dash.no_update, 'Probabilites', dash.no_update, dash.no_update
+
+    return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
 @app.callback(
     [
