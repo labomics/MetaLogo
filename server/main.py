@@ -826,6 +826,16 @@ result_panel = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row([
+                    dbc.Col([
+                        html.Span('Sequence Type: '), 
+                        html.Span('NA',id='seq_type_txt',style={"color":"blue"}),
+                        html.Span(' Sequence Count: '),
+                        html.Span('NA',id='seq_count_txt',style={"color":"blue"}),
+                        html.Span(' Group Count: '),
+                        html.Span('NA',id='group_count_txt',style={"color":"blue"}),
+                    ],style={"fontSize":"10px"})
+                ]),
+                dbc.Row([
                     html.Img(id='img_res',src='',style={"width":"100%","margin":"auto"}),
                     ]),
                 dbc.Row([
@@ -1100,7 +1110,10 @@ def change_figure_size(logo_shape):
         Output('modal_body', 'children'),
         Output('modal', 'is_open'),
         Output('img_res', 'src'),
-        Output('functional_garbage','children')
+        Output('functional_garbage','children'),
+        Output("seq_type_txt","children"),
+        Output("seq_count_txt","children"),
+        Output("group_count_txt","children"),
     ],
     [
         Input('submit1', 'n_clicks'),
@@ -1164,10 +1177,10 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
 
     if max_len_input < min_len_input:
-        return '','Error','Maximum length < Minimum length',True,'',''
+        return '','Error','Maximum length < Minimum length',True,'','','NA','NA','NA'
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
-        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'',''
+        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','NA','NA','NA'
 
 
     seqs = []
@@ -1176,17 +1189,17 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
     if not response['successful']:
-        return '','Error',response['msg'],True,'',''
+        return '','Error',response['msg'],True,'','','NA','NA','NA'
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
     if len(seqs) > MAX_SEQ_LIMIT:
-        return '','Error','Sequence number exceed the limitation',True,'',''
+        return '','Error','Sequence number exceed the limitation',True,'','','NA','NA','NA'
 
     if len(seqs) == 0:
-        return '','Error','Detect no sequences with limited lengths',True,'',''
+        return '','Error','Detect no sequences with limited lengths',True,'','','NA','NA','NA'
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
@@ -1261,6 +1274,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         toml.dump(config, f)
 
     logogroup = LogoGroup(seqs, **config)
+
+    #print('logogroup.groups:')
+    #print(logogroup.groups)
     
     logogroup.draw()
 
@@ -1275,8 +1291,14 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
 
 
-
-    return '','','',False,src,uid
+    if height_algorithm_dropdown == 'bits':
+        cnt = 0
+        for grp in logogroup.groups:
+            if len(logogroup.groups[grp]) > 1:
+                cnt += 1
+        return '','','',False,src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
+    else:
+        return '','','',False,src,uid,sequence_type,len(seqs),len(logogroup.groups)
 
 if __name__ == '__main__':
 
