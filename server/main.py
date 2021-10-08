@@ -822,7 +822,7 @@ loading_spinner = html.Div(
 )
 result_panel = dbc.Card(
     [
-        dbc.CardHeader("Result",style={'fontWeight':'bold'}),
+        dbc.CardHeader("Sequence Logos",style={'fontWeight':'bold'}),
         dbc.CardBody(
             [
                 dbc.Row([
@@ -840,13 +840,33 @@ result_panel = dbc.Card(
                     ]),
                 dbc.Row([
                     dbc.Col([
-                        dbc.Button("Download Figure", id="download_btn",active=False,disabled=True), 
-                        dcc.Download(id="download_png",type='image/png')
+                        dbc.Button("Download Figure", id="download_btn",active=False,disabled=True, style={"margin":"10px"}), 
+                        dcc.Download(id="download_png",type='image/png'),
                     ], style={'textAlign':'center','margin':'auto'})
                 ]),
             ]
         )
-    ], style={'marginTop':'20px'}
+    ],  style={'marginTop':'20px'}
+)
+
+analysis_panel = dbc.Card(
+    [
+        dbc.CardHeader("Statistics Analysis",style={'fontWeight':'bold'}),
+        dbc.CardBody(
+            [
+                dbc.Row([
+                    html.Img(id='entropy_img_res',src='',style={"width":"100%","margin":"auto"}),
+                    ]),
+                dbc.Row([
+                    html.Img(id='mean_entropy_img_res',src='',style={"width":"100%","margin":"auto"}),
+                    ]),
+                dbc.Row([
+                    html.Img(id='entropy_boxplot_img_res',src='',style={"width":"100%","margin":"auto"}),
+                    ]),
+
+            ]
+        )
+    ], id='analysis_panel', style={'marginTop':'20px'}
 )
 
 footer_panel = html.Div([
@@ -869,6 +889,7 @@ app.layout = dbc.Container(children=[
         layout_panel,
         style_panel,
         result_panel,
+        analysis_panel,
         footer_panel,
         modal,
         result_modal,
@@ -876,7 +897,6 @@ app.layout = dbc.Container(children=[
         html.Div('',id='functional_garbage',style={'display':'none'}),
         html.Div('',id='garbage',style={'display':'none'}),
        ])
-
 
 
 
@@ -1024,7 +1044,7 @@ app.clientside_callback(
 )
 def show_btn(uid, format):
     if (uid is not None) and (len(uid) > 0):
-        return False, f"Download {format.upper()}"
+        return False,  f"Download {format.upper()}"
     else:
         return True, f"Download {format.upper()}"
 
@@ -1110,6 +1130,9 @@ def change_figure_size(logo_shape):
         Output('modal_body', 'children'),
         Output('modal', 'is_open'),
         Output('img_res', 'src'),
+        Output('entropy_img_res', 'src'),
+        Output('mean_entropy_img_res', 'src'),
+        Output('entropy_boxplot_img_res', 'src'),
         Output('functional_garbage','children'),
         Output("seq_type_txt","children"),
         Output("seq_count_txt","children"),
@@ -1177,10 +1200,10 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
 
     if max_len_input < min_len_input:
-        return '','Error','Maximum length < Minimum length',True,'','','NA','NA','NA'
+        return '','Error','Maximum length < Minimum length',True,'','','','','','NA','NA','NA'
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
-        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','NA','NA','NA'
+        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','NA','NA','NA'
 
 
     seqs = []
@@ -1189,17 +1212,17 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
     if not response['successful']:
-        return '','Error',response['msg'],True,'','','NA','NA','NA'
+        return '','Error',response['msg'],True,'','','','','','NA','NA','NA'
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
     if len(seqs) > MAX_SEQ_LIMIT:
-        return '','Error','Sequence number exceed the limitation',True,'','','NA','NA','NA'
+        return '','Error','Sequence number exceed the limitation',True,'','','','','','NA','NA','NA'
 
     if len(seqs) == 0:
-        return '','Error','Detect no sequences with limited lengths',True,'','','NA','NA','NA'
+        return '','Error','Detect no sequences with limited lengths',True,'','','','','','NA','NA','NA'
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
@@ -1280,15 +1303,35 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
     logogroup.draw()
 
+
     output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
     logogroup.savefig(output_name)
 
     if download_format_dropdown != 'png':
         output_name = f'{PNG_PATH}/{uid}.png'
-        logogroup.savefig(output_name)
-    
+        logogroup.savefig(output_name,bbox_inches='tight',pad_inches = 0)
+
     encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+    
+    fig,ax = logogroup.get_entropy_figure()
+    entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
+    fig.savefig(entropy_name)
+
+    encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
+    entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
+    
+
+    mean_entropy_name = f'{PNG_PATH}/{uid}.mean_entropy.png'
+    logogroup.get_group_mean_entropy_figure().figure.savefig(mean_entropy_name)
+    mean_entropy_encode_image = base64.b64encode(open(mean_entropy_name, 'rb').read())
+    mean_entropy_src = 'data:image/png;base64,{}'.format(mean_entropy_encode_image.decode())
+
+#entropy_boxplot_img_res
+    boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
+    logogroup.get_boxplot_entropy_figure().figure.savefig(boxplot_entropy_name)
+    boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
+    boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
 
 
     if height_algorithm_dropdown == 'bits':
@@ -1296,9 +1339,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         for grp in logogroup.groups:
             if len(logogroup.groups[grp]) > 1:
                 cnt += 1
-        return '','','',False,src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
+        return '','','',False,src,entropy_src,mean_entropy_src,boxplot_entropy_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
     else:
-        return '','','',False,src,uid,sequence_type,len(seqs),len(logogroup.groups)
+        return '','','',False,src,entropy_src,mean_entropy_src,boxplot_entropy_src,uid,sequence_type,len(seqs),len(logogroup.groups)
 
 if __name__ == '__main__':
 

@@ -3,6 +3,7 @@ import genericpath
 from typing import Sequence
 from matplotlib import transforms
 from matplotlib.colors import get_named_colors_mapping
+import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, get
 import numpy as np
 from matplotlib.patches import Circle
@@ -22,6 +23,7 @@ from numpy import radians as rad
 import math
 import re
 import time
+import pandas as pd
 
 from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
@@ -688,3 +690,86 @@ class LogoGroup(Item):
             if self.logo_type == 'Horizontal':
                 self.ax.get_figure().set_figheight(6)
                 self.ax.get_figure().set_figwidth(12)
+    
+
+    def get_entropy(self):
+        ents = []
+        #for grpid,probs in self.probs.items():
+        for grpid in self.group_ids[::-1]:
+            probs = self.probs[grpid]
+            _ents = []
+            _i = 0
+            for pos in probs:
+                _i += 1
+                _ep = [x[1] for x in pos if x[1]>0]
+                entropy = -sum([x*np.log(x) for x in _ep ])
+                _ents.append(entropy)
+            ents.append(_ents)
+        
+        return ents
+
+
+    def get_group_mean_entropy_figure(self):
+
+        fig,ax = plt.subplots()
+
+        ents = self.get_entropy()
+        mean_ents = [np.mean(x) for x in ents]
+        df = pd.DataFrame(mean_ents)
+        df.index = self.group_ids[::-1]
+        df.columns = ['Mean Entropy']
+        ax = df.plot.bar(ax=ax)
+        ax.set_xlabel('Group')
+        ax.set_ylabel('Mean Entropy')
+        return ax
+    
+    def get_boxplot_entropy_figure(self):
+        fig,ax = plt.subplots()
+
+        ents = self.get_entropy()
+        lists = []
+        for i in range(len(ents)):
+            grp_id = self.group_ids[::-1][i]
+            for item in ents[i]:
+                lists.append([grp_id,item])
+        df = pd.DataFrame(lists,columns=['group','entropy'])
+        return sns.boxplot(data=df,x='group',y='entropy',ax=ax)
+
+
+
+    def get_entropy_figure(self):
+
+        ents = self.get_entropy()
+        ent_df = pd.DataFrame(ents).fillna(0)
+
+        fig,ax = plt.subplots()
+        im = ax.imshow(ent_df)
+        cbar = ax.figure.colorbar(im, ax=ax,orientation='horizontal')
+        #cbar = ax.figure.colorbar(im, ax=ax)
+        cbar.ax.set_xlabel('Entropy')
+
+        kw = dict(horizontalalignment="center",
+              verticalalignment="center",color='white')
+
+        for i in range(len(ent_df)):
+            for j in range(ent_df.columns.size):
+                print(i,j,len(ents[i]))
+                if j > len(ents[i]) - 1:
+                    im.axes.text(j,i,'X',**kw)
+                #else:
+                #    im.axes.text(j,i,round(ents[i][j],2),**kw)
+
+        #ax.spines[:].set_visible(False)
+        #ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+        #ax.tick_params(which="minor", bottom=False, left=False)
+
+        ax.set_xticks(np.arange(ent_df.columns.size))
+        ax.set_yticks(np.arange(len(self.group_ids)))
+        ax.set_yticklabels(self.group_ids[::-1])
+        ax.set_xticklabels(np.arange(ent_df.columns.size))
+        ax.set_xlabel('Position')
+        ax.set_ylabel('Group')
+        ax.set_title('Entropy Heatmap')
+        fig.tight_layout()
+        return fig,ax
+    
