@@ -695,16 +695,20 @@ class LogoGroup(Item):
     def get_entropy(self):
         ents = []
         #for grpid,probs in self.probs.items():
-        for grpid in self.group_ids[::-1]:
+        for grpid in self.group_ids:
             probs = self.probs[grpid]
             _ents = []
             _i = 0
             for pos in probs:
                 _i += 1
+                if len(pos) == 0:
+                    _ents.append('-')
+                    continue
                 _ep = [x[1] for x in pos if x[1]>0]
                 entropy = -sum([x*np.log(x) for x in _ep ])
                 _ents.append(entropy)
-            ents.append(_ents)
+            if len(_ents) > 0:
+                ents.append(_ents)
         
         return ents
 
@@ -712,40 +716,42 @@ class LogoGroup(Item):
     def get_group_mean_entropy_figure(self):
 
         fig,ax = plt.subplots()
-
         ents = self.get_entropy()
-        mean_ents = [np.mean(x) for x in ents]
+        mean_ents = [np.median([y for y in x if y!='-']) for x in ents]
         df = pd.DataFrame(mean_ents)
-        df.index = self.group_ids[::-1]
-        df.columns = ['Mean Entropy']
+        df.index = self.group_ids
+        df.columns = ['Mean Entropy of Positions']
         ax = df.plot.bar(ax=ax)
         ax.set_xlabel('Group')
-        ax.set_ylabel('Mean Entropy')
+        ax.set_ylabel('Mean Entropy of Positions')
         return ax
     
     def get_boxplot_entropy_figure(self):
         fig,ax = plt.subplots()
-
         ents = self.get_entropy()
+        ents = [[y for y in x if y!='-'] for x in ents]
         lists = []
         for i in range(len(ents)):
-            grp_id = self.group_ids[::-1][i]
+            grp_id = self.group_ids[i]
             for item in ents[i]:
                 lists.append([grp_id,item])
-        df = pd.DataFrame(lists,columns=['group','entropy'])
-        return sns.boxplot(data=df,x='group',y='entropy',ax=ax)
+        df = pd.DataFrame(lists,columns=['Group','Entropy of Each Position'])
+        return sns.boxplot(data=df,x='Group',y='Entropy of Each Position',ax=ax,order=self.group_ids)
 
 
 
     def get_entropy_figure(self):
 
         ents = self.get_entropy()
-        ent_df = pd.DataFrame(ents).fillna(0)
+
+
+        ent_df = pd.DataFrame(ents)
+        ent_df = ent_df.replace('-',0)
+        ent_df = ent_df.fillna(0)
 
         fig,ax = plt.subplots()
         im = ax.imshow(ent_df)
         cbar = ax.figure.colorbar(im, ax=ax,orientation='horizontal')
-        #cbar = ax.figure.colorbar(im, ax=ax)
         cbar.ax.set_xlabel('Entropy')
 
         kw = dict(horizontalalignment="center",
@@ -753,23 +759,55 @@ class LogoGroup(Item):
 
         for i in range(len(ent_df)):
             for j in range(ent_df.columns.size):
-                print(i,j,len(ents[i]))
                 if j > len(ents[i]) - 1:
                     im.axes.text(j,i,'X',**kw)
+                else:
+                    if ents[i][j] == '-':
+                        im.axes.text(j,i,'X',**kw)
                 #else:
                 #    im.axes.text(j,i,round(ents[i][j],2),**kw)
 
-        #ax.spines[:].set_visible(False)
-        #ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
-        #ax.tick_params(which="minor", bottom=False, left=False)
 
         ax.set_xticks(np.arange(ent_df.columns.size))
         ax.set_yticks(np.arange(len(self.group_ids)))
-        ax.set_yticklabels(self.group_ids[::-1])
+        ax.set_yticklabels(self.group_ids)
         ax.set_xticklabels(np.arange(ent_df.columns.size))
         ax.set_xlabel('Position')
         ax.set_ylabel('Group')
         ax.set_title('Entropy Heatmap')
         fig.tight_layout()
-        return fig,ax
+
+        ##extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+
+        return fig,ax#,extent
+    
+
+    def get_correlation_figure(self):
+
+        fig,ax = plt.subplots()
+
+        if not self.padding_align:
+            return None
+        bases = []
+        for i in range(len(self.seq_bits[self.group_ids[0]])):
+            _bases = []
+            for grp_id in self.group_ids:
+                _bases += [x[0] for x in self.seq_bits[grp_id][i]]
+            bases.append(sorted(list(set(_bases))))
+        arrs = []
+        for grp_id in self.group_ids:
+            bits = self.seq_bits[grp_id]
+            _arr = []
+            for i in range(len(bits)):
+                _dict = dict(bits[i])
+                for base in bases[i]:
+                    _arr.append(_dict.get(base,0))
+            arrs.append(_arr)
+        
+        df = pd.DataFrame(arrs)
+        df.index = self.group_ids
+        df = df.T
+        return sns.clustermap(df.corr(method='pearson'))
+        
+
     
