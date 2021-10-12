@@ -808,6 +808,21 @@ class LogoGroup(Item):
         df.index = self.group_ids
         df = df.T
         return sns.clustermap(df.corr(method='pearson'))
+    
+    def get_grp_counts_figure(self):
+        fig,ax = plt.subplots()
+        lens = []
+        for grp in self.group_ids:
+            lens.append([grp,len(self.seq_bits[grp])])
+        df = pd.DataFrame(lens,columns=['Group','Counts'])
+        ax = df.set_index('Group').plot.bar(ax=ax)
+        for p in ax.patches:
+            ax.annotate(str(p.get_height()), (p.get_x() * 1, p.get_height() * 1.005))
+        ax.set_title('Sequence counts of each group')
+
+        return ax
+
+
         
 
     

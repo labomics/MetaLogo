@@ -855,6 +855,10 @@ analysis_panel = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row([
+                    html.Img(id='count_img_res',src='',style={"width":"100%","margin":"auto"}),
+                    ]),
+                html.Hr(),
+                dbc.Row([
                     html.Img(id='entropy_img_res',src='',style={"width":"100%","margin":"auto"}),
                     ]),
                 html.Hr(),
@@ -1137,6 +1141,7 @@ def change_figure_size(logo_shape):
         Output('modal_body', 'children'),
         Output('modal', 'is_open'),
         Output('img_res', 'src'),
+        Output('count_img_res', 'src'),
         Output('entropy_img_res', 'src'),
         Output('mean_entropy_img_res', 'src'),
         Output('entropy_boxplot_img_res', 'src'),
@@ -1208,10 +1213,10 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
 
     if max_len_input < min_len_input:
-        return '','Error','Maximum length < Minimum length',True,'','','','','','','NA','NA','NA'
+        return '','Error','Maximum length < Minimum length',True,'','','','','','','','NA','NA','NA'
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
-        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','','NA','NA','NA'
+        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','','','NA','NA','NA'
 
 
     seqs = []
@@ -1220,17 +1225,17 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
     if not response['successful']:
-        return '','Error',response['msg'],True,'','','','','','','NA','NA','NA'
+        return '','Error',response['msg'],True,'','','','','','','','NA','NA','NA'
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
     if len(seqs) > MAX_SEQ_LIMIT:
-        return '','Error','Sequence number exceed the limitation',True,'','','','','','','NA','NA','NA'
+        return '','Error','Sequence number exceed the limitation',True,'','','','','','','','NA','NA','NA'
 
     if len(seqs) == 0:
-        return '','Error','Detect no sequences with limited lengths',True,'','','','','','','NA','NA','NA'
+        return '','Error','Detect no sequences with limited lengths',True,'','','','','','','','NA','NA','NA'
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
@@ -1320,9 +1325,18 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
     
+    fig = logogroup.get_grp_counts_figure().figure
+    count_name = f'{PNG_PATH}/{uid}.counts.png'
+    fig.savefig(count_name,bbox_inches='tight')
+    plt.close(fig)
+    encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
+    count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
+
+
     fig,ax = logogroup.get_entropy_figure()
     entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
     fig.savefig(entropy_name,bbox_inches='tight')
+    plt.close(fig)
     #fig.savefig(entropy_name, bbox_inches=extent)
 
     encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
@@ -1330,20 +1344,25 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
 
     mean_entropy_name = f'{PNG_PATH}/{uid}.mean_entropy.png'
-    logogroup.get_group_mean_entropy_figure().figure.savefig(mean_entropy_name)
+    fig = logogroup.get_group_mean_entropy_figure().figure
+    fig.savefig(mean_entropy_name)
+    plt.close(fig)
     mean_entropy_encode_image = base64.b64encode(open(mean_entropy_name, 'rb').read())
     mean_entropy_src = 'data:image/png;base64,{}'.format(mean_entropy_encode_image.decode())
 
 #entropy_boxplot_img_res
     boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
-    logogroup.get_boxplot_entropy_figure().figure.savefig(boxplot_entropy_name)
+    fig = logogroup.get_boxplot_entropy_figure().figure
+    fig.savefig(boxplot_entropy_name)
+    plt.close(fig)
     boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
     boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
 
     clustermap_src = ''
     if padding_align:
         clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
-        logogroup.get_correlation_figure().savefig(clustermap_name)
+        fig = logogroup.get_correlation_figure()
+        fig.savefig(clustermap_name)
         clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
         clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
 
@@ -1353,9 +1372,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         for grp in logogroup.groups:
             if len(logogroup.groups[grp]) > 1:
                 cnt += 1
-        return '','','',False,src,entropy_src,mean_entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
+        return '','','',False,src,count_src,entropy_src,mean_entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
     else:
-        return '','','',False,src,entropy_src,mean_entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
+        return '','','',False,src,count_src,entropy_src,mean_entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
 
 if __name__ == '__main__':
 
