@@ -1078,6 +1078,17 @@ def udpate_download(n_clicks,uid,format,src):
         return dcc.send_file(
         f"{PNG_PATH}/{uid}.{format}"
         )
+
+@app.callback(
+    Output("sortby_dropdown","value"),
+    Input("grouping_by_dropdown","value"), prevent_initial_call=True
+)
+def change_default_order(sort_by_value):
+    if sort_by_value == 'identifier':
+        return 'identifier' 
+    else:
+        return 'length'
+
 @app.callback(
     [
         Output("xlabel_input","value"),

@@ -107,7 +107,8 @@ class Logo(Item):
         if show_id:
             #self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+0.1,
             self.id_txt = self.ax.text(self.get_width() + 0.5, self.start_pos[1]+self.get_height()*0.1,
-                                     f'{self.id}', fontsize=group_id_size, clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
+                                     f"{self.id}", fontsize=group_id_size, clip_on=True)#,bbox={'fc': '0.8', 'pad': 0})
+        
 
         
     def draw_circle_help(self,show_id=True, group_id_size=10,draw_arrow=False,**kwargs):
@@ -301,9 +302,9 @@ class LogoGroup(Item):
             elif self.group_order.lower() == 'length_reverse':
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: len(self.seq_bits[d]),reverse=True)
             elif self.group_order.lower() == 'identifier':
-                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[1])
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0])
             elif self.group_order.lower() == 'identifier_reverse':
-                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[1], reverse=True)
+                self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0], reverse=True)
         except Exception as e:
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
@@ -437,6 +438,7 @@ class LogoGroup(Item):
                 self.ax.set_xticklabels([])
             else:
                 self.ax.set_xticks([])
+
         if  self.hide_y_ticks:
             if self.show_grid:
                 self.ax.set_yticklabels([])
@@ -482,6 +484,9 @@ class LogoGroup(Item):
         
         if self.logo_type == 'Circle':
             self.draw_circle_help()
+        
+        if self.logo_type == 'Horizontal':
+            self.draw_hz_help()
     
     def draw_connect(self):
         if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
@@ -558,6 +563,35 @@ class LogoGroup(Item):
 
     def draw_radiation_help(self):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
+    
+    def draw_hz_help(self):
+
+        if not self.hide_x_ticks:
+            maxlen = max([len(bits) for bits in self.seq_bits.values()])
+            margin_ratio = 0
+            if len(self.logos)>0:
+                margin_ratio = self.logos[0].column_margin_ratio
+
+            #self.ax.set_xticks([x+0.5+x*margin_ratio for x in range(maxlen)])
+            self.ax.set_xticks([x+x*margin_ratio for x in range(maxlen+1)])
+            self.ax.set_xticklabels([str(x) for x in range(maxlen+1)])
+        
+        if not self.hide_y_ticks:
+            total_height = self.ceiling_pos[1]
+            ticks = []
+            ticklabels = []
+            for logo in self.logos:
+                start = logo.start_pos[1]
+                height = logo.get_height()
+                ticks.append(start)
+                ticklabels.append(0)
+                ticks.append(start+height)
+                ticklabels.append(round(height,2))
+        
+            self.ax.set_yticks(ticks)
+            self.ax.set_yticklabels(ticklabels)
+
+
 
     def compute_positions(self):
 
@@ -736,7 +770,7 @@ class LogoGroup(Item):
             for item in ents[i]:
                 lists.append([grp_id,item])
         df = pd.DataFrame(lists,columns=['Group','Entropy of Each Position'])
-        return sns.boxplot(data=df,x='Group',y='Entropy of Each Position',ax=ax,order=self.group_ids)
+        return sns.boxplot(data=df,y='Group',x='Entropy of Each Position',ax=ax,order=self.group_ids)
 
 
 
@@ -813,11 +847,11 @@ class LogoGroup(Item):
         fig,ax = plt.subplots()
         lens = []
         for grp in self.group_ids:
-            lens.append([grp,len(self.seq_bits[grp])])
+            lens.append([grp,len(self.groups[grp])])
         df = pd.DataFrame(lens,columns=['Group','Counts'])
-        ax = df.set_index('Group').plot.bar(ax=ax)
+        ax = df.set_index('Group').plot.bar(ax=ax,y='Counts')
         for p in ax.patches:
-            ax.annotate(str(p.get_height()), (p.get_x() * 1, p.get_height() * 1.005))
+            ax.annotate(str(p.get_height()), (p.get_x() , p.get_height() * 1.005))
         ax.set_title('Sequence counts of each group')
 
         return ax

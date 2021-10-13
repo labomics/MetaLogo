@@ -60,9 +60,9 @@ def grouping(seqs,group_by='length'):
             groups_dict[key].append([name,seq])
     if group_by.lower() == 'identifier':
         for name,seq in seqs:
-            group_pat = re.search('group@\d+-\S+',name)
+            group_pat = re.search('group@(\d+-\S+)',name)
             if group_pat:
-                group_id = group_pat.group()
+                group_id = group_pat.groups()[0]
                 if group_id not in groups_dict:
                     groups_dict[group_id] = []
                 groups_dict[group_id].append([name,seq])
