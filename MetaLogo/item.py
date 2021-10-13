@@ -17,9 +17,9 @@ class Item():
     def draw(self):
         pass
     
-    def savefig(self,filename):
+    def savefig(self,filename,bbox_inches='tight'):
         if (hasattr(self,'ax')) and (self.ax is not None):
-            self.ax.get_figure().savefig(filename)
+            self.ax.get_figure().savefig(filename,bbox_inches=bbox_inches)
 
     def set_start_pos(self,start_pos):
         self.start_pos = start_pos

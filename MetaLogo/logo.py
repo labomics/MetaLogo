@@ -822,6 +822,10 @@ class LogoGroup(Item):
 
         if not self.padding_align:
             return None
+        print(self.group_ids)
+        if len(self.group_ids) < 2:
+            return None
+        
         bases = []
         for i in range(len(self.seq_bits[self.group_ids[0]])):
             _bases = []
@@ -851,7 +855,7 @@ class LogoGroup(Item):
         df = pd.DataFrame(lens,columns=['Group','Counts'])
         ax = df.set_index('Group').plot.bar(ax=ax,y='Counts')
         for p in ax.patches:
-            ax.annotate(str(p.get_height()), (p.get_x() , p.get_height() * 1.005))
+            ax.annotate(str(p.get_height()), (p.get_x() + p.get_width()/2 , p.get_height() * 1.005),ha='center')
         ax.set_title('Sequence counts of each group')
 
         return ax
