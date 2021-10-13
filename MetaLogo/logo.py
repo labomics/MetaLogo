@@ -580,13 +580,19 @@ class LogoGroup(Item):
             total_height = self.ceiling_pos[1]
             ticks = []
             ticklabels = []
+            i = -1
             for logo in self.logos:
+                i += 1
                 start = logo.start_pos[1]
                 height = logo.get_height()
-                ticks.append(start)
-                ticklabels.append(0)
-                ticks.append(start+height)
-                ticklabels.append(round(height,2))
+                if i==0:
+                    ticks.append(0)
+                    ticklabels.append(0)
+                ticks.append(start+height*(1+self.logo_margin_ratio))
+                if i == len(self.logos) - 1:
+                    ticklabels.append('%s'%round(height,2))
+                else:
+                    ticklabels.append('%s,0'%round(height,2))
         
             self.ax.set_yticks(ticks)
             self.ax.set_yticklabels(ticklabels)
