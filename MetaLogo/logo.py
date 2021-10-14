@@ -828,7 +828,6 @@ class LogoGroup(Item):
 
         if not self.padding_align:
             return None
-        print(self.group_ids)
         if len(self.group_ids) < 2:
             return None
         

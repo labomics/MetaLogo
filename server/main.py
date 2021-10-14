@@ -1342,7 +1342,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     if download_format_dropdown != 'png':
         output_name = f'{PNG_PATH}/{uid}.png'
-        logogroup.savefig(output_name,bbox_inches='tight',pad_inches = 0)
+        logogroup.savefig(output_name,bbox_inches='tight')
 
     encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
