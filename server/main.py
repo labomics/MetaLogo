@@ -239,6 +239,20 @@ min_len_input = dbc.FormGroup(
         dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=10,id="min_len_input"),
     ]
 )
+display_range_left_input = dbc.FormGroup(
+    [
+        dbc.Label("Display Range (left)",html_for='input'),
+        dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=0,id="display_range_left",disabled="disabled"),
+        html.Span("Avaliable for global alignment",style={'fontSize':'10px','color':'#ff6f00'})
+    ]
+)
+display_range_right_input = dbc.FormGroup(
+    [
+        dbc.Label("Display Range (right)",html_for='input'),
+        dbc.Input(type="number", min=-1, max=MAX_SEQ_LEN, step=1, value=-1,id="display_range_right",disabled="disabled"),
+        html.Span("-1 means till the end",style={'fontSize':'10px','color':'#ff6f00'})
+    ]
+)
 
 seqinput_form = html.Div([
     html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
@@ -302,8 +316,12 @@ input_panel = dbc.Card(
                     dbc.Col(input_format_dropdown),
                     dbc.Col(sequence_type_dropdown),
                     dbc.Col(grouping_by_dropdown),
+                ]),
+                dbc.Row([
                     dbc.Col(min_len_input),
                     dbc.Col(max_len_input),
+                    dbc.Col(display_range_left_input),
+                    dbc.Col(display_range_right_input),
                 ]),
                 dbc.Row(dbc.Col(seqinput_form)),
                 dbc.Row([dbc.Col(''),dbc.Col(input_submit)],justify='end'),
@@ -328,7 +346,7 @@ height_algorithm_dropdown = dbc.FormGroup(
 )
 align_dropdown = dbc.FormGroup(
     [
-        dbc.Label("Alignment?", html_for="dropdown"),
+        dbc.Label("Adjacent Alignment?", html_for="dropdown"),
         dcc.Dropdown(
             id="align_dropdown",
             options=[
@@ -1153,6 +1171,19 @@ def change_figure_size(logo_shape):
         return 10,10
     if logo_shape == 'Threed':
         return 10,10
+
+@app.callback(
+    [
+        Output("display_range_left","disabled"),
+        Output("display_range_right","disabled")
+    ],
+    Input("padding_align_dropdown","value"),prevent_initial_call=True
+)
+def activate_display_range(padding):
+    if padding == 'Yes':
+        return None,None 
+    else:
+        return 'disabled','disabled'
    
 
 
@@ -1180,6 +1211,8 @@ def change_figure_size(logo_shape):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('display_range_left','value'),
+        State('display_range_right','value'),
         State('height_algorithm_dropdown','value'),
         State('hide_version_checklist','value'),
         State('padding_align_dropdown','value'),
@@ -1220,6 +1253,7 @@ def change_figure_size(logo_shape):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            display_left, display_right,
             height_algorithm_dropdown,
             hide_version_checklist,
             padding_align,
@@ -1233,12 +1267,19 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
+    
+    if (display_left > display_right) and (display_right != -1):
+        return '','Error','Display range left > Range right',True,'','','','','','','NA','NA','NA'
+
+    if display_left < 0:
+        return '','Error','Display range left illegal',True,'','','','','','','NA','NA','NA'
 
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,'','','','','','','NA','NA','NA'
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
         return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','','NA','NA','NA'
+
 
 
     seqs = []
@@ -1323,6 +1364,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           title_size=title_size, label_size=label_size, group_id_size=id_size,
                           tick_size=tick_size, logo_margin_ratio = logo_margin_input, column_margin_ratio = column_margin_input,
                           figure_size_x=width_input, figure_size_y=height_input,
+                          display_range_left = display_left, display_range_right = display_right,
                           char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
                           gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
                           sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown

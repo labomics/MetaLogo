@@ -45,6 +45,10 @@ def main():
 
     parser.add_argument('--gap_score',type=float,help='The gap score for alignment',default=-1.0)
 
+    #display range
+    parser.add_argument('--display_range_left',type=int,help='The start position of display range (Global alignment with padding required)',default=0)
+    parser.add_argument('--display_range_right',type=int,help='Then end position of display range (Global alignment with padding requirement)',default=-1)
+
     #layout
 
     parser.add_argument('--logo_margin_ratio',type=float,help='Margin ratio between the logos',default=0.1)
@@ -113,6 +117,7 @@ def main():
                           tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
                           figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
                           char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
+                          display_range_left=display_range_left, display_range_right=display_range_right,
                           gap_score = args.gap_score,
                           padding_align = args.padding_align,
                           hide_version_tag=args.hide_version_tag,

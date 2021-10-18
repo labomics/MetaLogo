@@ -203,6 +203,7 @@ class LogoGroup(Item):
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
                  x_label = 'Position', y_label = 'bits',z_label = 'bits', show_grid = True, show_group_id = True,
+                 display_range_left = 0, display_range_right = -1,
                  hide_left_axis=False, hide_right_axis=False, hide_top_axis=False, hide_bottom_axis=False,
                  hide_x_ticks=False, hide_y_ticks=False, hide_z_ticks=False, 
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
@@ -235,6 +236,9 @@ class LogoGroup(Item):
         self.align_alpha = align_alpha
 
         self.padding_align = padding_align
+
+        self.display_range_left = display_range_left
+        self.display_range_right = display_range_right
 
         self.gap_score = gap_score
 
@@ -336,10 +340,25 @@ class LogoGroup(Item):
                     self.seq_bits = dict(zip(self.group_ids, new_seq_bits_list))
             
                 self.align_probs_bits()
+        
+        if self.padding_align:
+            if self.display_range_left == 0 or self.display_range_right == -1:
+                pass
 
+            self.task_name = f"MetaLogo (Display range: {self.display_range_left} to {self.display_range_right})"
+
+            new_probs = {}
+            new_bits = {}
+
+            for gid in self.group_ids:
+                new_probs[gid] = self.probs[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
+                new_bits[gid] = self.seq_bits[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
             
-
-
+            self.full_probs = self.probs.copy()
+            self.full_seq_bits = self.seq_bits.copy()
+            
+            self.probs = new_probs
+            self.seq_bits = new_bits
     
     def align_probs_bits(self):
         new_probs = {}
@@ -592,7 +611,7 @@ class LogoGroup(Item):
                 if i == len(self.logos) - 1:
                     ticklabels.append('%s'%round(height,2))
                 else:
-                    ticklabels.append('%s,0'%round(height,2))
+                    ticklabels.append('%s/0'%round(height,2))
         
             self.ax.set_yticks(ticks)
             self.ax.set_yticklabels(ticklabels)
@@ -735,8 +754,13 @@ class LogoGroup(Item):
     def get_entropy(self):
         ents = []
         #for grpid,probs in self.probs.items():
+
+        seq_probs = self.probs
+        if hasattr(self, 'full_probs'):
+            seq_probs = self.full_probs
+        
         for grpid in self.group_ids:
-            probs = self.probs[grpid]
+            probs = seq_probs[grpid]
             _ents = []
             _i = 0
             for pos in probs:
@@ -830,16 +854,25 @@ class LogoGroup(Item):
             return None
         if len(self.group_ids) < 2:
             return None
+
+        seq_bits = self.seq_bits        
+        if hasattr(self, 'full_seq_bits'):
+            seq_bits = self.full_seq_bits
+        
+        aligned_len =  len(seq_bits[self.group_ids[0]])
+        if aligned_len < 1:
+            return None
         
         bases = []
-        for i in range(len(self.seq_bits[self.group_ids[0]])):
+        for i in range(aligned_len):
             _bases = []
             for grp_id in self.group_ids:
-                _bases += [x[0] for x in self.seq_bits[grp_id][i]]
+                _bases += [x[0] for x in seq_bits[grp_id][i]]
             bases.append(sorted(list(set(_bases))))
+
         arrs = []
         for grp_id in self.group_ids:
-            bits = self.seq_bits[grp_id]
+            bits = seq_bits[grp_id]
             _arr = []
             for i in range(len(bits)):
                 _dict = dict(bits[i])
@@ -847,12 +880,16 @@ class LogoGroup(Item):
                     _arr.append(_dict.get(base,0))
             arrs.append(_arr)
         
-        df = pd.DataFrame(arrs)
-        df.index = self.group_ids
-        df = df.T
-        g = sns.clustermap(df.corr(method='pearson'))
-        g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
-        return g
+        
+        try:
+            df = pd.DataFrame(arrs)
+            df.index = self.group_ids
+            df = df.T
+            g = sns.clustermap(df.corr(method='pearson'))
+            g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
+            return g
+        except:
+            return None
 
     
     def get_grp_counts_figure(self):
