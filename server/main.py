@@ -1338,7 +1338,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
 
     output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
-    logogroup.savefig(output_name,bbox_inches='tight')
+    logogroup.savefig(output_name,bbox_inches=None)
 
     if download_format_dropdown != 'png':
         output_name = f'{PNG_PATH}/{uid}.png'
@@ -1350,6 +1350,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     fig = logogroup.get_grp_counts_figure().figure
     count_name = f'{PNG_PATH}/{uid}.counts.png'
     fig.savefig(count_name,bbox_inches='tight')
+    #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
     plt.close(fig)
     encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
     count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
@@ -1358,6 +1359,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     fig,ax = logogroup.get_entropy_figure()
     entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
     fig.savefig(entropy_name,bbox_inches='tight')
+    #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
     plt.close(fig)
     #fig.savefig(entropy_name, bbox_inches=extent)
 
@@ -1370,6 +1372,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
     fig = logogroup.get_boxplot_entropy_figure().figure
     fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+    #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
     plt.close(fig)
     boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
     boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
@@ -1380,6 +1383,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         fig = logogroup.get_correlation_figure()
         if fig:
             fig.savefig(clustermap_name,bbox_inches='tight')
+            #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
             clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
             clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
 

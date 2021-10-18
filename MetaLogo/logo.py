@@ -850,7 +850,10 @@ class LogoGroup(Item):
         df = pd.DataFrame(arrs)
         df.index = self.group_ids
         df = df.T
-        return sns.clustermap(df.corr(method='pearson'))
+        g = sns.clustermap(df.corr(method='pearson'))
+        g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
+        return g
+
     
     def get_grp_counts_figure(self):
         fig,ax = plt.subplots()
@@ -864,8 +867,3 @@ class LogoGroup(Item):
         ax.set_title('Sequence counts of each group')
 
         return ax
-
-
-        
-
-    
