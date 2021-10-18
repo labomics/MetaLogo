@@ -5,6 +5,7 @@ from .logo import LogoGroup
 from .utils import read_file
 from .colors import get_color_scheme
 from .version import __version__
+import matplotlib.pyplot as plt
 import json
 
 
@@ -91,6 +92,9 @@ def main():
     parser.add_argument('--output_dir',type=str,help='Output path of figure',default='.')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
 
+    #analysis
+    parser.add_argument('--analysis',action='store_true',dest='analysis',help='If perform basic analysis on data')
+
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
     
@@ -127,10 +131,35 @@ def main():
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
     print(f'{args.output_dir}/{args.output_name}',' saved')
+    base_name = '.'.join(args.output_name.split('.')[:-1]) 
     if not args.output_name.endswith('.png'):
-        base = '.'.join(args.output_name.split('.')[:-1]) 
-        logogroup.savefig(f'{args.output_dir}/{base}.png')
-        print(f'{args.output_dir}/{base}.png', ' saved')
+        logogroup.savefig(f'{args.output_dir}/{base_name}.png')
+        print(f'{args.output_dir}/{base_name}.png', ' saved')
+    
+    if args.analysis:
+
+        fig = logogroup.get_grp_counts_figure().figure
+        count_name = f'{args.output_dir}/{base_name}.counts.png'
+        fig.savefig(count_name,bbox_inches='tight')
+        plt.close(fig)
+
+
+        fig = logogroup.get_entropy_figure()
+        entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
+        fig.savefig(entropy_name,bbox_inches='tight')
+        plt.close(fig)
+
+        boxplot_entropy_name = f'{args.output_dir}/{base_name}.boxplot_entropy.png'
+        fig = logogroup.get_boxplot_entropy_figure().figure
+        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+        plt.close(fig)
+
+        if args.padding_align:
+            clustermap_name = f'{args.output_dir}/{basename}.clustermap.png'
+            fig = logogroup.get_correlation_figure()
+            if fig:
+                fig.savefig(clustermap_name,bbox_inches='tight')
+
     
 
 if __name__ == '__main__':

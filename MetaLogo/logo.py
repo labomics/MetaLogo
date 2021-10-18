@@ -843,7 +843,7 @@ class LogoGroup(Item):
 
         ##extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
 
-        return fig,ax#,extent
+        return fig
     
 
     def get_correlation_figure(self):

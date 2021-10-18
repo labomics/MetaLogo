@@ -306,6 +306,19 @@ input_submit =  html.Div(
     style={'marginTop':'10px','textAlign':'right'}
 )
 
+basic_analysis_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Basic analysis?", html_for="dropdown"),
+        dcc.Dropdown(
+            id="basic_analysis_dropdown",
+            options=[
+                {"label": "Yes", "value": 'Yes'},
+                {"label": "No", "value": 'No'}
+            ],
+            value='Yes'
+        ),
+    ]
+)
 
 input_panel = dbc.Card(
     [
@@ -316,6 +329,7 @@ input_panel = dbc.Card(
                     dbc.Col(input_format_dropdown),
                     dbc.Col(sequence_type_dropdown),
                     dbc.Col(grouping_by_dropdown),
+                    dbc.Col(basic_analysis_dropdown),
                 ]),
                 dbc.Row([
                     dbc.Col(min_len_input),
@@ -370,6 +384,8 @@ padding_align_dropdown = dbc.FormGroup(
         ),
     ]
 )
+
+
 align_metric = dbc.FormGroup(
     [
         dbc.Label("Score Metric", html_for="dropdown"),
@@ -1211,6 +1227,7 @@ def activate_display_range(padding):
         Input('submit4', 'n_clicks')
     ],
     [
+        State('basic_analysis_dropdown','value'),
         State('display_range_left','value'),
         State('display_range_right','value'),
         State('height_algorithm_dropdown','value'),
@@ -1253,6 +1270,7 @@ def activate_display_range(padding):
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            basic_analysis_dropdown,
             display_left, display_right,
             height_algorithm_dropdown,
             hide_version_checklist,
@@ -1267,7 +1285,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
-    
+
+    display_left = int(display_left) 
+    display_right = int(display_right) 
     if (display_left > display_right) and (display_right != -1):
         return '','Error','Display range left > Range right',True,'','','','','','','NA','NA','NA'
 
@@ -1388,46 +1408,52 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     encoded_image = base64.b64encode(open(output_name, 'rb').read())
     src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+
+    if basic_analysis_dropdown != 'Yes': 
+        count_src = ''
+        entropy_src = ''
+        boxplot_entropy_src = ''
+        clustermap_src = ''
+    else:
+        fig = logogroup.get_grp_counts_figure().figure
+        count_name = f'{PNG_PATH}/{uid}.counts.png'
+        fig.savefig(count_name,bbox_inches='tight')
+        #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
+        plt.close(fig)
+        encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
+        count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
+
+
+        fig = logogroup.get_entropy_figure()
+        entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
+        fig.savefig(entropy_name,bbox_inches='tight')
+        #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
+        plt.close(fig)
+        #fig.savefig(entropy_name, bbox_inches=extent)
+
+        encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
+        entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
     
-    fig = logogroup.get_grp_counts_figure().figure
-    count_name = f'{PNG_PATH}/{uid}.counts.png'
-    fig.savefig(count_name,bbox_inches='tight')
-    #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
-    plt.close(fig)
-    encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
-    count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
 
 
-    fig,ax = logogroup.get_entropy_figure()
-    entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
-    fig.savefig(entropy_name,bbox_inches='tight')
-    #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-    plt.close(fig)
-    #fig.savefig(entropy_name, bbox_inches=extent)
+#ent    ropy_boxplot_img_res
+        boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
+        fig = logogroup.get_boxplot_entropy_figure().figure
+        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+        #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
+        plt.close(fig)
+        boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
+        boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
 
-    encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
-    entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
-    
-
-
-#entropy_boxplot_img_res
-    boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
-    fig = logogroup.get_boxplot_entropy_figure().figure
-    fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-    #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-    plt.close(fig)
-    boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
-    boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
-
-    clustermap_src = ''
-    if padding_align:
-        clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
-        fig = logogroup.get_correlation_figure()
-        if fig:
-            fig.savefig(clustermap_name,bbox_inches='tight')
-            #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
-            clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
-            clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
+        clustermap_src = ''
+        if padding_align:
+            clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
+            fig = logogroup.get_correlation_figure()
+            if fig:
+                fig.savefig(clustermap_name,bbox_inches='tight')
+                #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
+                clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
+                clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
 
 
     if height_algorithm_dropdown == 'bits':
