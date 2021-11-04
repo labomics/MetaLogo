@@ -219,11 +219,18 @@ grouping_by_dropdown = dbc.FormGroup(
         dcc.Dropdown(
             id="grouping_by_dropdown",
             options=[
+                {"label": "Auto", "value": 'auto'},
                 {"label": "Length", "value": 'length'},
                 {"label": "Seq identifier", "value": 'identifier'},
             ],
-            value='length'
+            value='auto'
         ),
+    ]
+)
+grouping_resolution = dbc.FormGroup(
+    [
+        dbc.Label("Grouping resolution",html_for='input'),
+        dbc.Input(type="float", min=0, max=1, value=0.5, id="grouping_resolution"),
     ]
 )
 max_len_input = dbc.FormGroup(
@@ -328,8 +335,11 @@ input_panel = dbc.Card(
                 dbc.Row([
                     dbc.Col(input_format_dropdown),
                     dbc.Col(sequence_type_dropdown),
-                    dbc.Col(grouping_by_dropdown),
                     dbc.Col(basic_analysis_dropdown),
+                ]),
+                dbc.Row([
+                    dbc.Col(grouping_by_dropdown),
+                    dbc.Col(grouping_resolution),
                 ]),
                 dbc.Row([
                     dbc.Col(min_len_input),
@@ -1133,7 +1143,7 @@ def change_default_order(sort_by_value):
     if sort_by_value == 'identifier':
         return 'identifier' 
     else:
-        return 'length'
+        return 'auto'
 
 @app.callback(
     [
@@ -1387,7 +1397,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           display_range_left = display_left, display_range_right = display_right,
                           char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
                           gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
-                          sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown
+                          sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown,
+                          seq_file = seq_file, fa_output_dir = FA_PATH, uid=uid,
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

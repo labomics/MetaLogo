@@ -12,6 +12,8 @@ import mpl_toolkits.mplot3d.art3d as art3d
 from matplotlib.text import TextPath
 from matplotlib.transforms import Affine2D
 
+from .pholy import auto_detect_groups
+
 
 
 
@@ -49,7 +51,8 @@ def read_file(filename, filetype, min_length, max_length):
 
     return [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>=min_length) and (len(seq_dict[seqname])<=max_length)]
 
-def grouping(seqs,group_by='length'):
+def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustalo_bin='',uid='',fa_output_dir=''):
+    print('group_by:', group_by)
 
     groups_dict = {}
     if group_by.lower() == 'length':
@@ -58,7 +61,7 @@ def grouping(seqs,group_by='length'):
             if key not in groups_dict:
                 groups_dict[key] = []
             groups_dict[key].append([name,seq])
-    if group_by.lower() == 'identifier':
+    elif group_by.lower() == 'identifier':
         for name,seq in seqs:
             group_pat = re.search('group@(\d+-\S+)',name)
             if group_pat:
@@ -66,6 +69,9 @@ def grouping(seqs,group_by='length'):
                 if group_id not in groups_dict:
                     groups_dict[group_id] = []
                 groups_dict[group_id].append([name,seq])
+    elif group_by.lower() == 'auto':
+        auto_detect_groups(seqs,seq_file,group_resolution,clustalo_bin,uid,fa_output_dir)
+        pass
     return groups_dict
 
 def check_group(groups):
@@ -233,3 +239,9 @@ def detect_seq_type(seqs):
     
     return seq_type
     
+def save_seqs(seqs, filename):
+    with open(filename,'w') as outpf:
+        for seqname,seq in seqs:
+            outpf.write(f'>{seqname}\n')
+            outpf.write(f'{seq}\n')
+

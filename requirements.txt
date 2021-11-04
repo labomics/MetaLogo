@@ -10,3 +10,4 @@ plotly==5.1.0
 scipy==1.5.2
 seaborn==0.11.1
 toml==0.10.2
+treecluster==1.0.3

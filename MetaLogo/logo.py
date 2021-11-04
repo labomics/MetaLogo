@@ -24,6 +24,8 @@ import math
 import re
 import time
 import pandas as pd
+import pathlib
+import os
 
 from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
@@ -198,7 +200,7 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
+    def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', group_resolution=0.5, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
@@ -209,11 +211,15 @@ class LogoGroup(Item):
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
+                 seq_file = '', fa_output_dir = '', uid = '',
+                 clustalo_bin = '',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
+        self.seq_file = seq_file
         self.group_order = group_order
         self.group_strategy = group_strategy
+        self.group_resolution = group_resolution
         self.start_pos = start_pos
         self.logo_margin_ratio = logo_margin_ratio
         self.column_margin_ratio = column_margin_ratio
@@ -268,6 +274,10 @@ class LogoGroup(Item):
 
         self.hide_version_tag = hide_version_tag
 
+        self.clustalo_bin = clustalo_bin
+        self.fa_output_dir = fa_output_dir
+        self.uid = uid
+
 
         if sequence_type == 'auto':
             self.sequence_type = detect_seq_type(self.seqs)
@@ -277,6 +287,7 @@ class LogoGroup(Item):
 
         self.logos = []
 
+        self.prep_env()
 
         self.prepare_bits()
 
@@ -285,11 +296,45 @@ class LogoGroup(Item):
         else:
             self.ax = ax
         self.generate_components()
+    
+    def prep_env(self):
+
+        print('in prep env')
+
+        if self.clustalo_bin == '':
+            cur_path = pathlib.Path().resolve()
+            os.makedirs(f'{cur_path}/bins',exist_ok = True)
+            self.clustalo_bin = f'{cur_path}/bins/clustalo'
+            if not os.path.exists(f'{cur_path}/bins/clustalo'):
+                #determine os
+                import platform
+                import struct
+                platform = platform.system()
+                url = ''
+                if platform == 'Linux':
+                    is_64bit = struct.calcsize('P') * 8 == 64
+                    if is_64bit:
+                        url = 'wget http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64'
+                    else:
+                        url = 'http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-32-bit'
+                elif platform == 'Darwin':
+                    url = 'http://www.clustal.org/omega/clustal-omega-1.2.3-macosx'
+            
+                os.system(f'wget {url} -O {cur_path}/bins/clustalo')
+                os.system(f'chmod u+x {cur_path}/bins/clustalo')
+        
+        print('self clustalo_bin:', self.clustalo_bin)
+        print('self clustalo_bin:', self.clustalo_bin)
+        print('self clustalo_bin:', self.clustalo_bin)
+        print('self clustalo_bin:', self.clustalo_bin)
+
 
     
     def prepare_bits(self):
         
-        self.groups = grouping(self.seqs,group_by=self.group_strategy)
+        self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
+                               group_resolution=self.group_resolution,clustalo_bin=self.clustalo_bin,
+                               uid=self.uid,fa_output_dir=self.fa_output_dir)
         check_group(self.groups)
 
         self.probs = compute_prob(self.groups,threshold=self.omit_prob)
