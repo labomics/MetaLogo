@@ -70,8 +70,8 @@ def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustalo_bin=
                     groups_dict[group_id] = []
                 groups_dict[group_id].append([name,seq])
     elif group_by.lower() == 'auto':
-        auto_detect_groups(seqs,seq_file,group_resolution,clustalo_bin,uid,fa_output_dir)
-        pass
+        groups_dict = auto_detect_groups(seqs,seq_file,group_resolution,clustalo_bin,uid,fa_output_dir)
+    
     return groups_dict
 
 def check_group(groups):

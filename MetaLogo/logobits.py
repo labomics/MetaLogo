@@ -18,9 +18,11 @@ def compute_prob(groups,threshold=0):
     for gid,_counts in counts.items():
         _probs = []
         for i in range(len(_counts)):
-            total = sum(_counts[i].values())
+            #total = sum(_counts[i].values())
+            total = sum(_counts.get(i,{}).values())
             _ps = []
-            for base in sorted(_counts[i].keys()):
+            #for base in sorted(_counts[i].keys()):
+            for base in sorted(_counts.get(i,{}).keys()):
                 ration = _counts[i][base]/total
                 if ration < threshold:
                     continue

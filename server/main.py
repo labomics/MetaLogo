@@ -230,7 +230,7 @@ grouping_by_dropdown = dbc.FormGroup(
 grouping_resolution = dbc.FormGroup(
     [
         dbc.Label("Grouping resolution",html_for='input'),
-        dbc.Input(type="float", min=0, max=1, value=0.5, id="grouping_resolution"),
+        dbc.Input(type="float", min=0, max=10, value=0.5, id="grouping_resolution"),
     ]
 )
 max_len_input = dbc.FormGroup(
@@ -482,6 +482,7 @@ sort_dropdown = dbc.FormGroup(
                 {"label": "Length Reverse", "value": 'length_reverse'},
                 {"label": "Group Id", "value": 'identifier'},
                 {"label": "Group Id Reverse", "value": 'identifier_reverse'},
+                {"label": "Auto", "value": 'auto'},
             ],
             value='length'
         ),
@@ -1142,6 +1143,8 @@ def udpate_download(n_clicks,uid,format,src):
 def change_default_order(sort_by_value):
     if sort_by_value == 'identifier':
         return 'identifier' 
+    elif sort_by_value == 'length':
+        return 'length' 
     else:
         return 'auto'
 

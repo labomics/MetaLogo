@@ -324,9 +324,6 @@ class LogoGroup(Item):
                 os.system(f'chmod u+x {cur_path}/bins/clustalo')
         
         print('self clustalo_bin:', self.clustalo_bin)
-        print('self clustalo_bin:', self.clustalo_bin)
-        print('self clustalo_bin:', self.clustalo_bin)
-        print('self clustalo_bin:', self.clustalo_bin)
 
 
     
@@ -354,9 +351,13 @@ class LogoGroup(Item):
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0])
             elif self.group_order.lower() == 'identifier_reverse':
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0], reverse=True)
+            elif self.group_ids == 'auto':
+                self.group_ids = list(self.seq_bits.keys())
         except Exception as e:
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
+        
+        print('group_ids:',self.group_ids)
         
         if self.height_algorithm == 'bits':
             to_del_ids = []

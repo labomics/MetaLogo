@@ -16,4 +16,5 @@ baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 #bins
 clustalo_bin = '/home/achen/softwares/clustalo-1.2.4-Ubuntu-x86_64'
 rate4site_bin = ''
+treecluster_bin  = ''
 
