@@ -113,58 +113,7 @@ with open('server/assets/baidu.js','w') as outpf:
 alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-','B','J','O','U','X','Z']
 
 
-nav = dbc.Nav(
-    [
-        dbc.NavItem(dbc.NavLink("Tutorial",  href="https://github.com/labomics/MetaLogo/wiki/Web-server/",target='_blank')),
-        dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
-        dbc.NavItem(dbc.NavLink("Paper",  target="_blank",href='https://www.biorxiv.org/content/10.1101/2021.08.12.456038v1')),
-        dbc.NavItem(dbc.NavLink("Lab",  href="http://omicsnet.org",target='_blank')),
-        dbc.NavItem(dbc.NavLink("Feedback", href="mailto:achenge07@163.com", target='_blank')),
-    ]
-)
-toppanel = html.Div(
-    [
-        dbc.Row([
-            dbc.Col(dbc.Row([html.H1(['MetaLogo']),html.Span(MetaLogo.__version__,style={'color':'grey'})])),
-            ],
-            style={'marginTop':'10px'}
-        ),
-        dbc.Row(nav)
-    ]
-)
-about_md = dcc.Markdown('''
-**MetaLogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can take multiple sets of sequences as input, with different lengths or other characteristics, integrate the logos into one single figure and align them through certain algorithms, so as to display the total sequence population in a more detailed and dynamic view.
 
-Users can choose to group sequences by length, or divide sequences of the same length into multiple groups. For each group, MetaLogo will draw a sequence logo separately. At the logo level, alignment is performed through a modified version of sequence alignment and multiple sequence alignment algorithms.
-
-There are a total of 4 different logo layouts for users to choose from, such as horizontal, circular, radial and 3D logos, which are suitable for different scenes. At the same time, there are many different algorithms to choose from for the logo comparison and alignment.
-
-Users can customize most of the elements of drawing, including title, axis, ticks, labels, font color, graphic size, etc. At the same time, it can export a variety of formats including PDF, PNG, SVG and so on. Users do not need any programming experience at all to make publication-level pictures.
-
-Due to server resource limitations, this tool has a limit on the number of input sequences. But we also provide a python package that can be run independently, which can facilitate users to integrate the drawing code in their own projects or deploy them on high-performance computing nodes. In addition, we also provide a convenient server dockerfile for users to perform convenient graphical visualization operations locally.
-
-If you think this tool is easy to use, please share it with those who need it. If you have any comments, you can send an email to the maintainer via the feedback button at the top. When our article gets published, please remember to cite our work.
-
-
-''')  
-
-about_panel = dbc.Card(
-    [
-        dbc.CardHeader("About MetaLogo"),
-        dbc.CardBody(
-            [
-                dbc.Row([
-                    dbc.Col(html.Div(html.Img(src='/assets/introduction.PNG',width='100%')))
-                ])
-                ,
-                dbc.Row([
-                    dbc.Col(about_md),
-                ]),
-
-            ]
-        )
-    ],style={'marginBottom':'10px'}
-)
 
 input_format_dropdown = dbc.FormGroup(
     [
@@ -931,9 +880,7 @@ footer_panel = html.Div([
 
 
 layout = dbc.Container(children=[
-        toppanel,
         html.Hr(),
-        about_panel,
         input_panel,
         algorithm_panel,
         layout_panel,
@@ -1460,4 +1407,13 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
     else:
         return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
+
+if __name__ == '__main__':
+
+    if not os.path.exists(PNG_PATH):
+        os.makedirs(PNG_PATH, exist_ok=True)
+    if not os.path.exists(FA_PATH):
+        os.makedirs(FA_PATH, exist_ok=True)
+
+    app.run_server(debug=True)
 
