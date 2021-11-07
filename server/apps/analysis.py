@@ -868,16 +868,6 @@ analysis_panel = dbc.Card(
     ], id='analysis_panel', style={'marginTop':'20px'}
 )
 
-footer_panel = html.Div([
-    dbc.Row([
-        dbc.Col(['© Developed by Yaowen Chen @ Beijing Institute of Basic Medical Sciences by using ', 
-                html.A('Matplotlib',href='https://matplotlib.org/'),' and ', html.A('Plotly Dash',href='https://dash.plotly.com/')],
-                )
-    ]),
-    dbc.Row(dbc.Col('Jun, 2021'))
-],style={"textAlign":"center","marginTop":"40px","fontSize":"10px","color":"grey"})
-
-
 
 layout = dbc.Container(children=[
         html.Hr(),
@@ -887,7 +877,6 @@ layout = dbc.Container(children=[
         style_panel,
         analysis_panel,
         result_panel,
-        footer_panel,
         modal,
         result_modal,
         loading_spinner,

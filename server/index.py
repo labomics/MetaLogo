@@ -31,6 +31,16 @@ toppanel = html.Div(
     ]
 )
 
+footer_panel = html.Div([
+    dbc.Row([
+        dbc.Col(['© Developed by Yaowen Chen @ Beijing Institute of Basic Medical Sciences by using ', 
+                html.A('Matplotlib',href='https://matplotlib.org/'),' and ', html.A('Plotly Dash',href='https://dash.plotly.com/')],
+                )
+    ]),
+    dbc.Row(dbc.Col('Jun, 2021'))
+],style={"textAlign":"center","marginTop":"40px","fontSize":"10px","color":"grey"})
+
+
 layout = dbc.Container(children=[
     toppanel
 ])
@@ -38,7 +48,8 @@ layout = dbc.Container(children=[
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     layout,
-    html.Div(id='page-content')
+    html.Div(id='page-content'),
+    footer_panel
 ])
 
 # "complete" layout
