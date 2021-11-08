@@ -7,7 +7,6 @@ from .app import app
 from .apps import results, analysis,about
 import MetaLogo
 
-
 nav = dbc.Nav(
     [
         dbc.NavItem(dbc.NavLink("About", href="/about",id='jump_about')),

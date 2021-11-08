@@ -23,3 +23,4 @@ app = dash.Dash(
 )
 app.title = "MetaLogo, multiple sequence logos generator and aligner"
 
+

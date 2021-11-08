@@ -42,6 +42,11 @@ from MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_co
 import json
 import toml
 
+from contextlib import closing
+import sqlite3
+
+
+
 from ..app import app
 
 #read config file
@@ -55,6 +60,7 @@ MAX_INPUT_SIZE = 5242880
 MAX_SEQ_LEN = 100
 GOOGLE_ANALYTICS_ID = ''
 BAIDU_TONGJI_ID = ''
+SQLITE3_DB = 'db/metalogo.db'
 
 if os.path.exists('server.toml'):
     paras_dict = toml.load('server.toml')
@@ -76,6 +82,8 @@ if os.path.exists('server.toml'):
         GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
     if 'baidu_tongji_id' in paras_dict:
         BAIDU_TONGJI_ID = paras_dict['baidu_tongji_id']
+    if 'sqlite_db' in paras_dict:
+        SQLITE3_DB = paras_dict['sqlite_db']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
@@ -113,6 +121,31 @@ with open('server/assets/baidu.js','w') as outpf:
 alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-','B','J','O','U','X','Z']
 
 
+
+def get_status(uid):
+    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
+        with closing(connection.cursor()) as cursor:
+            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
+            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
+            if len(rows) == 1:
+                return rows[0][1]
+            else:
+                return 'not found'
+    
+
+def write_status(uid,status):
+    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
+        print(SQLITE3_DB)
+        with closing(connection.cursor()) as cursor:
+            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
+            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
+            if len(rows) == 1:
+                cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
+            else:
+                print('insert')
+                print(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
+                cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
+        connection.commit()
 
 
 input_format_dropdown = dbc.FormGroup(
@@ -1231,8 +1264,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
         return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','','NA','NA','NA'
 
-
-
     seqs = []
     if (file_upload_content is not None) and (len(file_upload_content)>0 and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0)):
         response = handle_seqs_file(file_upload_content,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
@@ -1250,9 +1281,16 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,'','','','','','','NA','NA','NA'
+    
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
+
+    print('xxxxx')
+    print(get_status(uid))
+    write_status(uid,'running')
+    print('xxxxx')
+
     seq_file = f"{FA_PATH}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
 

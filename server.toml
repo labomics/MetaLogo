@@ -18,3 +18,5 @@ clustalo_bin = '/home/achen/softwares/clustalo-1.2.4-Ubuntu-x86_64'
 rate4site_bin = ''
 treecluster_bin  = ''
 
+sqlite3_db = 'db/metalogo.db'
+
