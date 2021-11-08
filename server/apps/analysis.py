@@ -14,6 +14,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 
 from ..handle_seqs import handle_seqs_str,handle_seqs_file
 from ..handle_seqs import save_seqs
@@ -915,6 +916,8 @@ layout = dbc.Container(children=[
         loading_spinner,
         html.Div('',id='functional_garbage',style={'display':'none'}),
         html.Div('',id='garbage',style={'display':'none'}),
+        html.Div('',id='garbage2',style={'display':'none'}),
+        html.Div('',id='finished_item',style={'display':'none'})
        ])
 
 
@@ -1164,7 +1167,28 @@ def activate_display_range(padding):
         return None,None 
     else:
         return 'disabled','disabled'
-   
+
+app.clientside_callback(
+    """
+    function(finished) {
+        if (finished.startsWith('finished')){
+            window.open('/results/'+finished.substr(8),'_self');
+        }
+    }
+    """,
+    Output('garbage2', 'children'),
+    Input('finished_item', 'children'),
+)
+
+#@app.callback(
+#    Output("url","pathname"),
+#    Input("finished_item","children")
+#)   
+#def gotoresult(status):
+#    if status.startswith('finished'):
+#        return '/results/' + status.replace('finished','')
+#    else:
+#        raise PreventUpdate
 
 
 
@@ -1174,15 +1198,7 @@ def activate_display_range(padding):
         Output('modal_header', 'children'),
         Output('modal_body', 'children'),
         Output('modal', 'is_open'),
-        Output('img_res', 'src'),
-        Output('count_img_res', 'src'),
-        Output('entropy_img_res', 'src'),
-        Output('entropy_boxplot_img_res', 'src'),
-        Output('clustermap_img_res', 'src'),
-        Output('functional_garbage','children'),
-        Output("seq_type_txt","children"),
-        Output("seq_count_txt","children"),
-        Output("group_count_txt","children"),
+        Output('finished_item', 'children'),
     ],
     [
         Input('submit1', 'n_clicks'),
@@ -1253,16 +1269,16 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     display_left = int(display_left) 
     display_right = int(display_right) 
     if (display_left > display_right) and (display_right != -1):
-        return '','Error','Display range left > Range right',True,'','','','','','','NA','NA','NA'
+        return '','Error','Display range left > Range right',True,''
 
     if display_left < 0:
-        return '','Error','Display range left illegal',True,'','','','','','','NA','NA','NA'
+        return '','Error','Display range left illegal',True,''
 
     if max_len_input < min_len_input:
-        return '','Error','Maximum length < Minimum length',True,'','','','','','','NA','NA','NA'
+        return '','Error','Maximum length < Minimum length',True,''
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
-        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,'','','','','','','NA','NA','NA'
+        return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,''
 
     seqs = []
     if (file_upload_content is not None) and (len(file_upload_content)>0 and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0) and (len(file_upload_content)>0)):
@@ -1270,26 +1286,23 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     elif len(seq_textarea) != 0:
         response = handle_seqs_str(seq_textarea,format=input_format_dropdown,sequence_type=sequence_type_dropdown)
     if not response['successful']:
-        return '','Error',response['msg'],True,'','','','','','','NA','NA','NA'
+        return '','Error',response['msg'],True,''
     seqs = response['res']['seqs']
     sequence_type = response['res']['sequence_type']
 
     seqs = [(name,seq) for name,seq in seqs  if ((len(seq)>=min_len_input) and (len(seq)<=max_len_input))]
 
     if len(seqs) > MAX_SEQ_LIMIT:
-        return '','Error','Sequence number exceed the limitation',True,'','','','','','','NA','NA','NA'
+        return '','Error','Sequence number exceed the limitation',True,''
 
     if len(seqs) == 0:
-        return '','Error','Detect no sequences with limited lengths',True,'','','','','','','NA','NA','NA'
+        return '','Error','Detect no sequences with limited lengths',True,''
     
 
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
 
-    print('xxxxx')
-    print(get_status(uid))
     write_status(uid,'running')
-    print('xxxxx')
 
     seq_file = f"{FA_PATH}/server-{uid}.fasta"
     save_seqs(seqs, seq_file)
@@ -1357,83 +1370,134 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           char_margin_ratio = char_margin_input, align_color=align_color,align_alpha=align_alpha ,
                           gap_score = gap_score, padding_align = padding_align, hide_version_tag=hide_version_tag,
                           sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown,
-                          seq_file = seq_file, fa_output_dir = FA_PATH, uid=uid,
+                          seq_file=seq_file, fa_output_dir = FA_PATH, uid=uid,
+                          min_length=min_len_input,max_length=max_len_input,seq_file_type=input_format_dropdown,
+                          sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
         toml.dump(config, f)
+    
+    cmd = f"python -m MetaLogo.entry --config {CONFIG_PATH}/{uid}.toml &"
+    print(cmd)
+    os.system(cmd)
 
-    logogroup = LogoGroup(seqs, **config)
+    return '','','',False,f'finished{uid}'
+    
+    #cmd = f"python -m MetaLogo.entry --seq_file {seq_file} --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} --type {logo_shape_dropdown} \
+    #        --align_metric {align_metric} --connect_threshold {connect_threshold} \
+    #        --color_scheme_json_string '{json.dumps(color_scheme)}' --task_name '{title_input}'  \
+    #        --x_label '{xlabel_input}' --y_label '{ylabel_input}' --z_label '{zlabel_input}'    \
+    #        --title_size {title_size} --label_size {label_size} --group_id_size {id_size}    \
+    #        --tick_size {tick_size} --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} \
+    #        --figure_size_x {width_input} --figure_size_y {height_input}   \
+    #        --display_range_left {display_left} --display_range_right {display_right}   \
+    #        --char_margin_ratio {char_margin_input} --align_color '{align_color}' --align_alpha {align_alpha}    \
+    #        --gap_score {gap_score}      \
+    #        --sequence_type {sequence_type} --height_algorithm {height_algorithm_dropdown}    \
+    #        --fa_output_dir {FA_PATH} --uid {uid} "
+    #if align:
+    #    cmd += ' --align '
+    #if hide_left:
+    #    cmd += ' --hide_left_axis '
+    #if hide_right:
+    #    cmd += ' --hide_right_axis '
+    #if hide_bottom:
+    #    cmd += ' --hide_bottom_axis '
+    #if hide_top:
+    #    cmd += ' --hide_top_axis '
+    #if show_grid:
+    #    cmd += ' --show_grid '
+    #if show_group_id:
+    #    cmd += ' --show_group_id '
+    #if hide_x_ticks:
+    #    cmd += ' --hide_x_ticks '
+    #if hide_y_ticks:
+    #    cmd += ' --hide_y_ticks '
+    #if hide_z_ticks:
+    #    cmd += ' --hide_z_ticks '
+    #if padding_align:
+    #    cmd += ' --pading_align '
+    #if hide_version_tag:
+    #    cmd += ' --hide_version_tag '
 
-       
-    logogroup.draw()
-
-
-    output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
-    logogroup.savefig(output_name,bbox_inches=None)
-
-    if download_format_dropdown != 'png':
-        output_name = f'{PNG_PATH}/{uid}.png'
-        logogroup.savefig(output_name,bbox_inches='tight')
-
-    encoded_image = base64.b64encode(open(output_name, 'rb').read())
-    src = 'data:image/png;base64,{}'.format(encoded_image.decode())
-
-    if basic_analysis_dropdown != 'Yes': 
-        count_src = ''
-        entropy_src = ''
-        boxplot_entropy_src = ''
-        clustermap_src = ''
-    else:
-        fig = logogroup.get_grp_counts_figure().figure
-        count_name = f'{PNG_PATH}/{uid}.counts.png'
-        fig.savefig(count_name,bbox_inches='tight')
-        #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
-        plt.close(fig)
-        encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
-        count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
-
-
-        fig = logogroup.get_entropy_figure()
-        entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
-        fig.savefig(entropy_name,bbox_inches='tight')
-        #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-        plt.close(fig)
-        #fig.savefig(entropy_name, bbox_inches=extent)
-
-        encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
-        entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
+    #cmd += '&'
+    #print(cmd)
+    #os.system(cmd)
     
 
 
-#ent    ropy_boxplot_img_res
-        boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
-        fig = logogroup.get_boxplot_entropy_figure().figure
-        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-        #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-        plt.close(fig)
-        boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
-        boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
+    #logogroup = LogoGroup(seqs, **config)
 
-        clustermap_src = ''
-        if padding_align:
-            clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
-            fig = logogroup.get_correlation_figure()
-            if fig:
-                fig.savefig(clustermap_name,bbox_inches='tight')
-                #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
-                clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
-                clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
+    #   
+    #logogroup.draw()
 
 
-    if height_algorithm_dropdown == 'bits':
-        cnt = 0
-        for grp in logogroup.groups:
-            if len(logogroup.groups[grp]) > 1:
-                cnt += 1
-        return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
-    else:
-        return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
+    #output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
+    #logogroup.savefig(output_name,bbox_inches=None)
+
+    #if download_format_dropdown != 'png':
+    #    output_name = f'{PNG_PATH}/{uid}.png'
+    #    logogroup.savefig(output_name,bbox_inches='tight')
+
+    #encoded_image = base64.b64encode(open(output_name, 'rb').read())
+    #src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+
+    #if basic_analysis_dropdown != 'Yes': 
+    #    count_src = ''
+    #    entropy_src = ''
+    #    boxplot_entropy_src = ''
+    #    clustermap_src = ''
+    #else:
+    #    fig = logogroup.get_grp_counts_figure().figure
+    #    count_name = f'{PNG_PATH}/{uid}.counts.png'
+    #    fig.savefig(count_name,bbox_inches='tight')
+    #    #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
+    #    plt.close(fig)
+    #    encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
+    #    count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
+
+
+    #    fig = logogroup.get_entropy_figure()
+    #    entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
+    #    fig.savefig(entropy_name,bbox_inches='tight')
+    #    #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
+    #    plt.close(fig)
+    #    #fig.savefig(entropy_name, bbox_inches=extent)
+
+    #    encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
+    #    entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
+    
+
+
+#ent#    ropy_boxplot_img_res
+    #    boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
+    #    fig = logogroup.get_boxplot_entropy_figure().figure
+    #    fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+    #    #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
+    #    plt.close(fig)
+    #    boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
+    #    boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
+
+    #    clustermap_src = ''
+    #    if padding_align:
+    #        clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
+    #        fig = logogroup.get_correlation_figure()
+    #        if fig:
+    #            fig.savefig(clustermap_name,bbox_inches='tight')
+    #            #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
+    #            clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
+    #            clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
+
+
+    #if height_algorithm_dropdown == 'bits':
+    #    cnt = 0
+    #    for grp in logogroup.groups:
+    #        if len(logogroup.groups[grp]) > 1:
+    #            cnt += 1
+    #    return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
+    #else:
+    #    return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
 
 if __name__ == '__main__':
 

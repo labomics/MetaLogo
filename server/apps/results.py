@@ -10,13 +10,14 @@ import flask
 from dash.dependencies import Input, Output, State
 import os
 
+
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB
+from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH
 
 from contextlib import closing
 import sqlite3
 from dash.exceptions import PreventUpdate
-
+import base64
 
 
 def get_status(uid):
@@ -33,21 +34,27 @@ def get_status(uid):
 def get_layout():
     uid_input = dbc.FormGroup(
         [
-            dbc.Label("Please input the job ID and click the Search button",html_for='input'),
+            dbc.Label("Please input the job ID and click the Search button",html_for='input',id='input_label'),
             dbc.Input(type="string", id="uid_input"),
         ])
     search_btn = html.Div(
-                [dbc.Button("Check", color='primary',id='search_btn',n_clicks=0)],
+                #[dbc.Button("Check", color='primary',id='search_btn',n_clicks=0)],
+                [dbc.NavLink("Check", href="results",target='_self',id='search_btn')],
                 style={'marginTop':'20px','textAlign':'right'})
 
     not_found_panel = html.Div(
         [html.Span('Task id not found, please input the right id and click the check button', id='not_found_span', style={'display':'none'})], style={'fontSize':'25px','color':'#ff3400','margin':'20px'}
     )
+
+    error_panel = html.Div(
+        [html.Span('Task failed', id='error_span', style={'display':'none'})], style={'fontSize':'25px','color':'#ff3400','margin':'20px'}
+    )
+
     running_panel = html.Div(
         [
             html.Span(
                 [
-                    html.Div('The task is running, please check it later.'), 
+                    html.Div('The task is still running, please check it later.'), 
                     html.Div(
                         [ 
                             html.Span('The page will be refreshed after '),
@@ -104,6 +111,9 @@ def get_layout():
             dbc.CardHeader("Sequence Logo"),
             dbc.CardBody(
                 [
+                    dbc.Row([
+                        html.Img(id='logo_img',src='',style={"width":"100%","margin":"auto"}),
+                    ]),
                 ]
             )
         ],style={'marginBottom':'10px'},id='seqlogo_panel'
@@ -163,6 +173,7 @@ def get_layout():
             search_btn,
             html.Hr(),
             not_found_panel,
+            error_panel,
             running_panel,
             html.Div([
                 task_info_panel,
@@ -176,7 +187,8 @@ def get_layout():
                 id='interval-component',
                 interval=1000,
                 n_intervals=0
-            )
+            ),
+            html.Div('',id='garbage3',style={'display':'none'}),
     ])
 
     return layout
@@ -184,25 +196,36 @@ def get_layout():
 
 @app.callback(
                 Output('uid_input', 'value'),
-                Input('url', 'pathname'),
+                Input('url', 'href'),
+                State('url','pathname')
             )
-def display_page(pathname):
+def display_page(href,pathname):
 
-    if ('/results' in pathname) and (not pathname == '/results'):
-        return pathname.split('/')[-1]
+    print('href: ', href)
+    print('pathname: ', href)
+
+    uid_arr = href.split('/results/')
+    if len(uid_arr) > 1:
+        return uid_arr[-1].split('#')[0]
     else:
         return ''
-
 @app.callback(
-    Output("url","pathname"),
-    Input('search_btn','n_clicks'),
-    State('uid_input','value'), prevent_initial_call=True
+    Output("search_btn","href"),
+    Input("uid_input","value")
 )
-def navigate(n_clicks,uid):
-    if n_clicks > 0:
-        return f'/results/{uid}'
-    else:
-        raise PreventUpdate
+def change_link(uid):
+    return f'/results/{uid}'
+#@app.callback(
+#    Output("url","pathname"),
+#    Input('search_btn','n_clicks'),
+#    State('uid_input','value'), prevent_initial_call=True
+#)
+#def navigate(n_clicks,uid):
+#    if n_clicks > 0:
+#        return f'/results/{uid}'
+#    else:
+#        raise PreventUpdate
+
 
 def get_left_time(n_intervals):
 
@@ -239,7 +262,9 @@ def fire_trigger(n_intervals,old_trigger):
         Output('uid_span','children') ,
         Output('not_found_span','style'),
         Output('running_span','style'),
+        Output('error_span','style'),
         Output('result_panel','style'),
+        Output('logo_img','src')
     ],
     [
         Input('trigger_panel','children'),
@@ -260,15 +285,25 @@ def trigger(uid,pathname):
 
     if status == 'not found':
         LOADED = True
-        results_arr += [{},{'display':'none'},{'display':'none'}]
+        results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'}]
     elif status == 'running':
         LOADED = False
-        results_arr += [{'display':'none'},{},{'display':'none'}]
+        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'}]
+    elif status == 'error':
+        LOADED = True
+        results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'}]
     elif status == 'finished':
-        results_arr += [{'display':'none'},{'display':'none'},{}]
+        results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{}]
         LOADED = True
     else:
+
         LOADED = True
+
+    src = '' 
+    if LOADED and status == 'finished':
+        encoded_image = base64.b64encode(open(f'{PNG_PATH}/{uid}.png', 'rb').read())
+        src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+    results_arr += [src]
     
     return results_arr
 

@@ -15,6 +15,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     external_scripts=external_scripts,
     server=server,
+    update_title=None,
     meta_tags=[{
         'name': 'description',
         'content': 'A website to plot and align multiple sequences logos on one single figure,it can integrate the logo images of sequece of different lengths, and align them through algorithms, so as to display the samples in a more macroscopic view.'
