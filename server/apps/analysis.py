@@ -46,6 +46,10 @@ import toml
 from contextlib import closing
 import sqlite3
 
+from rq import Connection, Queue
+from redis import Redis
+from ..run_metalogo import execute
+
 
 
 from ..app import app
@@ -830,78 +834,6 @@ loading_spinner = html.Div(
         dbc.Spinner(html.Div(id="loading-output"),fullscreen=True,fullscreen_style={"opacity":"0.8"}),
     ]
 )
-result_panel = dbc.Card(
-    [
-        dbc.CardHeader("Sequence Logos",style={'fontWeight':'bold'}),
-        dbc.CardBody(
-            [
-                dbc.Row([
-                    dbc.Col([
-                        html.Span('Sequence Type: '), 
-                        html.Span('NA',id='seq_type_txt',style={"color":"blue"}),
-                        html.Span(' Sequence Count: '),
-                        html.Span('NA',id='seq_count_txt',style={"color":"blue"}),
-                        html.Span(' Group Count: '),
-                        html.Span('NA',id='group_count_txt',style={"color":"blue"}),
-                    ],style={"fontSize":"10px"})
-                ]),
-                dbc.Row([
-                    html.Img(id='img_res',src='',style={"width":"100%","margin":"auto"}),
-                    ]),
-                dbc.Row([
-                    dbc.Col([
-                        dbc.Button("Download Figure", id="download_btn",active=False,disabled=True, style={"margin":"10px"}), 
-                        dcc.Download(id="download_png",type='image/png'),
-                    ], style={'textAlign':'center','margin':'auto'})
-                ]),
-            ]
-        )
-    ],  style={'marginTop':'20px'}
-)
-
-analysis_panel = dbc.Card(
-    [
-        dbc.CardHeader("Statistics Analysis",style={'fontWeight':'bold'}),
-        dbc.CardBody(
-            [
-                dbc.Row(
-                    dbc.Col(
-                        html.Span('Figure 1. Sequence counts of each group.')
-                )),
-                dbc.Row([
-                    html.Img(id='count_img_res',src='',style={"margin":"auto"}),
-                    ]),
-                html.Hr(),
-                dbc.Row(
-                    dbc.Col(
-                        html.Span('Figure 2. Entropies of each position. ("X"s mean gaps)')
-                )),
-                dbc.Row([
-                    html.Img(id='entropy_img_res',src='',style={"margin":"auto"}),
-                    ]),
-                html.Hr(),
-                dbc.Row(
-                    dbc.Col(
-                        html.Span('Figure 3. Entropies distribution of each group.')
-                )),
-                dbc.Row([
-                    html.Img(id='entropy_boxplot_img_res',src='',style={"margin":"auto"}),
-                    ]),
-                html.Hr(),
-                dbc.Row(
-                    dbc.Col(
-                        html.Span('Figure 4. Correlations among groups (only in global alignment mode and #groups>1).')
-                )),
-                dbc.Row([
-                    html.Img(id='clustermap_img_res',src='',style={"margin":"auto","width":"60%"}),
-                    ]),
-
-
-            ]
-        )
-    ], id='analysis_panel', style={'marginTop':'20px'}
-)
-
 
 layout = dbc.Container(children=[
         html.Hr(),
@@ -909,8 +841,6 @@ layout = dbc.Container(children=[
         algorithm_panel,
         layout_panel,
         style_panel,
-        analysis_panel,
-        result_panel,
         modal,
         result_modal,
         loading_spinner,
@@ -1058,37 +988,6 @@ app.clientside_callback(
     Input('functional_garbage', 'children'),
 )
 
-@app.callback(
-    [Output("download_btn","disabled"),
-     Output("download_btn","children")],
-    Input("functional_garbage","children"),
-    State("download_format_dropdown","value"),prevent_initial_call=True,
-)
-def show_btn(uid, format):
-    if (uid is not None) and (len(uid) > 0):
-        return False,  f"Download {format.upper()}"
-    else:
-        return True, f"Download {format.upper()}"
-
-@app.callback(
-        Output("download_png","data"),
-        Input("download_btn","n_clicks"),
-    [
-        State("functional_garbage","children"),
-        State('download_format_dropdown','value'),
-        State('img_res', 'src'),
-    ],prevent_initial_call=True,
-    )
-def udpate_download(n_clicks,uid,format,src):
-    if len(uid) > 0:
-        #return [dict(
-        #        base64=True,
-        #        content=src.split('base64,')[1],
-        #        filename=f'{uid}.png'
-        #    )]
-        return dcc.send_file(
-        f"{PNG_PATH}/{uid}.{format}"
-        )
 
 @app.callback(
     Output("sortby_dropdown","value"),
@@ -1378,126 +1277,17 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
         toml.dump(config, f)
     
-    cmd = f"python -m MetaLogo.entry --config {CONFIG_PATH}/{uid}.toml &"
-    print(cmd)
-    os.system(cmd)
+    #cmd = f"python -m MetaLogo.entry --config {CONFIG_PATH}/{uid}.toml &"
+    #print(cmd)
+    #os.system(cmd)
+
+    redis_conn = Redis()
+    q = Queue('default',connection=redis_conn)
+    job = q.enqueue(execute,f"{CONFIG_PATH}/{uid}.toml")
+    print(job)
 
     return '','','',False,f'finished{uid}'
     
-    #cmd = f"python -m MetaLogo.entry --seq_file {seq_file} --group_strategy {grouping_by_dropdown} --group_order {sortby_dropdown} --type {logo_shape_dropdown} \
-    #        --align_metric {align_metric} --connect_threshold {connect_threshold} \
-    #        --color_scheme_json_string '{json.dumps(color_scheme)}' --task_name '{title_input}'  \
-    #        --x_label '{xlabel_input}' --y_label '{ylabel_input}' --z_label '{zlabel_input}'    \
-    #        --title_size {title_size} --label_size {label_size} --group_id_size {id_size}    \
-    #        --tick_size {tick_size} --logo_margin_ratio {logo_margin_input} --column_margin_ratio {column_margin_input} \
-    #        --figure_size_x {width_input} --figure_size_y {height_input}   \
-    #        --display_range_left {display_left} --display_range_right {display_right}   \
-    #        --char_margin_ratio {char_margin_input} --align_color '{align_color}' --align_alpha {align_alpha}    \
-    #        --gap_score {gap_score}      \
-    #        --sequence_type {sequence_type} --height_algorithm {height_algorithm_dropdown}    \
-    #        --fa_output_dir {FA_PATH} --uid {uid} "
-    #if align:
-    #    cmd += ' --align '
-    #if hide_left:
-    #    cmd += ' --hide_left_axis '
-    #if hide_right:
-    #    cmd += ' --hide_right_axis '
-    #if hide_bottom:
-    #    cmd += ' --hide_bottom_axis '
-    #if hide_top:
-    #    cmd += ' --hide_top_axis '
-    #if show_grid:
-    #    cmd += ' --show_grid '
-    #if show_group_id:
-    #    cmd += ' --show_group_id '
-    #if hide_x_ticks:
-    #    cmd += ' --hide_x_ticks '
-    #if hide_y_ticks:
-    #    cmd += ' --hide_y_ticks '
-    #if hide_z_ticks:
-    #    cmd += ' --hide_z_ticks '
-    #if padding_align:
-    #    cmd += ' --pading_align '
-    #if hide_version_tag:
-    #    cmd += ' --hide_version_tag '
-
-    #cmd += '&'
-    #print(cmd)
-    #os.system(cmd)
-    
-
-
-    #logogroup = LogoGroup(seqs, **config)
-
-    #   
-    #logogroup.draw()
-
-
-    #output_name = f'{PNG_PATH}/{uid}.{download_format_dropdown}'
-    #logogroup.savefig(output_name,bbox_inches=None)
-
-    #if download_format_dropdown != 'png':
-    #    output_name = f'{PNG_PATH}/{uid}.png'
-    #    logogroup.savefig(output_name,bbox_inches='tight')
-
-    #encoded_image = base64.b64encode(open(output_name, 'rb').read())
-    #src = 'data:image/png;base64,{}'.format(encoded_image.decode())
-
-    #if basic_analysis_dropdown != 'Yes': 
-    #    count_src = ''
-    #    entropy_src = ''
-    #    boxplot_entropy_src = ''
-    #    clustermap_src = ''
-    #else:
-    #    fig = logogroup.get_grp_counts_figure().figure
-    #    count_name = f'{PNG_PATH}/{uid}.counts.png'
-    #    fig.savefig(count_name,bbox_inches='tight')
-    #    #fig.savefig(count_name.replace('.png','.pdf'),bbox_inches='tight')
-    #    plt.close(fig)
-    #    encoded_image_count = base64.b64encode(open(count_name, 'rb').read())
-    #    count_src = 'data:image/png;base64,{}'.format(encoded_image_count.decode())
-
-
-    #    fig = logogroup.get_entropy_figure()
-    #    entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
-    #    fig.savefig(entropy_name,bbox_inches='tight')
-    #    #fig.savefig(entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-    #    plt.close(fig)
-    #    #fig.savefig(entropy_name, bbox_inches=extent)
-
-    #    encoded_image_entropy = base64.b64encode(open(entropy_name, 'rb').read())
-    #    entropy_src = 'data:image/png;base64,{}'.format(encoded_image_entropy.decode())
-    
-
-
-#ent#    ropy_boxplot_img_res
-    #    boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
-    #    fig = logogroup.get_boxplot_entropy_figure().figure
-    #    fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-    #    #fig.savefig(boxplot_entropy_name.replace('.png','.pdf'),bbox_inches='tight')
-    #    plt.close(fig)
-    #    boxplot_entropy_encode_image = base64.b64encode(open(boxplot_entropy_name, 'rb').read())
-    #    boxplot_entropy_src = 'data:image/png;base64,{}'.format(boxplot_entropy_encode_image.decode())
-
-    #    clustermap_src = ''
-    #    if padding_align:
-    #        clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
-    #        fig = logogroup.get_correlation_figure()
-    #        if fig:
-    #            fig.savefig(clustermap_name,bbox_inches='tight')
-    #            #fig.savefig(clustermap_name.replace('.png','.pdf'),bbox_inches='tight')
-    #            clustermap_encode_image = base64.b64encode(open(clustermap_name, 'rb').read())
-    #            clustermap_src = 'data:image/png;base64,{}'.format(clustermap_encode_image.decode())
-
-
-    #if height_algorithm_dropdown == 'bits':
-    #    cnt = 0
-    #    for grp in logogroup.groups:
-    #        if len(logogroup.groups[grp]) > 1:
-    #            cnt += 1
-    #    return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),f'{cnt} (for groups with >1 sequences)'
-    #else:
-    #    return '','','',False,src,count_src,entropy_src,boxplot_entropy_src,clustermap_src,uid,sequence_type,len(seqs),len(logogroup.groups)
 
 if __name__ == '__main__':
 

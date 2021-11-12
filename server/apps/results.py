@@ -39,7 +39,7 @@ def get_layout():
         ])
     search_btn = html.Div(
                 #[dbc.Button("Check", color='primary',id='search_btn',n_clicks=0)],
-                [dbc.NavLink("Check", href="results",target='_self',id='search_btn')],
+                [html.A("Check", href="results",target='_self',id='search_btn')],
                 style={'marginTop':'20px','textAlign':'right'})
 
     not_found_panel = html.Div(

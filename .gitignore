@@ -8,3 +8,5 @@ sequence_input
 configs
 *.log
 bins
+logs
+db

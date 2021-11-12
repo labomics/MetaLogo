@@ -1,7 +1,16 @@
 #!/usr/bin/env python
+print('enter logo.py')
+import sys
+import os
+print(sys.path)
+print(sys.executable)
+print(os.getcwd())
+
 import genericpath
 from typing import Sequence
+print('xxxxzzzz')
 from matplotlib import transforms
+print('yyyyy')
 from matplotlib.colors import get_named_colors_mapping
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, get

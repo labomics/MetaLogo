@@ -1,17 +1,29 @@
 #!/usr/bin/env python
+import sys
+import os
+print('in entry')
+print(sys.path)
+print(sys.executable)
+print(os.getcwd())
+print('11111111')
 import argparse
-
+print('2222222')
 from .logo import LogoGroup
+print('3333333')
 from .utils import read_file
 from .colors import get_color_scheme
 from .version import __version__
+print("1111112")
 import matplotlib.pyplot as plt
+print("1111113")
 import json
 import uuid
 import toml
 from contextlib import closing
 import sqlite3
 import time
+
+
 
 def write_status(uid,status,db):
     with closing(sqlite3.connect(db)) as connection:
