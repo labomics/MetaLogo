@@ -8,50 +8,46 @@ import dash_bootstrap_components as dbc
 import dash_bio as dashbio
 from dash.dependencies import Input, Output, State
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
+from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
 import os
 
-#uid = '85eb7426-71d3-4d55-8688-dd15cfe9b482'
-#msa_file = f'{FA_PATH}/server.{uid}.msa.fa'
-#rf = open(msa_file,'r')
-#fa_string = ''.join(rf.readlines())
-#rf.close()
-
-
+loading_spinner = html.Div(
+    [
+        dbc.Spinner(html.Div(id="loading-output3"), fullscreen=True,
+                    fullscreen_style={"opacity": "0.8"}),
+    ]
+)
 
 layout = html.Div([
     dashbio.AlignmentChart(
         id='my-default-alignment-viewer',
-        data='>1\nAATT',
-        height=1800,
-        tileheight=50,
+        data='>a\nA',
+        height=800,
+        width="100%"
     ),
-    html.Div(id='default-alignment-viewer-output')
+    html.Div(id='default-alignment-viewer-output',style={'display': 'none'}),
+    loading_spinner
 ])
 
-@app.callback(Output('my-default-alignment-viewer', 'data'),
-              Input('url', 'pathname'),prevent_initial_call=True)
+
+@app.callback(
+              [Output('my-default-alignment-viewer', 'data'), 
+              Output("loading-output3", "children")],
+              Input('url', 'pathname'))
 def display_page(pathname):
     arrs = pathname.split('/msa/')
     if len(arrs) > 1:
-        import urllib.request as urlreq
+        uid = arrs[-1]
+        msa_file = f'{FA_PATH}/server.{uid}.msa.fa'
+        if not os.path.exists(msa_file):
+            return "",''
 
-        #uid = arrs[-1]
-        #msa_file = f'{FA_PATH}/server.{uid}.msa.fa'
-        #if not os.path.exists(msa_file):
-        #    return ''
-        #rf = open(msa_file,'r')
-        #fa_string = ''.join(rf.readlines())
-        #rf.close()
-        #print('yyyyy')
-        data = urlreq.urlopen(
-        fa_string = 'https://raw.githubusercontent.com/plotly/dash-bio-docs-files/master/alignment_viewer_p53.fasta'
-).read().decode('utf-8')
-
-        return fa_string
+        with open(msa_file, encoding='utf-8') as data_file:
+            data = data_file.read()
+        return data,''
     else:
-        print('xxxxxx')
-        return ''
+        return '',''
+
 
 @app.callback(
     Output('default-alignment-viewer-output', 'children'),
@@ -60,6 +56,5 @@ def display_page(pathname):
 def update_output(value):
     if value is None:
         return 'No data.'
-    return str(value)
-
-
+    else:
+        return str(value)

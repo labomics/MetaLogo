@@ -56,8 +56,8 @@ def get_layout():
         [
             html.Span(
                 [
-                    html.Div([html.Span('The task is still running, please check it later: '),
-                              html.Span('',id='page_url')]), 
+                    html.Div([html.Div('The task is still running, please check it later: '),
+                              html.Div('',id='page_url')]), 
                     html.Div(
                         [ 
                             html.Span('The page will be refreshed after '),
@@ -134,6 +134,17 @@ def get_layout():
                 ]
             )
         ],style={'marginBottom':'10px'},id='statistics_panel'
+    )
+    msa_panel = dbc.Card(
+        [
+            dbc.CardHeader("MSA and Phylogenetic Tree"),
+            dbc.CardBody(
+                [
+                    html.Span('Please click to open '),
+                    html.A("MSA result", href="msa",target='_blank',id='msa_btn')
+                ]
+            )
+        ],style={'marginBottom':'10px'},id='msa_panel'
     )
     btn_style = {'maring':'10px'}
     download_panel = dbc.Card(
@@ -224,6 +235,7 @@ def get_layout():
                 task_info_panel,
                 seqlogo_panel,
                 statistics_panel,
+                msa_panel,
                 download_panel,
                 trigger_panel
             ],id='result_panel',style={"display":"none"}),
@@ -399,11 +411,12 @@ def display_page(href,pathname):
     else:
         return ''
 @app.callback(
-    Output("search_btn","href"),
+    [Output("search_btn","href"),
+     Output("msa_btn","href")],
     Input("uid_input","value")
 )
 def change_link(uid):
-    return f'/results/{uid}'
+    return f'/results/{uid}',f'/msa/{uid}'
 #@app.callback(
 #    Output("url","pathname"),
 #    Input('search_btn','n_clicks'),
