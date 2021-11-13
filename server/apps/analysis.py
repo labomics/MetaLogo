@@ -147,8 +147,6 @@ def write_status(uid,status):
             if len(rows) == 1:
                 cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
             else:
-                print('insert')
-                print(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
                 cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
         connection.commit()
 
@@ -1106,6 +1104,7 @@ app.clientside_callback(
         Input('submit4', 'n_clicks')
     ],
     [
+        State('grouping_resolution','value'),
         State('basic_analysis_dropdown','value'),
         State('display_range_left','value'),
         State('display_range_right','value'),
@@ -1149,6 +1148,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            grouping_resolution,
             basic_analysis_dropdown,
             display_left, display_right,
             height_algorithm_dropdown,
@@ -1203,7 +1203,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     write_status(uid,'running')
 
-    seq_file = f"{FA_PATH}/server-{uid}.fasta"
+    seq_file = f"{FA_PATH}/server.{uid}.fasta"
     save_seqs(seqs, seq_file)
 
     if color_dropdown.lower() == 'auto':
@@ -1271,7 +1271,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           sequence_type = sequence_type, height_algorithm=height_algorithm_dropdown,
                           seq_file=seq_file, fa_output_dir = FA_PATH, uid=uid,
                           min_length=min_len_input,max_length=max_len_input,seq_file_type=input_format_dropdown,
-                          sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown
+                          sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
+                          grouping_resolution=grouping_resolution,create_time=int(time.time())
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
@@ -1284,7 +1285,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     redis_conn = Redis()
     q = Queue('default',connection=redis_conn)
     job = q.enqueue(execute,f"{CONFIG_PATH}/{uid}.toml")
-    print(job)
 
     return '','','',False,f'finished{uid}'
     

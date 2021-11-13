@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from .app import app
-from .apps import results, analysis,about
+from .apps import results, analysis,about,msa
 import MetaLogo
 
 nav = dbc.Nav(
@@ -58,7 +58,8 @@ app.validation_layout = html.Div([
     html.Div(id='page-content'),
     about.layout,
     results.layout,
-    analysis.layout
+    analysis.layout,
+    msa.layout
 ])
 
 @app.callback(
@@ -82,7 +83,7 @@ def highlight_btn(pathname):
 def display_page(pathname):
     if pathname == '/results':
         return results.layout
-    if pathname == '/analysis':
+    elif pathname == '/analysis':
         return analysis.layout
     elif pathname == '/about':
         return about.layout
@@ -90,6 +91,8 @@ def display_page(pathname):
         return about.layout
     elif '/results/' in pathname:
         return results.layout
+    elif '/msa/' in pathname:
+        return msa.layout
     else:
         return '404'
 

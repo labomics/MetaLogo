@@ -1,21 +1,12 @@
 #!/usr/bin/env python
 import sys
 import os
-print('in entry')
-print(sys.path)
-print(sys.executable)
-print(os.getcwd())
-print('11111111')
 import argparse
-print('2222222')
 from .logo import LogoGroup
-print('3333333')
 from .utils import read_file
 from .colors import get_color_scheme
 from .version import __version__
-print("1111112")
 import matplotlib.pyplot as plt
-print("1111113")
 import json
 import uuid
 import toml
@@ -60,6 +51,7 @@ def main():
 
     #group
     parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['length','identifier'],default='length')
+    parser.add_argument('--grouping_resolution',type=float,help='The resolution for sequence grouping',default=0)
 
     #sort
     parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_reverse','identifier','identifier_reverse'],default='length')
@@ -204,7 +196,8 @@ def main():
                                   hide_version_tag=args.hide_version_tag,
                                   sequence_type = args.sequence_type,
                                   height_algorithm=args.height_algorithm,
-                                  seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid
+                                  seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
+                                  grouping_resolution=args.grouping_resolution
                                   )
             logogroup.draw()
             logogroup.savefig(f'{args.output_dir}/{args.output_name}')

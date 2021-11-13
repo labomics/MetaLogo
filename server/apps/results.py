@@ -9,15 +9,17 @@ import dash_bootstrap_components as dbc
 import flask
 from dash.dependencies import Input, Output, State
 import os
+import toml
 
 
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH
+from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
 
 from contextlib import closing
 import sqlite3
 from dash.exceptions import PreventUpdate
 import base64
+import datetime
 
 
 def get_status(uid):
@@ -54,7 +56,8 @@ def get_layout():
         [
             html.Span(
                 [
-                    html.Div('The task is still running, please check it later.'), 
+                    html.Div([html.Span('The task is still running, please check it later: '),
+                              html.Span('',id='page_url')]), 
                     html.Div(
                         [ 
                             html.Span('The page will be refreshed after '),
@@ -85,21 +88,25 @@ def get_layout():
                     dbc.Col([
                         dbc.Row([
                             dbc.Col([html.Span('ID',style=label_style), html.Span('ffdee00f-24a8-4501-8e45-5d8327ce97d8',style=value_style, id='uid_span')]) ,
-                            dbc.Col([html.Span('Created Time',style=label_style), html.Span('2021/2/3, 15:00',style=value_style)]),
+                            dbc.Col([html.Span('Created Time',style=label_style), html.Span('2021/2/3, 15:00',style=value_style, id='create_time')]),
                         ]),
                         html.Hr(),
                         dbc.Row([
-                            dbc.Col([html.Span('Input Format',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Sequence Type',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Group Strategy',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Grouping Resolution ',style=label_style), html.Span('auto',style=value_style)]),
+                            dbc.Col([html.Span('Input Format',style=label_style), html.Span('auto',style=value_style,id='input_format')]),
+                            dbc.Col([html.Span('Sequence Type',style=label_style), html.Span('auto',style=value_style,id='sequence_type')]),
+                            dbc.Col([html.Span('Group Strategy',style=label_style), html.Span('auto',style=value_style,id='group_strategy')]),
+                            dbc.Col([html.Span('Grouping Resolution ',style=label_style), html.Span('auto',style=value_style,id='group_resolution')]),
                         ],style={'marginTop':'10px'}),
                         dbc.Row([
-                            dbc.Col([html.Span('Minimum Length ',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Maximum Length ',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Display Range (left) ',style=label_style), html.Span('auto',style=value_style)]),
-                            dbc.Col([html.Span('Display Range (right) ',style=label_style), html.Span('auto',style=value_style)]),
-                        ],style={'marginTop':'10px'})
+                            dbc.Col([html.Span('Minimum Length ',style=label_style), html.Span('auto',style=value_style,id='min_len')]),
+                            dbc.Col([html.Span('Maximum Length ',style=label_style), html.Span('auto',style=value_style,id='max_len')]),
+                            dbc.Col([html.Span('Display Range (left) ',style=label_style), html.Span('auto',style=value_style,id='display_left')]),
+                            dbc.Col([html.Span('Display Range (right) ',style=label_style), html.Span('auto',style=value_style,id='display_right')]),
+                        ],style={'marginTop':'10px'}),
+                        html.Hr(),
+                        dbc.Row([
+                            dbc.Col([html.Span('* For more details, please download the configure file at the bottom of the result page')],style={'fontSize':'10px'}),
+                        ]),
                     ], style={'display':'tableCell','verticalAlign':'middle',})
                 ]
             )
@@ -136,25 +143,63 @@ def get_layout():
                 [
                     dbc.Col([
                         dbc.Row([
-                            dbc.Col(dbc.Button(
-                                "Config File",   color='info',style=btn_style
-                            )),
-                            dbc.Col(dbc.Button(
-                                "Sequence Logo",   color='info',style=btn_style
-                            )),
-                            dbc.Col(dbc.Button(
-                                "Sequence input",   color='info',style=btn_style
-                            ))], style={'margin':'20px'}),
+                            dbc.Col(
+                                [
+                                  dbc.Button("Config File", id="config_download_btn", style=btn_style, color='info'), 
+                                  dcc.Download(id="config_download",type='text'),
+                                ]
+                            ),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Sequence Input",   color='info',id='seq_input_download_btn',style=btn_style),
+                                  dcc.Download(id="seq_input_download",type='text'),
+                                ]
+
+                            ),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Sequence Logo",   color='info',id='seq_logo_download_btn',style=btn_style),
+                                  dcc.Download(id="seq_logo_download",type='text',),
+                                ]
+                            )
+                        ], style={'margin':'20px'}),
                         dbc.Row([
-                            dbc.Col(dbc.Button(
-                                "MSA result",   color='info',style=btn_style
-                            )),
-                            dbc.Col(dbc.Button(
-                                "Phylogenetic Tree",   color='info',style=btn_style
-                            )),
-                            dbc.Col(dbc.Button(
-                                "Grouping result",   color='info',style=btn_style
-                            ))],style={'margin':'20px'})
+                            dbc.Col(
+                                [
+                                    dbc.Button("MSA result",   color='info',id='msa_download_btn',style=btn_style),
+                                    dcc.Download(id="msa_download",type='text',),
+                                ]
+                            ),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Phylogenetic Tree",   color='info',id='phylo_download_btn',style=btn_style),
+                                    dcc.Download(id="phylo_download",type='text',),
+                                ]),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Conservation scores",   color='info',id='scores_download_btn',style=btn_style),
+                                    dcc.Download(id="scores_download",type='text',),
+                                ]),
+                            ],style={'margin':'20px'}),
+                        dbc.Row([
+                            dbc.Col(
+                                [
+                                    dbc.Button("Grouping details", color='info',id='grouping_download_btn',style=btn_style),
+                                    dcc.Download(id="grouping_download",type='text',),
+                                ]
+                            ),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Grouping clustering",   color='info',id='clustering_download_btn',style=btn_style),
+                                    dcc.Download(id="clustering_download",type='text',),
+                                ]
+                            ),
+                            dbc.Col(
+                                [
+                                    dbc.Button("Sequence name mapping",   color='info',id='mapping_download_btn',style=btn_style),
+                                    dcc.Download(id="mapping_download",type='text',),
+                                ]
+                            )],style={'margin':'20px'})
                     ])
                 ]
             )
@@ -193,20 +238,164 @@ def get_layout():
 
     return layout
 
+@app.callback(
+        Output("config_download","data"),
+        Input("config_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_config_download(n_clicks,pathname):
+
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target = f"{CONFIG_PATH}/{uid}.toml"
+    
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
 
 @app.callback(
-                Output('uid_input', 'value'),
+        Output("seq_input_download","data"),
+        Input("seq_input_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_seq_input_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{FA_PATH}/server.{uid}.fasta"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("seq_logo_download","data"),
+        Input("seq_logo_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_logo_input_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{PNG_PATH}/{uid}.png"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("msa_download","data"),
+        Input("msa_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_msa_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{FA_PATH}/server.{uid}.msa.fa"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("phylo_download","data"),
+        Input("phylo_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_phylo_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{FA_PATH}/server.{uid}.rate4site.tree"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("scores_download","data"),
+        Input("scores_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_scores_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{FA_PATH}/server.{uid}.rate4site.scores"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("grouping_download","data"),
+        Input("grouping_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_grouping_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{FA_PATH}/server.{uid}.rate4site.cluster"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+        Output("clustering_download","data"),
+        Input("clustering_download_btn","n_clicks"),
+        State('url','pathname'),
+        prevent_initial_call=True,
+    )
+def update_clustering_download(n_clicks,pathname):
+    if ('/results' in pathname) and (not pathname == '/results'):
+        uid = pathname.split('/')[-1]
+    else:
+        uid = ''
+    target =  f"{PNG_PATH}/{uid}.clustering.png"
+    print(target)
+    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
+        return dcc.send_file(target)
+    else:
+        return None
+
+@app.callback(
+                [
+                    Output('uid_input', 'value'),
+                    Output('page_url', 'children')
+                ],
                 Input('url', 'href'),
                 State('url','pathname')
             )
 def display_page(href,pathname):
 
-    print('href: ', href)
-    print('pathname: ', href)
-
     uid_arr = href.split('/results/')
     if len(uid_arr) > 1:
-        return uid_arr[-1].split('#')[0]
+        return uid_arr[-1].split('#')[0], href
     else:
         return ''
 @app.callback(
@@ -254,6 +443,12 @@ def fire_trigger(n_intervals,old_trigger):
     else:
         raise PreventUpdate
 
+def load_config(config_file):
+    if os.path.exists(config_file):
+        paras_dict = toml.load(config_file)
+    else:
+        paras_dict = {}
+    return paras_dict
 
 
 @app.callback(
@@ -264,14 +459,23 @@ def fire_trigger(n_intervals,old_trigger):
         Output('running_span','style'),
         Output('error_span','style'),
         Output('result_panel','style'),
-        Output('logo_img','src')
+        Output('logo_img','src'),
+        Output('create_time','children'),
+        Output('input_format','children'),
+        Output('sequence_type','children'),
+        Output('group_strategy','children'),
+        Output('group_resolution','children'),
+        Output('min_len','children'),
+        Output('max_len','children'),
+        Output('display_left','children'),
+        Output('display_right','children'),
     ],
     [
         Input('trigger_panel','children'),
     ],
         State('url','pathname')
     )
-def trigger(uid,pathname):
+def trigger(nonsense,pathname):
 
     if ('/results' in pathname) and (not pathname == '/results'):
         uid = pathname.split('/')[-1]
@@ -296,7 +500,6 @@ def trigger(uid,pathname):
         results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{}]
         LOADED = True
     else:
-
         LOADED = True
 
     src = '' 
@@ -304,7 +507,27 @@ def trigger(uid,pathname):
         encoded_image = base64.b64encode(open(f'{PNG_PATH}/{uid}.png', 'rb').read())
         src = 'data:image/png;base64,{}'.format(encoded_image.decode())
     results_arr += [src]
+
+    config_file = f"{CONFIG_PATH}/{uid}.toml"
+    config_dict = load_config(config_file)
+
+    for item in ['create_time','seq_file_type','sequence_type','group_strategy','grouping_resolution','min_length','max_length','display_range_left','display_range_right']:
+        if item == 'create_time':
+            tm = config_dict.get(item,'')
+            if tm != '':
+                tm = datetime.datetime.utcfromtimestamp(int(tm)).strftime('%Y-%m-%d %H:%M:%S (UTC)')
+            results_arr += ['%s'%(tm)]
+        else:
+            results_arr += ['%s'%(config_dict.get(item,''))]
     
+
+    ###
+
+
+
+
+    ###
+       
     return results_arr
 
 
