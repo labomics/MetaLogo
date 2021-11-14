@@ -19,6 +19,7 @@ loading_spinner = html.Div(
 )
 
 layout = dbc.Container([
+    html.H3([html.Span("MSA result for task "),html.A(id="uid")]),
     dbc.Col(
         [
             dbc.Row([
@@ -40,7 +41,10 @@ layout = dbc.Container([
 
 @app.callback(
               [Output('my-default-alignment-viewer', 'data'), 
-              Output("loading-output3", "children")],
+              Output("loading-output3", "children"),
+              Output("uid","children"),
+              Output("uid","href"),
+              ],
               Input('url', 'pathname'))
 def display_page(pathname):
     arrs = pathname.split('/msa/')
@@ -48,13 +52,13 @@ def display_page(pathname):
         uid = arrs[-1]
         msa_file = f'{FA_PATH}/server.{uid}.msa.fa'
         if not os.path.exists(msa_file):
-            return "",''
+            return "",'',uid,'/results/'+uid
 
         with open(msa_file, encoding='utf-8') as data_file:
             data = data_file.read()
-        return data,''
+        return data,'',uid,'/results/'+uid
     else:
-        return '',''
+        return '','','',''
 
 
 @app.callback(
