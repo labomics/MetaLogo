@@ -18,14 +18,22 @@ loading_spinner = html.Div(
     ]
 )
 
-layout = html.Div([
-    dashbio.AlignmentChart(
-        id='my-default-alignment-viewer',
-        data='>a\nA',
-        height=800,
-        width="100%"
+layout = dbc.Container([
+    dbc.Col(
+        [
+            dbc.Row([
+                dashbio.AlignmentChart(
+                id='my-default-alignment-viewer',
+                data='>a\nA',
+                height=1200,
+                width="100%",
+                showgap=False,
+                showconservation=False,
+                showconsensus=False
+            )]),
+            dbc.Row([html.Div(id='default-alignment-viewer-output',style={'display': 'none'})]),
+        ]
     ),
-    html.Div(id='default-alignment-viewer-output',style={'display': 'none'}),
     loading_spinner
 ])
 

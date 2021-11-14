@@ -201,7 +201,9 @@ class Logo(Item):
 
 
 class LogoGroup(Item):
-    def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', group_resolution=0.5, start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
+    def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', group_resolution=0.5,
+                 clustering_method = 'max',
+                 start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
                  radiation_head_n = 5, threed_interval = 4, color = basic_dna_color, task_name='MetaLogo',
@@ -212,7 +214,7 @@ class LogoGroup(Item):
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
-                 seq_file = '', fa_output_dir = '', uid = '',
+                 seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
                  clustalo_bin = '',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
@@ -220,7 +222,7 @@ class LogoGroup(Item):
         self.seq_file = seq_file
         self.group_order = group_order
         self.group_strategy = group_strategy
-        self.group_resolution = group_resolution
+        self.group_resolution = float(group_resolution)
         self.start_pos = start_pos
         self.logo_margin_ratio = logo_margin_ratio
         self.column_margin_ratio = column_margin_ratio
@@ -277,7 +279,10 @@ class LogoGroup(Item):
 
         self.clustalo_bin = clustalo_bin
         self.fa_output_dir = fa_output_dir
+        self.output_dir = output_dir
         self.uid = uid
+
+        self.clustering_method = clustering_method
 
 
         if sequence_type == 'auto':
@@ -331,8 +336,9 @@ class LogoGroup(Item):
     def prepare_bits(self):
         
         self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
-                               group_resolution=self.group_resolution,clustalo_bin=self.clustalo_bin,
-                               uid=self.uid,fa_output_dir=self.fa_output_dir)
+                               group_resolution=self.group_resolution,clustering_method=self.clustering_method,
+                               clustalo_bin=self.clustalo_bin,
+                               uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
         check_group(self.groups)
 
         self.probs = compute_prob(self.groups,threshold=self.omit_prob)
@@ -341,6 +347,7 @@ class LogoGroup(Item):
             self.seq_bits = self.probs
         elif self.height_algorithm == 'bits':
             self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
+
 
 
         try:
@@ -359,6 +366,7 @@ class LogoGroup(Item):
             self.group_ids = sorted(self.seq_bits.keys())
         
         print('group_ids:',self.group_ids)
+
         
         if self.height_algorithm == 'bits':
             to_del_ids = []
@@ -372,7 +380,7 @@ class LogoGroup(Item):
                 del self.probs[gid]
                 del self.seq_bits[gid]
 
-        if self.align and self.padding_align:
+        if (self.align and self.padding_align) and (self.group_strategy != 'auto'):
 
             if len(self.group_ids) > 1:
                 if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
@@ -388,24 +396,24 @@ class LogoGroup(Item):
             
                 self.align_probs_bits()
         
-        if self.padding_align:
-            if self.display_range_left == 0 or self.display_range_right == -1:
-                pass
+        
+        if self.padding_align or (self.group_strategy == 'auto'):
+            if not (self.display_range_left == 0 and self.display_range_right == -1):
 
-            self.task_name = f"MetaLogo (Display range: {self.display_range_left} to {self.display_range_right})"
+                self.task_name = f"{self.task_name} (Display range: {self.display_range_left} to {self.display_range_right})"
 
-            new_probs = {}
-            new_bits = {}
+                new_probs = {}
+                new_bits = {}
 
-            for gid in self.group_ids:
-                new_probs[gid] = self.probs[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
-                new_bits[gid] = self.seq_bits[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
+                for gid in self.group_ids:
+                    new_probs[gid] = self.probs[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
+                    new_bits[gid] = self.seq_bits[gid][self.display_range_left: self.display_range_right + 1*(self.display_range_right!=-1)]
             
-            self.full_probs = self.probs.copy()
-            self.full_seq_bits = self.seq_bits.copy()
+                self.full_probs = self.probs.copy()
+                self.full_seq_bits = self.seq_bits.copy()
             
-            self.probs = new_probs
-            self.seq_bits = new_bits
+                self.probs = new_probs
+                self.seq_bits = new_bits
     
     def align_probs_bits(self):
         new_probs = {}
@@ -488,7 +496,11 @@ class LogoGroup(Item):
         self.draw_help()
         self.compute_xy()
         self.set_figsize()
-        self.ax.set_title(self.task_name,fontsize=self.title_size)
+        if self.group_strategy == 'auto':
+            task_name = self.task_name + '\n' + 'resolution: %s (0-1)'%(self.group_resolution)
+        else:
+            task_name = self.task_name
+        self.ax.set_title(task_name,fontsize=self.title_size)
 
         self.ax.tick_params(labelsize=self.tick_size)
 
@@ -557,10 +569,10 @@ class LogoGroup(Item):
     def draw_connect(self):
         if self.align_metric in ['js_divergence','entropy_bhattacharyya']:
             self.connected = get_connect([self.probs[gid] for gid in self.group_ids], self.align_metric, 
-                                       gap_score=self.gap_score,msa_input=self.padding_align,seq_type=self.sequence_type)
+                                       gap_score=self.gap_score,msa_input= (self.padding_align or self.group_strategy=='auto'),seq_type=self.sequence_type)
         else:
             self.connected = get_connect([self.seq_bits[gid] for gid in self.group_ids], self.align_metric, 
-                                       gap_score=self.gap_score,msa_input=self.padding_align,seq_type=self.sequence_type)
+                                       gap_score=self.gap_score,msa_input=(self.padding_align or self.group_strategy=='auto'),seq_type=self.sequence_type)
         if self.connect_threshold < 0:
             vals = []
             for group_id in self.connected:
@@ -631,9 +643,8 @@ class LogoGroup(Item):
         self.ax.add_patch(Circle(self.start_pos,self.radiation_radius,linewidth=1,fill=False,edgecolor='grey',alpha=0.5))
     
     def draw_hz_help(self):
-
         if not self.hide_x_ticks:
-            maxlen = max([len(bits) for bits in self.seq_bits.values()])
+            maxlen = max([len(bits) for bits in self.seq_bits.values()]+[0])
             margin_ratio = 0
             if len(self.logos)>0:
                 margin_ratio = self.logos[0].column_margin_ratio
@@ -815,6 +826,10 @@ class LogoGroup(Item):
                 if len(pos) == 0:
                     _ents.append('-')
                     continue
+                bases = set([x[0] for x in pos])
+                if len(bases) == 1 and '-' in bases:
+                    _ents.append('-')
+                    continue
                 _ep = [x[1] for x in pos if x[1]>0]
                 entropy = -sum([x*np.log(x) for x in _ep ])
                 _ents.append(entropy)
@@ -841,13 +856,16 @@ class LogoGroup(Item):
         fig,ax = plt.subplots()
         ents = self.get_entropy()
         ents = [[y for y in x if y!='-'] for x in ents]
+
         lists = []
         for i in range(len(ents)):
             grp_id = self.group_ids[i]
             for item in ents[i]:
                 lists.append([grp_id,item])
         df = pd.DataFrame(lists,columns=['Group','Entropy of Each Position'])
-        return sns.boxplot(data=df,y='Group',x='Entropy of Each Position',ax=ax,order=self.group_ids)
+        print(self.group_ids)
+        print(df['Group'])
+        return sns.boxplot(data=df,x='Group',y='Entropy of Each Position',ax=ax,order=self.group_ids)
 
 
 
@@ -897,7 +915,7 @@ class LogoGroup(Item):
 
         fig,ax = plt.subplots()
 
-        if not self.padding_align:
+        if (not self.padding_align) and (self.group_strategy != 'auto'):
             return None
         if len(self.group_ids) < 2:
             return None
@@ -906,10 +924,12 @@ class LogoGroup(Item):
         if hasattr(self, 'full_seq_bits'):
             seq_bits = self.full_seq_bits
         
+        #print('seq_bits:', seq_bits)
+        
         aligned_len =  len(seq_bits[self.group_ids[0]])
         if aligned_len < 1:
             return None
-        
+
         bases = []
         for i in range(aligned_len):
             _bases = []

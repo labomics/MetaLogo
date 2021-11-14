@@ -194,10 +194,25 @@ grouping_by_dropdown = dbc.FormGroup(
         ),
     ]
 )
+cluster_method_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Clustering method",html_for='input'),
+        dcc.Dropdown(
+            id="clustering_method_dropdown",
+            options=[
+                {"label": "Max", "value": 'max'},
+                {"label": "Max_clade", "value": 'max_clade'},
+                {"label": "Single_linkage", "value": 'single_linkage'},
+            ],
+            value='max'
+        ),
+
+    ]
+)
 grouping_resolution = dbc.FormGroup(
     [
         dbc.Label("Grouping resolution",html_for='input'),
-        dbc.Input(type="float", min=0, max=10, value=0.5, id="grouping_resolution"),
+        dbc.Input(type="float", min=0, max=1, value=0.5, id="grouping_resolution"),
     ]
 )
 max_len_input = dbc.FormGroup(
@@ -217,7 +232,7 @@ display_range_left_input = dbc.FormGroup(
     [
         dbc.Label("Display Range (left)",html_for='input'),
         dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=0,id="display_range_left",disabled="disabled"),
-        html.Span("Avaliable for global alignment",style={'fontSize':'10px','color':'#ff6f00'})
+        html.Span("For aligned sequences",style={'fontSize':'10px','color':'#ff6f00'})
     ]
 )
 display_range_right_input = dbc.FormGroup(
@@ -230,7 +245,7 @@ display_range_right_input = dbc.FormGroup(
 
 seqinput_form = html.Div([
     html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
-                html.A(" example2",href='#input_panel',id="load_example2")]),
+                html.A(" example2,",href='#input_panel',id="load_example2"), html.A(" example3",href='#input_panel',id="load_example3")]),
     dcc.Textarea(
         placeholder='Paste sequences in chosen input format',
         value='',
@@ -240,7 +255,7 @@ seqinput_form = html.Div([
         persistence='true'
     ),  
     html.Div([
-        html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 sequences if you choose '),
+        html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 DNA sequences or >=7 protein sequences if you choose '),
         html.Span('Bits ', style={'fontStyle':'italic'}),
         html.Span('as height algorithm (Default) rather than '),
         html.Span('Probabilities.', style={'fontStyle':'italic'})
@@ -306,6 +321,7 @@ input_panel = dbc.Card(
                 ]),
                 dbc.Row([
                     dbc.Col(grouping_by_dropdown),
+                    dbc.Col(cluster_method_dropdown),
                     dbc.Col(grouping_resolution),
                 ]),
                 dbc.Row([
@@ -359,6 +375,7 @@ padding_align_dropdown = dbc.FormGroup(
             ],
             value='No'
         ),
+        html.Span("Avaliable when grouping by length or identifier",style={'fontSize':'10px','color':'#ff6f00'})
     ]
 )
 
@@ -850,6 +867,20 @@ layout = dbc.Container(children=[
 
 
 
+@app.callback(
+    [
+        Output('clustering_method_dropdown','disabled'),
+        Output('grouping_resolution','disabled'),
+    ],
+    Input('grouping_by_dropdown','value')
+)
+def activate_clustering_method(group_by):
+    if group_by != 'auto':
+        return [True ,True]
+    else:
+        return [False,False]
+
+
 @app.callback(Output("color_dropdown","value"), Input("sequence_type_dropdown","value"), prevent_initial_call=True)
 def change_color_scheme(seqtype):
     if  seqtype in ['dna','rna']:
@@ -865,9 +896,9 @@ def change_color_scheme(seqtype):
 #    return False
 
 @app.callback(Output("seq_textarea","value"), 
-    [Input("load_example","n_clicks"), Input("load_example2","n_clicks"),Input("file_upload","contents")],
+    [Input("load_example","n_clicks"), Input("load_example2","n_clicks"),Input("load_example3","n_clicks"),Input("file_upload","contents")],
     prevent_initial_call=True)
-def load_example(nclicks1,nclicks2,contents):
+def load_example(nclicks1,nclicks2,nclicks3,contents):
     ctx = dash.callback_context
     if not ctx.triggered:
         return
@@ -880,6 +911,8 @@ def load_example(nclicks1,nclicks2,contents):
             fa = f'{EXAMPLE_PATH}/ectf.fa'
         if example_id == 'load_example2':
             fa = f'{EXAMPLE_PATH}/cdr3.fa'
+        if example_id == 'load_example3':
+            fa = f'{EXAMPLE_PATH}/all_cluster_center.fa'
         if os.path.exists(fa):
             f = open(fa,'r')
             return ''.join(f.readlines())
@@ -904,16 +937,31 @@ ATCCATCTATAC
 @app.callback([
                 Output("score_metric","disabled"),
                 Output("connect_threshold","disabled"),
-                Output("padding_align_dropdown","disabled"),
                 Output("gap_score","disabled"),
-                Output("padding_align_dropdown","value")
+                Output("padding_align_dropdown","value"),
+                Output("padding_align_dropdown","disabled")
               ], 
-              Input("align_dropdown","value"))
-def enable_align_detail(align):
+              [
+                  Input("align_dropdown","value"),
+                  Input("grouping_by_dropdown","value"),
+              ])
+def enable_align_detail(align,group_by):
+    arrs = []
+
     if align == 'Yes':
-        return [False,False,False,False,'No']
+        arrs = [False,False,False,'No']
     else:
-        return [True,True,True,True,'No']
+        arrs = [True,True,True,'No']
+
+    if group_by == 'auto':
+        arrs += [True]
+    else:
+        if align == 'Yes':
+            arrs += [False]
+        else:
+            arrs += [True]
+    return arrs
+
 
 
 
@@ -1057,10 +1105,13 @@ def change_figure_size(logo_shape):
         Output("display_range_left","disabled"),
         Output("display_range_right","disabled")
     ],
-    Input("padding_align_dropdown","value"),prevent_initial_call=True
+    [
+        Input("padding_align_dropdown","value"),
+        Input("grouping_by_dropdown","value")
+    ],prevent_initial_call=True
 )
-def activate_display_range(padding):
-    if padding == 'Yes':
+def activate_display_range(padding,group_by):
+    if padding == 'Yes' or group_by == 'auto':
         return None,None 
     else:
         return 'disabled','disabled'
@@ -1105,6 +1156,7 @@ app.clientside_callback(
     ],
     [
         State('grouping_resolution','value'),
+        State('clustering_method_dropdown','value'),
         State('basic_analysis_dropdown','value'),
         State('display_range_left','value'),
         State('display_range_right','value'),
@@ -1148,7 +1200,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
-            grouping_resolution,
+            group_resolution,clustering_method,
             basic_analysis_dropdown,
             display_left, display_right,
             height_algorithm_dropdown,
@@ -1255,6 +1307,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
 
     padding_align = padding_align=='Yes'
+    analysis = basic_analysis_dropdown=='Yes'
 
     config = dict(group_strategy = grouping_by_dropdown, group_order = sortby_dropdown, logo_type = logo_shape_dropdown, 
                           align=align, align_metric=align_metric, connect_threshold = connect_threshold,
@@ -1272,11 +1325,14 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           seq_file=seq_file, fa_output_dir = FA_PATH, uid=uid,
                           min_length=min_len_input,max_length=max_len_input,seq_file_type=input_format_dropdown,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
-                          grouping_resolution=grouping_resolution,create_time=int(time.time())
+                          group_resolution=group_resolution,create_time=int(time.time()),
+                          analysis=analysis,clustering_method=clustering_method
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
         toml.dump(config, f)
+    
+    print('grouping_resolution: ', group_resolution)
     
     #cmd = f"python -m MetaLogo.entry --config {CONFIG_PATH}/{uid}.toml &"
     #print(cmd)

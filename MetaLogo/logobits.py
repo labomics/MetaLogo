@@ -7,10 +7,10 @@ def compute_prob(groups,threshold=0):
         _counts = {}
         for name,seq in group:
             for i in range(len(seq)):
-                if seq[i] == '-':
-                    continue
                 if i not in _counts:
                     _counts[i] = {}
+                #if seq[i] == '-':
+                #    continue
                 _counts[i][seq[i]] = _counts[i].get(seq[i],0) + 1
         counts[gid] = _counts
     
@@ -44,11 +44,13 @@ def compute_bits(groups, probs, seq_type='dna'):
         for i in range(len(prob)):
             h = 0
             for base,p in prob[i]:
-                if base == '-':
-                    continue
+                #if base == '-':
+                #    continue
                 h -= p*np.log2(p) 
             _bit = [] 
             for base,p in prob[i]:
+                if base == '-':
+                    continue
                 height = max(p * (e - h),0)
                 _bit.append((base,height))
             bit.append(_bit)

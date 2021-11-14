@@ -51,7 +51,8 @@ def main():
 
     #group
     parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['length','identifier'],default='length')
-    parser.add_argument('--grouping_resolution',type=float,help='The resolution for sequence grouping',default=0)
+    parser.add_argument('--clustering_method',type=str,help='The method for tree clustering',default='max')
+    parser.add_argument('--group_resolution',type=float,help='The resolution for sequence grouping',default=0)
 
     #sort
     parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_reverse','identifier','identifier_reverse'],default='length')
@@ -134,6 +135,8 @@ def main():
         if args.config is not None:
             config = toml.load(args.config)
             uid = config['uid']
+            print('in entry')
+            print(config)
             seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
             logogroup = LogoGroup(seqs, **config)
             logogroup.draw()
@@ -143,8 +146,9 @@ def main():
             if  config['logo_format'].lower() != 'png':
                 logogroup.savefig(f"{config['output_dir']}/{uid}.png")
                 print(f"{config['output_dir']}/{uid}.png', ' saved")
+            
     
-            if args.analysis:
+            if config['analysis']:
 
                 fig = logogroup.get_grp_counts_figure().figure
                 count_name = f"{config['output_dir']}/{uid}.counts.png"
@@ -162,7 +166,7 @@ def main():
                 fig.savefig(boxplot_entropy_name,bbox_inches='tight')
                 plt.close(fig)
 
-                if args.padding_align:
+                if config['padding_align'] or config['group_strategy']=='auto':
                     clustermap_name = f"{config['output_dir']}/{uid}.clustermap.png"
                     fig = logogroup.get_correlation_figure()
                     if fig:
@@ -197,7 +201,7 @@ def main():
                                   sequence_type = args.sequence_type,
                                   height_algorithm=args.height_algorithm,
                                   seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
-                                  grouping_resolution=args.grouping_resolution
+                                  group_resolution=args.group_resolution,clustering_method=args.clustering_method
                                   )
             logogroup.draw()
             logogroup.savefig(f'{args.output_dir}/{args.output_name}')
@@ -225,7 +229,7 @@ def main():
                 fig.savefig(boxplot_entropy_name,bbox_inches='tight')
                 plt.close(fig)
 
-                if args.padding_align:
+                if args.padding_align or args.group_strategy=='auto':
                     clustermap_name = f'{args.output_dir}/{basename}.clustermap.png'
                     fig = logogroup.get_correlation_figure()
                     if fig:
@@ -234,6 +238,7 @@ def main():
         if args.config is not None:
             write_status(config['uid'],'finished',config['sqlite3_db'])
     except Exception as e:
+        print(e)
         write_status(config['uid'],'error',config['sqlite3_db'])
 
 

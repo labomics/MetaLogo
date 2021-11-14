@@ -20,7 +20,17 @@ import sqlite3
 from dash.exceptions import PreventUpdate
 import base64
 import datetime
+import re
+import pandas as pd
 
+
+
+def get_img_src(f):
+    if not os.path.exists(f):
+        return ''
+    encoded_image = base64.b64encode(open(f, 'rb').read())
+    src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+    return src
 
 def get_status(uid):
     with closing(sqlite3.connect(SQLITE3_DB)) as connection:
@@ -56,7 +66,7 @@ def get_layout():
         [
             html.Span(
                 [
-                    html.Div([html.Div('The task is still running, please check it later: '),
+                    html.Div([html.Div('The task is still running, please check it later: ',style={'color':'black'}),
                               html.Div('',id='page_url')]), 
                     html.Div(
                         [ 
@@ -82,7 +92,7 @@ def get_layout():
 
     task_info_panel = dbc.Card(
         [
-            dbc.CardHeader("Task info and parameters"),
+            dbc.CardHeader("Task info and parameters",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
                     dbc.Col([
@@ -96,6 +106,7 @@ def get_layout():
                             dbc.Col([html.Span('Sequence Type',style=label_style), html.Span('auto',style=value_style,id='sequence_type')]),
                             dbc.Col([html.Span('Group Strategy',style=label_style), html.Span('auto',style=value_style,id='group_strategy')]),
                             dbc.Col([html.Span('Grouping Resolution ',style=label_style), html.Span('auto',style=value_style,id='group_resolution')]),
+                            dbc.Col([html.Span('Clustering method ',style=label_style), html.Span('auto',style=value_style,id='clustering_method_value')]),
                         ],style={'marginTop':'10px'}),
                         dbc.Row([
                             dbc.Col([html.Span('Minimum Length ',style=label_style), html.Span('auto',style=value_style,id='min_len')]),
@@ -115,7 +126,7 @@ def get_layout():
 
     seqlogo_panel = dbc.Card(
         [
-            dbc.CardHeader("Sequence Logo"),
+            dbc.CardHeader("Sequence Logo",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
                     dbc.Row([
@@ -125,19 +136,60 @@ def get_layout():
             )
         ],style={'marginBottom':'10px'},id='seqlogo_panel'
     )
-
     statistics_panel = dbc.Card(
         [
-            dbc.CardHeader("Statistics Figures"),
+            dbc.CardHeader("Statistics Analysis",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 1. Sequence counts of each group.')
+                    )),
+                    dbc.Row([
+                        html.Img(id='count_img_res',src='',style={"margin":"auto"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 2. Entropies of each position. ("X"s mean gaps)')
+                    )),
+                    dbc.Row([
+                        html.Img(id='entropy_img_res',src='',style={"margin":"auto"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 3. Entropies distribution of each group.')
+                    )),
+                    dbc.Row([
+                        html.Img(id='entropy_boxplot_img_res',src='',style={"margin":"auto"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 4. Correlations among groups (only in global alignment mode and #groups>1).')
+                    )),
+                    dbc.Row([
+                        html.Img(id='clustermap_img_res',src='',style={"margin":"auto","width":"60%"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 5. Conservation scores for positions of the target sequence by rate4site.')
+                    )),
+                    dbc.Row([
+                        html.Img(id='score_img_res',src='',style={"margin":"auto","width":"60%"}),
+                        ]),
+
+
                 ]
             )
-        ],style={'marginBottom':'10px'},id='statistics_panel'
+        ], id='statistics_panel', style={'marginBottom':'10px'}
     )
+
     msa_panel = dbc.Card(
         [
-            dbc.CardHeader("MSA and Phylogenetic Tree"),
+            dbc.CardHeader("Other Results",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
                     html.Span('Please click to open '),
@@ -149,7 +201,7 @@ def get_layout():
     btn_style = {'maring':'10px'}
     download_panel = dbc.Card(
         [
-            dbc.CardHeader("Download Files"),
+            dbc.CardHeader("Download Files",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
                     dbc.Col([
@@ -409,7 +461,7 @@ def display_page(href,pathname):
     if len(uid_arr) > 1:
         return uid_arr[-1].split('#')[0], href
     else:
-        return ''
+        return '',''
 @app.callback(
     [Output("search_btn","href"),
      Output("msa_btn","href")],
@@ -449,10 +501,16 @@ LOADED = False
 )
 def fire_trigger(n_intervals,old_trigger):
     if n_intervals == 0:
-        return old_trigger + 'x'
+        if len(old_trigger) > 1:
+            return old_trigger[:-1]
+        else:
+            return 'x'
     left = get_left_time(n_intervals)
     if left == 0 and (not LOADED):
-        return old_trigger + 'x'
+        if len(old_trigger) > 1:
+            return old_trigger[:-1]
+        else:
+            return 'x'
     else:
         raise PreventUpdate
 
@@ -478,10 +536,19 @@ def load_config(config_file):
         Output('sequence_type','children'),
         Output('group_strategy','children'),
         Output('group_resolution','children'),
+        Output('clustering_method_value','children'),
         Output('min_len','children'),
         Output('max_len','children'),
         Output('display_left','children'),
         Output('display_right','children'),
+        #statistics
+        Output('count_img_res', 'src'),
+        Output('entropy_img_res', 'src'),
+        Output('entropy_boxplot_img_res', 'src'),
+        Output('clustermap_img_res', 'src'),
+        Output('score_img_res', 'src'),
+        Output("interval-component","disabled"),
+
     ],
     [
         Input('trigger_panel','children'),
@@ -524,7 +591,8 @@ def trigger(nonsense,pathname):
     config_file = f"{CONFIG_PATH}/{uid}.toml"
     config_dict = load_config(config_file)
 
-    for item in ['create_time','seq_file_type','sequence_type','group_strategy','grouping_resolution','min_length','max_length','display_range_left','display_range_right']:
+    for item in ['create_time','seq_file_type','sequence_type','group_strategy','group_resolution','clustering_method',
+                 'min_length','max_length','display_range_left','display_range_right']:
         if item == 'create_time':
             tm = config_dict.get(item,'')
             if tm != '':
@@ -536,8 +604,34 @@ def trigger(nonsense,pathname):
 
     ###
 
+    count_src = ''
+    entropy_src = ''
+    boxplot_entropy_src = ''
+    clustermap_src = ''
+    score_src = ''
+    if LOADED and status == 'finished':
+        if  config_dict['analysis']: 
+            count_name = f'{PNG_PATH}/{uid}.counts.png'
+            count_src = get_img_src(count_name)
 
+            entropy_name = f'{PNG_PATH}/{uid}.entropy.png'
+            entropy_src = get_img_src(entropy_name)
 
+            boxplot_entropy_name = f'{PNG_PATH}/{uid}.boxplot_entropy.png'
+            boxplot_entropy_src = get_img_src(boxplot_entropy_name)
+
+            clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
+            clustermap_src = get_img_src(clustermap_name)
+
+            score_name = f'{PNG_PATH}/{uid}.scores.png'
+            score_src = get_img_src(score_name)
+    
+    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,score_src]
+
+    interval_disabled = False
+    if LOADED:
+        interval_disabled = True
+    results_arr += [interval_disabled]
 
     ###
        

@@ -3,9 +3,52 @@ import os
 import uuid
 from . import utils
 import pandas as pd
+import re
+import dendropy
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-def auto_detect_groups(seqs, seq_fa, group_resolution=1, clustalo='clustalo',uid='', fa_output_dir=''):
+def get_distance_range(tree_file):
+    tree = dendropy.Tree.get(path=tree_file,schema='newick')
+    pdm = tree.phylogenetic_distance_matrix()
+    dists = pdm.distances()
+    return dists
+
+def get_score_df(score_f):
+    print(score_f)
+    arrs = []
+    with open(score_f,'r') as inpf:
+        for line in inpf:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line[0] == '#':
+                continue
+            _arrs = re.split(' +',line)
+            arrs.append(_arrs[:3])
+    if len(arrs) == 0:
+        return None
+    df = pd.DataFrame(arrs,columns = ['POS','SEQ','SCORE'])
+    df['SCORE'] = df['SCORE'].map(float)
+    df['BASE'] = df['POS'] + '-' + df['SEQ']
+    return df
+
+def drawscore(input,output):
+    df = get_score_df(input)
+    if df is None:
+        return
+    fig,ax = plt.subplots()
+    g = sns.barplot(data=df,x='BASE',y='SCORE',ax=ax)
+    ax.xaxis.set_tick_params(rotation=45)
+    fig.savefig(output,bbox_inches='tight')
+    return
+
+
+
+    
+def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', clustalo='clustalo',uid='', fa_output_dir='', figure_output_dir=''):
     print('enter auto detect')
+    print('group_resolution: ', group_resolution)
 
     if seq_fa == '':
         if uid == '':
@@ -25,11 +68,17 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1, clustalo='clustalo',uid
                 f'{fa_output_dir}/server.{uid}.rate4site.tree',
                 f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates')
     
-    treecluster(group_resolution,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster')
+    drawscore(f'{fa_output_dir}/server.{uid}.rate4site.scores',f'{figure_output_dir}/{uid}.scores.png')
+
+    dists = get_distance_range(f'{fa_output_dir}/server.{uid}.rate4site.tree')
+    
+    treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster')
 
     cluster_df = pd.read_csv(f'{fa_output_dir}/server.{uid}.rate4site.cluster',sep='\t')
     groups_dict = {}
     for index, grp in cluster_df.groupby('ClusterNumber'):
+        #if str(index) == '-1':
+        #    continue
         groups_dict[index] = []
         for seqname in grp['SequenceName']:
             for _seqname in name_dict[seqname]:
@@ -38,9 +87,10 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1, clustalo='clustalo',uid
 
 def msa(seq_fa,clustalo,outfile):
     print(f'in msa, {outfile}')
-    cmd = f'{clustalo} --auto -i {seq_fa} -o {outfile}'
-    print(cmd)
-    os.system(f'{clustalo} --auto -i {seq_fa} -o {outfile}')
+    if not os.path.exists(outfile):
+        cmd = f'{clustalo} --auto -i {seq_fa} -o {outfile}'
+        print(cmd)
+        os.system(f'{clustalo} --auto -i {seq_fa} -o {outfile}')
     msa_dict = {}
     with open(outfile,'r') as inpf:
         seqname = ''
@@ -60,15 +110,20 @@ def msa(seq_fa,clustalo,outfile):
 
 def rate4site(msa_fa,outfile_score,outfile_tree,outfile_unnorm_rates,rate4site_bin='bins/bin/rate4site'):
     print('in rate4site...')
-    cmd = f'{rate4site_bin} -s {msa_fa} -o {outfile_score} -x {outfile_tree} -y {outfile_unnorm_rates}'
-    print(cmd)
-    return os.system(cmd)
+    if (not os.path.exists(outfile_score)) or (not os.path.exists(outfile_tree)):
+        cmd = f'{rate4site_bin} -s {msa_fa} -o {outfile_score} -x {outfile_tree} -y {outfile_unnorm_rates}'
+        print(cmd)
+        return os.system(cmd)
+    return -1
 
-def treecluster(threshold,treefile,outfile):
-    print('in tree cluster')
-    cmd = f'python /home/achen/anaconda3/envs/dash2/bin/TreeCluster.py -i {treefile} -o {outfile} -t {threshold}'
-    print(cmd)
-    return os.system(cmd)
+def treecluster(threshold,clustering_method,dists,treefile,outfile):
+    sorted_dists = sorted(dists)
+    adj_threshold_idx = round(threshold*len(dists))
+    adj_threshold = sorted_dists[min(len(dists)-1,adj_threshold_idx)]
+    if not os.path.exists(outfile):
+        cmd = f'python /home/achen/anaconda3/envs/dash2/bin/TreeCluster.py -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
+        return os.system(cmd)
+    return -1
 
 def deduplicate(seq_fa,out_fa):
     seq_dict = {}
