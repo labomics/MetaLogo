@@ -7,12 +7,16 @@ class Item():
     def __init__(self, *args, **kwargs) :
         pass
 
-    def generate_ax(self,threed=False):
+    def generate_ax(self,threed=False,withtree=False):
+        print('in generate ax', withtree)
         if threed:
             fig, ax = plt.subplots(1, 1,figsize=(10,10),subplot_kw=dict(projection="3d"))
-        else: 
-            fig, ax = plt.subplots(1, 1,figsize=(10,10))
-        self.ax = ax    
+            self.ax = ax    
+        elif withtree: 
+            fig, (ax1,ax2) = plt.subplots(1, 2,figsize=(10,10),gridspec_kw={'width_ratios': [1, 4]})
+            self.ax = ax2
+            self.ax0 = ax1
+            plt.subplots_adjust(wspace=0)
     
     def draw(self):
         pass

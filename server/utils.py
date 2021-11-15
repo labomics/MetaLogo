@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from io import BytesIO
 import base64
+import os
 
 def fig_to_uri(in_fig, close_all=True, **save_args):
     """
@@ -33,3 +34,10 @@ def figfile_to_uri(in_fig, close_all=True, **save_args):
     out_img.seek(0)  # rewind file
     encoded = base64.b64encode(out_img.read()).decode("ascii").replace("\n", "")
     return "data:image/png;base64,{}".format(encoded)
+
+def get_img_src(f):
+    if not os.path.exists(f):
+        return ''
+    encoded_image = base64.b64encode(open(f, 'rb').read())
+    src = 'data:image/png;base64,{}'.format(encoded_image.decode())
+    return src

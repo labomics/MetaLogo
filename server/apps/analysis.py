@@ -454,6 +454,19 @@ logo_type_dropdown = dbc.FormGroup(
         ),
     ]
 )
+logo_connect_tree_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Connect tree?", html_for="dropdown"),
+        dcc.Dropdown(
+            id="connect_tree_dropdown",
+            options=[
+                {"label": "Yes", "value": 'Yes'},
+                {"label": "No", "value": 'No'},
+            ],
+            value='Yes'
+        ),
+    ]
+)
 
 
 sort_dropdown = dbc.FormGroup(
@@ -511,6 +524,7 @@ layout_panel = dbc.Card(
             [
                 dbc.Row([
                     dbc.Col(logo_type_dropdown),
+                    dbc.Col(logo_connect_tree_dropdown),
                     dbc.Col(sort_dropdown),
                     #dbc.Col(align_dropdown)
                     ]),
@@ -1036,16 +1050,19 @@ app.clientside_callback(
 
 
 @app.callback(
-    Output("sortby_dropdown","value"),
-    Input("grouping_by_dropdown","value"), prevent_initial_call=True
+    [
+        Output("sortby_dropdown","value"),
+        Output("sortby_dropdown","disabled"),
+    ],
+    Input("grouping_by_dropdown","value")
 )
 def change_default_order(sort_by_value):
     if sort_by_value == 'identifier':
-        return 'identifier' 
+        return 'identifier' , False
     elif sort_by_value == 'length':
-        return 'length' 
+        return 'length' ,False
     else:
-        return 'auto'
+        return 'auto',True
 
 @app.callback(
     [
@@ -1155,6 +1172,7 @@ app.clientside_callback(
         Input('submit4', 'n_clicks')
     ],
     [
+        State('connect_tree_dropdown','value'),
         State('grouping_resolution','value'),
         State('clustering_method_dropdown','value'),
         State('basic_analysis_dropdown','value'),
@@ -1200,6 +1218,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            connect_tree_dropdown,
             group_resolution,clustering_method,
             basic_analysis_dropdown,
             display_left, display_right,
@@ -1305,6 +1324,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if 'hideversion' in hide_version_checklist:
         hide_version_tag = True
     
+    withtree = connect_tree_dropdown == 'Yes'
+    
 
     padding_align = padding_align=='Yes'
     analysis = basic_analysis_dropdown=='Yes'
@@ -1326,7 +1347,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           min_length=min_len_input,max_length=max_len_input,seq_file_type=input_format_dropdown,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
                           group_resolution=group_resolution,create_time=int(time.time()),
-                          analysis=analysis,clustering_method=clustering_method
+                          analysis=analysis,clustering_method=clustering_method,withtree=withtree
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

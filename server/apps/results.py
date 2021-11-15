@@ -14,6 +14,7 @@ import toml
 
 from ..app import app
 from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
+from ..utils import get_img_src
 
 from contextlib import closing
 import sqlite3
@@ -25,12 +26,6 @@ import pandas as pd
 
 
 
-def get_img_src(f):
-    if not os.path.exists(f):
-        return ''
-    encoded_image = base64.b64encode(open(f, 'rb').read())
-    src = 'data:image/png;base64,{}'.format(encoded_image.decode())
-    return src
 
 def get_status(uid):
     with closing(sqlite3.connect(SQLITE3_DB)) as connection:
@@ -192,8 +187,15 @@ def get_layout():
             dbc.CardHeader("Other Results",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
-                    html.Span('Please click to open '),
-                    html.A("MSA result", href="msa",target='_blank',id='msa_btn')
+                    html.Div([
+                    html.Span('1. Please click to open '),
+                    html.A("MSA visualization", href="/msa",target='_blank',id='msa_btn')
+                    ]),
+                    html.Div([
+                    html.Span('2. Please click to open '),
+                    html.A("Phylogenetic tree visualization", href="/tree",target='_blank',id='tree_btn')
+                    ])
+
                 ]
             )
         ],style={'marginBottom':'10px'},id='msa_panel'
@@ -462,13 +464,15 @@ def display_page(href,pathname):
         return uid_arr[-1].split('#')[0], href
     else:
         return '',''
+
 @app.callback(
     [Output("search_btn","href"),
-     Output("msa_btn","href")],
+     Output("msa_btn","href"),
+     Output("tree_btn","href")],
     Input("uid_input","value")
 )
 def change_link(uid):
-    return f'/results/{uid}',f'/msa/{uid}'
+    return f'/results/{uid}',f'/msa/{uid}',f'/tree/{uid}'
 #@app.callback(
 #    Output("url","pathname"),
 #    Input('search_btn','n_clicks'),

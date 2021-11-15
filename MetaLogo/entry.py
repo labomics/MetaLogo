@@ -78,6 +78,7 @@ def main():
     parser.add_argument('--display_range_right',type=int,help='Then end position of display range (Global alignment with padding requirement)',default=-1)
 
     #layout
+    parser.add_argument('--withtree',action='store_true',dest='withtree', help='If show tree besides sequence logo')
 
     parser.add_argument('--logo_margin_ratio',type=float,help='Margin ratio between the logos',default=0.1)
     parser.add_argument('--column_margin_ratio',type=float,help='Margin ratio between the columns',default=0.05)
@@ -201,7 +202,8 @@ def main():
                                   sequence_type = args.sequence_type,
                                   height_algorithm=args.height_algorithm,
                                   seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
-                                  group_resolution=args.group_resolution,clustering_method=args.clustering_method
+                                  group_resolution=args.group_resolution,clustering_method=args.clustering_method,
+                                  withtree=args.withtree
                                   )
             logogroup.draw()
             logogroup.savefig(f'{args.output_dir}/{args.output_name}')

@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 
 from .app import app
-from .apps import results, analysis,about,msa
+from .apps import results, analysis,about,msa,tree
 import MetaLogo
 
 nav = dbc.Nav(
@@ -36,7 +36,7 @@ footer_panel = html.Div([
                 html.A('Matplotlib',href='https://matplotlib.org/'),' and ', html.A('Plotly Dash',href='https://dash.plotly.com/')],
                 )
     ]),
-    dbc.Row(dbc.Col('Jun, 2021'))
+    dbc.Row(dbc.Col('July, 2021'))
 ],style={"textAlign":"center","marginTop":"40px","fontSize":"10px","color":"grey"})
 
 
@@ -59,7 +59,8 @@ app.validation_layout = html.Div([
     about.layout,
     results.layout,
     analysis.layout,
-    msa.layout
+    msa.layout,
+    tree.layout
 ])
 
 @app.callback(
@@ -93,6 +94,8 @@ def display_page(pathname):
         return results.layout
     elif '/msa/' in pathname:
         return msa.layout
+    elif '/tree/' in pathname:
+        return tree.layout
     else:
         return '404'
 

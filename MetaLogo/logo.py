@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import os
+from typing_extensions import IntVar
 
 from matplotlib import transforms
 from matplotlib.colors import get_named_colors_mapping
@@ -8,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, get
 import numpy as np
 from matplotlib.patches import Circle
+from scipy import cluster
 from .character import Character
 from .column import Column
 from .item import Item
@@ -27,6 +29,10 @@ import time
 import pandas as pd
 import pathlib
 import os
+from scipy.spatial import distance
+from scipy.cluster import hierarchy
+from scipy.cluster.hierarchy import dendrogram, linkage
+
 
 from .utils import grouping,check_group,detect_seq_type
 from .logobits import compute_bits, compute_prob
@@ -215,7 +221,7 @@ class LogoGroup(Item):
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
-                 clustalo_bin = '',
+                 clustalo_bin = '',withtree = False,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -283,6 +289,7 @@ class LogoGroup(Item):
         self.uid = uid
 
         self.clustering_method = clustering_method
+        self.withtree = withtree
 
 
         if sequence_type == 'auto':
@@ -295,12 +302,17 @@ class LogoGroup(Item):
 
         self.prep_env()
 
-        self.prepare_bits()
 
         if ax is None:
-            self.generate_ax(threed=(self.logo_type=='Threed'))
+            withtree = False
+            if (self.withtree) and (self.logo_type == 'Horizontal') and ( self.group_strategy == 'auto' or (self.align and self.padding_align)):
+                withtree = True
+            self.generate_ax(threed=(self.logo_type=='Threed'),withtree=withtree)
         else:
             self.ax = ax
+
+        self.prepare_bits()
+
         self.generate_components()
     
     def prep_env(self):
@@ -359,7 +371,7 @@ class LogoGroup(Item):
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0])
             elif self.group_order.lower() == 'identifier_reverse':
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: re.split('[@-]',d)[0], reverse=True)
-            elif self.group_ids == 'auto':
+            elif self.group_order.lower() == 'auto':
                 self.group_ids = list(self.seq_bits.keys())
         except Exception as e:
             print(e)
@@ -379,6 +391,7 @@ class LogoGroup(Item):
                 self.group_ids.remove(gid)
                 del self.probs[gid]
                 del self.seq_bits[gid]
+        
 
         if (self.align and self.padding_align) and (self.group_strategy != 'auto'):
 
@@ -414,6 +427,15 @@ class LogoGroup(Item):
             
                 self.probs = new_probs
                 self.seq_bits = new_bits
+            
+            ##get correlations
+            self.correlation  = self.get_correlation()
+            correlation_array = np.asarray(self.correlation)
+            self.row_linkage = hierarchy.linkage(distance.pdist(correlation_array.T), method='average')
+            self.dendrogram = dendrogram(self.row_linkage,orientation='left')
+            self.before_clustering_group_ids = self.group_ids.copy()
+            self.group_ids = list(self.correlation.index[self.dendrogram['leaves']])
+
     
     def align_probs_bits(self):
         new_probs = {}
@@ -540,22 +562,99 @@ class LogoGroup(Item):
         if not self.hide_version_tag:
             if self.logo_type == 'Threed':
                 #self.ax.text2D(1.005, 0, 'Created by MetaLogo')
-                self.ax.text2D(1.005, 0, f'Created by MetaLogo (v{__version__})', transform=self.ax.transAxes,
+                self.ax.text2D(1.00, 0, f'Created by MetaLogo (v{__version__})', transform=self.ax.transAxes,
                     horizontalalignment='left',
                     verticalalignment='bottom',
                     rotation='vertical',
                     color='#6c757d')
 
             else:
-                self.ax.text(1.005, 0, f'Created by MetaLogo (v{__version__})',
-                    horizontalalignment='left',
+                #self.ax.text(1.005, 0, f'Created by MetaLogo (v{__version__})',
+                self.ax.text(1.005, 1, f'Created by MetaLogo (v{__version__})',
+                    #horizontalalignment='left',
+                    horizontalalignment='right',
+                    #verticalalignment='bottom',
                     verticalalignment='bottom',
-                    rotation='vertical',
+                    #rotation='vertical',
                     transform=self.ax.transAxes,
                     color='#6c757d')
         
+        if (self.withtree) and (self.logo_type == 'Horizontal') and (self.group_strategy=='auto' or (self.padding_align and self.align)):
+            #draw new tree
+            intervals = []
+            total_height = 0
+            for logo in self.logos:
+                h = logo.get_height()
+                intervals += [total_height + h/2]
+                total_height += h*(1+self.logo_margin_ratio)
+            Zx = []
+            Zy = []
+            cluster_center = {}
+            i = -1
+            for item in self.row_linkage:
+                i += 1
+                node1,node2,branch,num = item
+                node1 = int(node1)
+                node2 = int(node2)
 
-        
+                if node1 < len(self.group_ids) and node2 < len(self.group_ids):
+                    idx1 = self.group_ids.index(self.before_clustering_group_ids[node1])
+                    idx2 = self.group_ids.index(self.before_clustering_group_ids[node2])
+                    if idx1 > idx2:
+                        idx1,idx2 = idx2,idx1
+                    if num == 2:
+                        p1 = [0, intervals[idx1]]
+                        p2 = [branch,intervals[idx1]]
+                        p3 = [branch,intervals[idx2]]
+                        p4 = [0, intervals[idx2]]
+                        Zx += [[p1[0],p2[0],p3[0],p4[0]]]
+                        Zy += [[p1[1],p2[1],p3[1],p4[1]]]
+                        cluster_center[len(self.group_ids)+i] = [branch,p1[1] + (p4[1]-p1[1])/2]
+                else:
+                    if node1 >= len(self.group_ids):
+                        p1 = cluster_center[node1]
+                    else:
+                        idx1 = self.group_ids.index(self.before_clustering_group_ids[node1])
+                        p1 = [0,intervals[idx1]]
+
+                    if node1 >= len(self.group_ids):
+                        p1 = cluster_center[node1]
+                    else:
+                        idx1 = self.group_ids.index(self.before_clustering_group_ids[node1])
+                        p1 = [0,intervals[idx1]]
+                    if node2 >= len(self.group_ids):
+                        p4 = cluster_center[node2]
+                    else:
+                        idx2 = self.group_ids.index(self.before_clustering_group_ids[node2])
+                        p4 = [0,intervals[idx2]]
+                    
+                    if p1[1] > p4[1]:
+                        p1,p4 = p4,p1
+                    
+                    p2 = [branch,p1[1]]
+                    p3 = [branch,p4[1]]
+
+                    Zx += [[p1[0],p2[0],p3[0],p4[0]]]
+                    Zy += [[p1[1],p2[1],p3[1],p4[1]]]
+                    cluster_center[len(self.group_ids)+i] = [branch,p1[1]+(p4[1]-p1[1])/2]
+
+            for path_x,path_y in zip(Zx,Zy):
+                self.ax0.plot(path_x,path_y)
+            
+            print(cluster_center)
+            self.ax0.invert_xaxis()
+            self.ax0.spines['left'].set_visible(False)
+            self.ax0.spines['right'].set_visible(False)
+            self.ax0.spines['top'].set_visible(False)
+            self.ax0.spines['bottom'].set_visible(False)
+            self.ax0.set_yticks([])
+            self.ax0.set_xticks([])
+            self.ax0.set_ylim(self.ax.get_ylim())
+
+            self.ax.yaxis.tick_right()
+            self.ax.yaxis.set_label_position("right")
+
+
     def draw_help(self):
         if self.logo_type == 'Radiation':
             self.draw_radiation_help()
@@ -910,25 +1009,15 @@ class LogoGroup(Item):
 
         return fig
     
-
-    def get_correlation_figure(self):
-
-        fig,ax = plt.subplots()
-
-        if (not self.padding_align) and (self.group_strategy != 'auto'):
-            return None
-        if len(self.group_ids) < 2:
-            return None
-
+    def get_correlation(self):
         seq_bits = self.seq_bits        
         if hasattr(self, 'full_seq_bits'):
             seq_bits = self.full_seq_bits
         
-        #print('seq_bits:', seq_bits)
-        
         aligned_len =  len(seq_bits[self.group_ids[0]])
         if aligned_len < 1:
             return None
+        
 
         bases = []
         for i in range(aligned_len):
@@ -947,16 +1036,29 @@ class LogoGroup(Item):
                     _arr.append(_dict.get(base,0))
             arrs.append(_arr)
         
-        
-        try:
-            df = pd.DataFrame(arrs)
-            df.index = self.group_ids
-            df = df.T
-            g = sns.clustermap(df.corr(method='pearson'))
-            g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
-            return g
-        except:
+        df = pd.DataFrame(arrs)
+        df.index = self.group_ids
+        return df.T.corr(method='pearson')
+   
+
+    def get_correlation_figure(self):
+
+        fig,ax = plt.subplots()
+
+        if (not self.padding_align) and (self.group_strategy != 'auto'):
             return None
+        if len(self.group_ids) < 2:
+            return None
+
+        if hasattr(self,'correlation'):
+            corr = self.correlation 
+        else:
+            corr = self.get_correlation()
+
+        g = sns.clustermap(corr)
+        g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
+        return g
+
 
     
     def get_grp_counts_figure(self):

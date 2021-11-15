@@ -45,7 +45,9 @@ layout = dbc.Container([
               Output("uid","children"),
               Output("uid","href"),
               ],
-              Input('url', 'pathname'))
+              Input('url', 'pathname'),
+              prevent_initial_call=True,suppress_callback_exceptions=True)
+
 def display_page(pathname):
     arrs = pathname.split('/msa/')
     if len(arrs) > 1:

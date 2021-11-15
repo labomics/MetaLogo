@@ -7,6 +7,7 @@ import re
 import dendropy
 import matplotlib.pyplot as plt
 import seaborn as sns
+from Bio import Phylo
 
 def get_distance_range(tree_file):
     tree = dendropy.Tree.get(path=tree_file,schema='newick')
@@ -43,6 +44,15 @@ def drawscore(input,output):
     fig.savefig(output,bbox_inches='tight')
     return
 
+def drawtree(input,output):
+    tree = Phylo.read(input, 'newick')
+    tree.ladderize()  # Flip branches so deeper clades are displayed at top
+    fig,ax = plt.subplots()
+    g = Phylo.draw(tree)
+    plt.savefig(output)
+
+
+
 
 
     
@@ -69,6 +79,7 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
                 f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates')
     
     drawscore(f'{fa_output_dir}/server.{uid}.rate4site.scores',f'{figure_output_dir}/{uid}.scores.png')
+    drawtree(f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{figure_output_dir}/{uid}.tree.png')
 
     dists = get_distance_range(f'{fa_output_dir}/server.{uid}.rate4site.tree')
     
