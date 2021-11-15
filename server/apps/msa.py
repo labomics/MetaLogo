@@ -46,10 +46,11 @@ layout = dbc.Container([
               Output("uid","href"),
               ],
               Input('url', 'pathname'),
-              prevent_initial_call=True,suppress_callback_exceptions=True)
+              )
 
 def display_page(pathname):
     arrs = pathname.split('/msa/')
+    print('enter msa')
     if len(arrs) > 1:
         uid = arrs[-1]
         msa_file = f'{FA_PATH}/server.{uid}.msa.fa'

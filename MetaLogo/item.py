@@ -17,6 +17,9 @@ class Item():
             self.ax = ax2
             self.ax0 = ax1
             plt.subplots_adjust(wspace=0)
+        else:
+            fig, ax = plt.subplots(1, 1,figsize=(10,10))
+            self.ax = ax    
     
     def draw(self):
         pass

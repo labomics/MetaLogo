@@ -129,7 +129,8 @@ def main():
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
-    try: 
+    #try: 
+    if True:
         args = parser.parse_args()
         print('args: ', args)
 
@@ -239,9 +240,9 @@ def main():
     
         if args.config is not None:
             write_status(config['uid'],'finished',config['sqlite3_db'])
-    except Exception as e:
-        print(e)
-        write_status(config['uid'],'error',config['sqlite3_db'])
+    #except Exception as e:
+    #    print(e)
+    #    write_status(config['uid'],'error',config['sqlite3_db'])
 
 
     

@@ -301,17 +301,16 @@ class LogoGroup(Item):
         self.logos = []
 
         self.prep_env()
-
+        self.prepare_bits()
 
         if ax is None:
             withtree = False
-            if (self.withtree) and (self.logo_type == 'Horizontal') and ( self.group_strategy == 'auto' or (self.align and self.padding_align)):
+            if (len(self.group_ids) > 1) and (self.withtree) and (self.logo_type == 'Horizontal') and ( self.group_strategy == 'auto' or (self.align and self.padding_align)):
                 withtree = True
             self.generate_ax(threed=(self.logo_type=='Threed'),withtree=withtree)
         else:
             self.ax = ax
 
-        self.prepare_bits()
 
         self.generate_components()
     
@@ -429,12 +428,13 @@ class LogoGroup(Item):
                 self.seq_bits = new_bits
             
             ##get correlations
-            self.correlation  = self.get_correlation()
-            correlation_array = np.asarray(self.correlation)
-            self.row_linkage = hierarchy.linkage(distance.pdist(correlation_array.T), method='average')
-            self.dendrogram = dendrogram(self.row_linkage,orientation='left')
-            self.before_clustering_group_ids = self.group_ids.copy()
-            self.group_ids = list(self.correlation.index[self.dendrogram['leaves']])
+            if len(self.group_ids) > 1:
+                self.correlation  = self.get_correlation()
+                correlation_array = np.asarray(self.correlation)
+                self.row_linkage = hierarchy.linkage(distance.pdist(correlation_array.T), method='average')
+                self.dendrogram = dendrogram(self.row_linkage,orientation='left')
+                self.before_clustering_group_ids = self.group_ids.copy()
+                self.group_ids = list(self.correlation.index[self.dendrogram['leaves']])
 
     
     def align_probs_bits(self):
@@ -579,7 +579,7 @@ class LogoGroup(Item):
                     transform=self.ax.transAxes,
                     color='#6c757d')
         
-        if (self.withtree) and (self.logo_type == 'Horizontal') and (self.group_strategy=='auto' or (self.padding_align and self.align)):
+        if (len(self.group_ids) > 1) and (self.withtree) and (self.logo_type == 'Horizontal') and (self.group_strategy=='auto' or (self.padding_align and self.align)):
             #draw new tree
             intervals = []
             total_height = 0
