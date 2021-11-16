@@ -10,6 +10,7 @@ from dash.dependencies import Input, Output, State
 from ..app import app
 from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
 import os
+import re
 
 loading_spinner = html.Div(
     [
@@ -30,7 +31,8 @@ layout = dbc.Container([
                 width="100%",
                 showgap=False,
                 showconservation=False,
-                showconsensus=False
+                showconsensus=False,
+                overview='none'
             )]),
             dbc.Row([html.Div(id='default-alignment-viewer-output',style={'display': 'none'})]),
         ]
@@ -40,10 +42,12 @@ layout = dbc.Container([
 
 
 @app.callback(
-              [Output('my-default-alignment-viewer', 'data'), 
-              Output("loading-output3", "children"),
-              Output("uid","children"),
-              Output("uid","href"),
+              [
+                Output('my-default-alignment-viewer', 'data'), 
+                Output('my-default-alignment-viewer', 'height'), 
+                Output("loading-output3", "children"),
+                Output("uid","children"),
+                Output("uid","href"),
               ],
               Input('url', 'pathname'),
               )
@@ -53,13 +57,14 @@ def display_page(pathname):
     print('enter msa')
     if len(arrs) > 1:
         uid = arrs[-1]
-        msa_file = f'{FA_PATH}/server.{uid}.msa.fa'
+        msa_file = f'{FA_PATH}/server.{uid}.msa.rawid.fa'
         if not os.path.exists(msa_file):
-            return "",'',uid,'/results/'+uid
+            return "",100,'',uid,'/results/'+uid
 
         with open(msa_file, encoding='utf-8') as data_file:
             data = data_file.read()
-        return data,'',uid,'/results/'+uid
+        line_no = len(re.findall('\n',data))/2
+        return data, line_no*15,'',uid,'/results/'+uid
     else:
         return '','','',''
 

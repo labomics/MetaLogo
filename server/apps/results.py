@@ -9,6 +9,7 @@ import dash_bootstrap_components as dbc
 import flask
 from dash.dependencies import Input, Output, State
 import os
+from flask import config
 from pandas.io.formats import style
 import toml
 
@@ -87,6 +88,7 @@ def get_layout():
                     dbc.Col([
                         dbc.Row([
                             dbc.Col([html.Span('ID',style=label_style), html.Span('xx',style=value_style, id='uid_span')]) ,
+                            dbc.Col([html.Span('Name',style=label_style), html.Span('xx',style=value_style, id='task_name_span')]) ,
                             dbc.Col([html.Span('Created Time',style=label_style), html.Span('2021/2/3, 15:00',style=value_style, id='create_time')]),
                         ]),
                         html.Hr(),
@@ -95,14 +97,23 @@ def get_layout():
                             dbc.Col([html.Span('Sequence Type',style=label_style), html.Span('auto',style=value_style,id='sequence_type')]),
                             dbc.Col([html.Span('Group Strategy',style=label_style), html.Span('auto',style=value_style,id='group_strategy')]),
                             dbc.Col([html.Span('Grouping Resolution ',style=label_style), html.Span('auto',style=value_style,id='group_resolution')]),
-                            dbc.Col([html.Span('Clustering method ',style=label_style), html.Span('auto',style=value_style,id='clustering_method_value')]),
+                            dbc.Col([html.Span('Clustering Method ',style=label_style), html.Span('auto',style=value_style,id='clustering_method_value')]),
                         ],style={'marginTop':'10px'}),
                         dbc.Row([
                             dbc.Col([html.Span('Minimum Length ',style=label_style), html.Span('auto',style=value_style,id='min_len')]),
                             dbc.Col([html.Span('Maximum Length ',style=label_style), html.Span('auto',style=value_style,id='max_len')]),
-                            dbc.Col([html.Span('Display Range (left) ',style=label_style), html.Span('auto',style=value_style,id='display_left')]),
-                            dbc.Col([html.Span('Display Range (right) ',style=label_style), html.Span('auto',style=value_style,id='display_right')]),
+                            dbc.Col([html.Span('Display Range',style=label_style), html.Span('auto',style=value_style,id='display_left_right')]),
+                            dbc.Col([html.Span('Basic Analysis',style=label_style), html.Span('auto',style=value_style,id='basic_analysis')]),
+                            dbc.Col([html.Span('Height Algorithm',style=label_style), html.Span('auto',style=value_style,id='height_algorithm')]),
                         ],style={'marginTop':'10px'}),
+                        dbc.Row([
+                            dbc.Col([html.Span('Adjacent Alignment ',style=label_style), html.Span('auto',style=value_style,id='adjacent_alignment')]),
+                            dbc.Col([html.Span('Global Alignment ',style=label_style), html.Span('auto',style=value_style,id='global_alignment')]),
+                            dbc.Col([html.Span('Align Metric ',style=label_style), html.Span('auto',style=value_style,id='align_metric')]),
+                            dbc.Col([html.Span('Connect Threshold ',style=label_style), html.Span('auto',style=value_style,id='connect_threshold_value')]),
+                            dbc.Col([html.Span('Logo Type',style=label_style), html.Span('auto',style=value_style,id='logo_type')]),
+                        ],style={'marginTop':'10px'}),
+
                         html.Hr(),
                         dbc.Row([
                             dbc.Col([html.Span('* For more details, please download the configure file at the bottom of the result page')],style={'fontSize':'10px'}),
@@ -123,11 +134,14 @@ def get_layout():
                     html.Hr(),
                     html.Div(
                         [
-                            dbc.Label("Reset resolution (0-1)  ",html_for='input'),
-                            dbc.Input(type="number", min=0, max=1, id="reset_resolution",step=0.000001,style={'width':'100px','margin':'20px'},value=1),
-                            dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn'),
-                        ],style={'display':'flex','alignItems':'center','float':'right'}),
-
+                            html.Div(
+                                [
+                                    dbc.Label("Reset resolution (0-1)  ",html_for='input'),
+                                    dbc.Input(type="number", min=0, max=1, id="reset_resolution",step=0.000001,style={'width':'100px','margin':'20px'},value=1),
+                                    dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn',color='info'),
+                                ],style={'display':'flex','alignItems':'center','justifyContent':'flex-end'}),
+                            html.Div('* Only for auto-grouping scenario',style={'textAlign':'right','fontSize':'10px'})
+                        ], style={'display':'flex','flexDirection':'column'}),
                 ]
             )
         ],style={'marginBottom':'10px'},id='seqlogo_panel'
@@ -163,7 +177,7 @@ def get_layout():
                     html.Hr(),
                     dbc.Row(
                         dbc.Col(
-                            html.Span('Figure 4. Correlations among groups (only in global alignment mode and #groups>1).')
+                            html.Span('Figure 4. Correlations among groups (only in global alignment mode and #groups>1). (Only for global alignment or auto-grouping mode)')
                     )),
                     dbc.Row([
                         html.Img(id='clustermap_img_res',src='',style={"margin":"auto","width":"60%"}),
@@ -171,7 +185,15 @@ def get_layout():
                     html.Hr(),
                     dbc.Row(
                         dbc.Col(
-                            html.Span('Figure 5. Conservation scores for positions of the target sequence by rate4site.')
+                            html.Span('Figure 5. Distribution of pairwise distances of nodes in the phylogenetic tree. (Only for auto-grouping mode)')
+                    )),
+                    dbc.Row([
+                        html.Img(id='dists_img_res',src='',style={"margin":"auto","width":"60%"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
+                            html.Span('Figure 6. Conservation scores for positions of the target sequence by rate4site. (Only for auto-grouping mode)')
                     )),
                     dbc.Row([
                         html.Img(id='score_img_res',src='',style={"margin":"auto","width":"60%"}),
@@ -183,7 +205,7 @@ def get_layout():
         ], id='statistics_panel', style={'marginBottom':'10px'}
     )
 
-    msa_panel = dbc.Card(
+    other_panel = dbc.Card(
         [
             dbc.CardHeader("Other Results",style={'fontWeight':'bold'}),
             dbc.CardBody(
@@ -199,7 +221,7 @@ def get_layout():
 
                 ]
             )
-        ],style={'marginBottom':'10px'},id='msa_panel'
+        ],style={'marginBottom':'10px'},id='other_panel'
     )
     btn_style = {'maring':'10px'}
     download_panel = dbc.Card(
@@ -256,14 +278,14 @@ def get_layout():
                             ),
                             dbc.Col(
                                 [
-                                    dbc.Button("Grouping clustering",   color='info',id='clustering_download_btn',style=btn_style),
-                                    dcc.Download(id="clustering_download",type='text',),
+                                    dbc.Button("space",   color='info',style={'display':'none'}),
+                                    dcc.Download(id="spacer1",type='text',),
                                 ]
                             ),
                             dbc.Col(
                                 [
-                                    dbc.Button("Sequence name mapping",   color='info',id='mapping_download_btn',style=btn_style),
-                                    dcc.Download(id="mapping_download",type='text',),
+                                    dbc.Button("space",   color='info',style={'display':'none'}),
+                                    dcc.Download(id="spacer2",type='text',),
                                 ]
                             )],style={'margin':'20px'})
                     ])
@@ -303,7 +325,7 @@ def get_layout():
                 task_info_panel,
                 seqlogo_panel,
                 statistics_panel,
-                msa_panel,
+                other_panel,
                 download_panel,
                 trigger_panel
             ],id='result_panel',style={"display":"none"}),
@@ -387,7 +409,7 @@ def update_msa_download(n_clicks,pathname):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
-    target =  f"{FA_PATH}/server.{uid}.msa.fa"
+    target =  f"{FA_PATH}/server.{uid}.msa.rawid.fa"
     print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
@@ -405,7 +427,7 @@ def update_phylo_download(n_clicks,pathname):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
-    target =  f"{FA_PATH}/server.{uid}.rate4site.tree"
+    target =  f"{FA_PATH}/server.{uid}.rate4site.rawid.tree"
     print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
@@ -441,25 +463,7 @@ def update_grouping_download(n_clicks,pathname):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
-    target =  f"{FA_PATH}/server.{uid}.rate4site.cluster"
-    print(target)
-    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
-        return dcc.send_file(target)
-    else:
-        return None
-
-@app.callback(
-        Output("clustering_download","data"),
-        Input("clustering_download_btn","n_clicks"),
-        State('url','pathname'),
-        prevent_initial_call=True,
-    )
-def update_clustering_download(n_clicks,pathname):
-    if ('/results' in pathname) and (not pathname == '/results'):
-        uid = pathname.split('/')[-1]
-    else:
-        uid = ''
-    target =  f"{PNG_PATH}/{uid}.clustering.png"
+    target =  f"{FA_PATH}/server.{uid}.grouping.fa"
     print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
@@ -557,22 +561,42 @@ def save_config(config,config_file):
         Output('error_span','style'),
         Output('result_panel','style'),
         Output('logo_img','src'),
+        #info 1L
+        Output('task_name_span','children') ,
         Output('create_time','children'),
         Output('input_format','children'),
         Output('sequence_type','children'),
         Output('group_strategy','children'),
         Output('group_resolution','children'),
         Output('clustering_method_value','children'),
+        #info 2L
         Output('min_len','children'),
         Output('max_len','children'),
-        Output('display_left','children'),
-        Output('display_right','children'),
+        Output('display_left_right','children'),
+        Output('basic_analysis','children'),
+        Output('height_algorithm','children'),
+        #info 3L
+        Output('adjacent_alignment','children'),
+        Output('global_alignment','children'),
+        Output('align_metric','children'),
+        Output('connect_threshold_value','children'),
+        Output('logo_type','children'),
         #statistics
         Output('count_img_res', 'src'),
         Output('entropy_img_res', 'src'),
         Output('entropy_boxplot_img_res', 'src'),
         Output('clustermap_img_res', 'src'),
+        Output('dists_img_res', 'src'),
         Output('score_img_res', 'src'),
+        #nondisplay/active
+        Output('other_panel','style'),
+        Output('msa_download_btn','disabled'),
+        Output('phylo_download_btn','disabled'),
+        Output('scores_download_btn','disabled'),
+        Output('grouping_download_btn','disabled'),
+        Output('reset_resolution_btn','disabled'),
+        Output('reset_resolution','disabled'),
+        #interval
         Output("interval-component","disabled"),
 
     ],
@@ -617,13 +641,15 @@ def trigger(nonsense,pathname):
     config_file = f"{CONFIG_PATH}/{uid}.toml"
     config_dict = load_config(config_file)
 
-    for item in ['create_time','seq_file_type','sequence_type','group_strategy','group_resolution','clustering_method',
-                 'min_length','max_length','display_range_left','display_range_right']:
+    for item in ['task_name','create_time','seq_file_type','sequence_type','group_strategy','group_resolution','clustering_method',
+                 'min_length','max_length','display_left_right','analysis','height_algorithm','align','padding_align','align_metric','connect_threshold','logo_type']:
         if item == 'create_time':
             tm = config_dict.get(item,'')
             if tm != '':
                 tm = datetime.datetime.utcfromtimestamp(int(tm)).strftime('%Y-%m-%d %H:%M:%S (UTC)')
             results_arr += ['%s'%(tm)]
+        elif item == 'display_left_right':
+            results_arr += ['%s:%s'%(config_dict.get('display_range_left'),config_dict.get('display_range_right'))]
         else:
             results_arr += ['%s'%(config_dict.get(item,''))]
     
@@ -635,6 +661,7 @@ def trigger(nonsense,pathname):
     boxplot_entropy_src = ''
     clustermap_src = ''
     score_src = ''
+    dists_src = ''
     if LOADED and status == 'finished':
         if  config_dict['analysis']: 
             count_name = f'{PNG_PATH}/{uid}.counts.png'
@@ -649,11 +676,42 @@ def trigger(nonsense,pathname):
             clustermap_name = f'{PNG_PATH}/{uid}.clustermap.png'
             clustermap_src = get_img_src(clustermap_name)
 
+            dists_name = f'{PNG_PATH}/{uid}.treedistances.png'
+            dists_src = get_img_src(dists_name)
+
             score_name = f'{PNG_PATH}/{uid}.scores.png'
             score_src = get_img_src(score_name)
     
-    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,score_src]
+    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,dists_src, score_src]
 
+    show_other_panel = False
+    disabled_msa_download = True
+    disabled_phylo_download =  True
+    disabled_scores_download = True
+    disabled_grouping_download = True
+    disabled_reset_resolution_btn = True
+    disabled_reset_resolution_input = True
+
+    if config_dict['group_strategy'] == 'auto':
+        show_other_panel = True
+        disabled_msa_download = False
+        disabled_phylo_download = False
+        disabled_scores_download = False
+        disabled_grouping_download = False
+        disabled_reset_resolution_btn = False
+        disabled_reset_resolution_input = False
+
+    if config_dict['padding_align'] and config_dict['align']:
+        show_other_panel = True
+    
+    if not show_other_panel:
+        results_arr += [{'display':'none'}]
+    else:
+        results_arr += [{}]
+    results_arr += [disabled_msa_download,disabled_phylo_download,
+                    disabled_scores_download,disabled_grouping_download,
+                    disabled_reset_resolution_btn,disabled_reset_resolution_input]
+    
     interval_disabled = False
     if LOADED:
         interval_disabled = True

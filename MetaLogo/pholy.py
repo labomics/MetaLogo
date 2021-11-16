@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from collections import namedtuple
 import os
 import uuid
 from . import utils
@@ -44,6 +45,12 @@ def drawscore(input,output):
     fig.savefig(output,bbox_inches='tight')
     return
 
+def drawdists(dists,output):
+    fig,ax = plt.subplots()
+    g = sns.distplot(pd.Series(dists,name='Pairwise distances'))
+    fig.savefig(output,bbox_inches='tight')
+    return
+
 def drawtree(input,output):
     tree = Phylo.read(input, 'newick')
     tree.ladderize()  # Flip branches so deeper clades are displayed at top
@@ -51,10 +58,48 @@ def drawtree(input,output):
     g = Phylo.draw(tree)
     plt.savefig(output)
 
+def reverse_msa_seqname(name_dict,oldfile,newfile):
 
+    with open(newfile,'w') as outpf:
+        seqname = ''
+        seq = ''
+        with open(oldfile,'r') as inpf:
+            for line in inpf:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                if line[0] == '>':
+                    if seqname != '' and seq != '':
+                        for alias in name_dict.get(seqname,[]):
+                            outpf.write(f'>{alias}\n')
+                            outpf.write(f'{seq}\n')
+                    seqname = line[1:]
+                    seq = ''
+                else:
+                    seq += line
 
+            if seqname != '' and seq != '':
+               for alias in name_dict.get(seqname,[]):
+                   outpf.write(f'>{alias}\n')
+                   outpf.write(f'{seq}\n')
+    return None
 
+def reverse_tree_seqname(name_dict,oldtreefile,newtreefile):
+    tree = dendropy.Tree.get(path=oldtreefile,schema='newick')
+    for node in tree:
+        if node.is_leaf():
+            if node.taxon is not None:
+                if len(name_dict.get(node.taxon.label,[])) > 0 :
+                    node.taxon.label = name_dict.get(node.taxon.label,[])[0]
+    tree.write(path=newtreefile,schema='newick')
+    return None
 
+def save_group_seqs(group_dict,outfa):
+    with open(outfa,'w') as outpf:
+        outpf.write('Sequence name\tGroup_id\n')
+        for grpid in group_dict:
+            for seqname,seq in group_dict[grpid]:
+                outpf.write(f'{seqname} \t {grpid} \n')
     
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', clustalo='clustalo',uid='', fa_output_dir='', figure_output_dir=''):
     print('enter auto detect')
@@ -70,19 +115,25 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
     dep_seq_fa = f'{fa_output_dir}/server.{uid}.dep.fa'
     name_dict, seq_dict = deduplicate(seq_fa,dep_seq_fa)
 
-
     msa_dict = msa(dep_seq_fa,clustalo,f'{fa_output_dir}/server.{uid}.msa.fa')
+
 
     rate4site(f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.rate4site.scores',
                 f'{fa_output_dir}/server.{uid}.rate4site.tree',
                 f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates')
     
-    drawscore(f'{fa_output_dir}/server.{uid}.rate4site.scores',f'{figure_output_dir}/{uid}.scores.png')
-    drawtree(f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{figure_output_dir}/{uid}.tree.png')
 
     dists = get_distance_range(f'{fa_output_dir}/server.{uid}.rate4site.tree')
+
     
     treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster')
+
+    reverse_msa_seqname(name_dict,f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.msa.rawid.fa')
+    reverse_tree_seqname(name_dict,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.rawid.tree')
+
+    drawdists(dists,f'{figure_output_dir}/{uid}.treedistances.png')
+    drawscore(f'{fa_output_dir}/server.{uid}.rate4site.scores',f'{figure_output_dir}/{uid}.scores.png')
+    drawtree(f'{fa_output_dir}/server.{uid}.rate4site.rawid.tree',f'{figure_output_dir}/{uid}.tree.png')
 
     cluster_df = pd.read_csv(f'{fa_output_dir}/server.{uid}.rate4site.cluster',sep='\t')
     groups_dict = {}
@@ -93,6 +144,8 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
         for seqname in grp['SequenceName']:
             for _seqname in name_dict[seqname]:
                 groups_dict[index].append([_seqname,msa_dict[seqname]])
+    save_group_seqs(groups_dict,f'{fa_output_dir}/server.{uid}.grouping.fa')
+        
     return groups_dict
 
 def msa(seq_fa,clustalo,outfile):
