@@ -88,9 +88,13 @@ def get_layout():
                     dbc.Col([
                         dbc.Row([
                             dbc.Col([html.Span('ID',style=label_style), html.Span('xx',style=value_style, id='uid_span')]) ,
+                        ],style={'marginTop':'10px'}),
+                        dbc.Row([
                             dbc.Col([html.Span('Name',style=label_style), html.Span('xx',style=value_style, id='task_name_span')]) ,
+                        ],style={'marginTop':'10px'}),
+                        dbc.Row([
                             dbc.Col([html.Span('Created Time',style=label_style), html.Span('2021/2/3, 15:00',style=value_style, id='create_time')]),
-                        ]),
+                        ],style={'marginTop':'10px'}),
                         html.Hr(),
                         dbc.Row([
                             dbc.Col([html.Span('Input Format',style=label_style), html.Span('auto',style=value_style,id='input_format')]),
@@ -391,7 +395,11 @@ def update_logo_input_download(n_clicks,pathname):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
-    target =  f"{PNG_PATH}/{uid}.png"
+
+    config_file = f"{CONFIG_PATH}/{uid}.toml"
+    config_dict = load_config(config_file)
+
+    target =  f"{PNG_PATH}/{uid}.{config_dict['logo_format']}"
     print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
@@ -598,6 +606,8 @@ def save_config(config,config_file):
         Output('reset_resolution','disabled'),
         #interval
         Output("interval-component","disabled"),
+        #other
+        Output("seq_logo_download_btn","children")
 
     ],
     [
@@ -718,6 +728,8 @@ def trigger(nonsense,pathname):
     results_arr += [interval_disabled]
 
     ###
+    logo_type = config_dict['logo_format']
+    results_arr += [f'Sequence Logo ({logo_type})']
        
     return results_arr
 
