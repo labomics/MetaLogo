@@ -58,7 +58,6 @@ def drawtree(input,output):
     
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', clustalo='clustalo',uid='', fa_output_dir='', figure_output_dir=''):
     print('enter auto detect')
-    print('group_resolution: ', group_resolution)
 
     if seq_fa == '':
         if uid == '':
@@ -131,10 +130,8 @@ def treecluster(threshold,clustering_method,dists,treefile,outfile):
     sorted_dists = sorted(dists)
     adj_threshold_idx = round(threshold*len(dists))
     adj_threshold = sorted_dists[min(len(dists)-1,adj_threshold_idx)]
-    if not os.path.exists(outfile):
-        cmd = f'python /home/achen/anaconda3/envs/dash2/bin/TreeCluster.py -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
-        return os.system(cmd)
-    return -1
+    cmd = f'python /home/achen/anaconda3/envs/dash2/bin/TreeCluster.py -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
+    return os.system(cmd)
 
 def deduplicate(seq_fa,out_fa):
     seq_dict = {}

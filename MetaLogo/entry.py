@@ -129,7 +129,7 @@ def main():
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
-    try: 
+    try:
         args = parser.parse_args()
         print('args: ', args)
 

@@ -345,7 +345,6 @@ class LogoGroup(Item):
 
     
     def prepare_bits(self):
-        
         self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
                                clustalo_bin=self.clustalo_bin,
@@ -435,6 +434,7 @@ class LogoGroup(Item):
                 self.dendrogram = dendrogram(self.row_linkage,orientation='left')
                 self.before_clustering_group_ids = self.group_ids.copy()
                 self.group_ids = list(self.correlation.index[self.dendrogram['leaves']])
+                
 
     
     def align_probs_bits(self):
@@ -641,7 +641,6 @@ class LogoGroup(Item):
             for path_x,path_y in zip(Zx,Zy):
                 self.ax0.plot(path_x,path_y)
             
-            print(cluster_center)
             self.ax0.invert_xaxis()
             self.ax0.spines['left'].set_visible(False)
             self.ax0.spines['right'].set_visible(False)
@@ -962,8 +961,6 @@ class LogoGroup(Item):
             for item in ents[i]:
                 lists.append([grp_id,item])
         df = pd.DataFrame(lists,columns=['Group','Entropy of Each Position'])
-        print(self.group_ids)
-        print(df['Group'])
         return sns.boxplot(data=df,x='Group',y='Entropy of Each Position',ax=ax,order=self.group_ids)
 
 

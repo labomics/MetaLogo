@@ -688,6 +688,8 @@ def trigger_reset_resolution(n_clicks,resolution,pathname,uid):
     config_dict = load_config(config_file)
     if resolution == config_dict['group_resolution']:
         return 'Same resolution, no need to re-run',True,''
+    if resolution is None:
+        return 'Please input the resolution',True,''
     
     config_dict['group_resolution'] = float(resolution)
     save_config(config_dict,config_file)
