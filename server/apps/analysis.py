@@ -212,7 +212,7 @@ cluster_method_dropdown = dbc.FormGroup(
 grouping_resolution = dbc.FormGroup(
     [
         dbc.Label("Grouping resolution",html_for='input'),
-        dbc.Input(type="float", min=0, max=1, value=0.5, id="grouping_resolution"),
+        dbc.Input(type="number", min=0, max=1, value=0.5, step=0.00001, id="grouping_resolution"),
     ]
 )
 max_len_input = dbc.FormGroup(

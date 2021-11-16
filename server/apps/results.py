@@ -9,11 +9,13 @@ import dash_bootstrap_components as dbc
 import flask
 from dash.dependencies import Input, Output, State
 import os
+from pandas.io.formats import style
 import toml
 
 
 from ..app import app
 from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
+from .analysis import get_status,write_status 
 from ..utils import get_img_src
 
 from contextlib import closing
@@ -25,18 +27,10 @@ import re
 import pandas as pd
 
 
+from rq import Connection, Queue
+from redis import Redis
+from ..run_metalogo import execute
 
-
-def get_status(uid):
-    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
-        with closing(connection.cursor()) as cursor:
-            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
-            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
-            if len(rows) == 1:
-                return rows[0][1]
-            else:
-                return 'not found'
-    
 
 def get_layout():
     uid_input = dbc.FormGroup(
@@ -92,7 +86,7 @@ def get_layout():
                 [
                     dbc.Col([
                         dbc.Row([
-                            dbc.Col([html.Span('ID',style=label_style), html.Span('ffdee00f-24a8-4501-8e45-5d8327ce97d8',style=value_style, id='uid_span')]) ,
+                            dbc.Col([html.Span('ID',style=label_style), html.Span('xx',style=value_style, id='uid_span')]) ,
                             dbc.Col([html.Span('Created Time',style=label_style), html.Span('2021/2/3, 15:00',style=value_style, id='create_time')]),
                         ]),
                         html.Hr(),
@@ -122,11 +116,18 @@ def get_layout():
     seqlogo_panel = dbc.Card(
         [
             dbc.CardHeader("Sequence Logo",style={'fontWeight':'bold'}),
-            dbc.CardBody(
-                [
-                    dbc.Row([
+            dbc.CardBody([
+                    html.Div([
                         html.Img(id='logo_img',src='',style={"width":"100%","margin":"auto"}),
                     ]),
+                    html.Hr(),
+                    html.Div(
+                        [
+                            dbc.Label("Reset resolution (0-1)  ",html_for='input'),
+                            dbc.Input(type="number", min=0, max=1, id="reset_resolution",step=0.000001,style={'width':'100px','margin':'20px'},value=1),
+                            dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn'),
+                        ],style={'display':'flex','alignItems':'center','float':'right'}),
+
                 ]
             )
         ],style={'marginBottom':'10px'},id='seqlogo_panel'
@@ -277,6 +278,19 @@ def get_layout():
             dbc.Spinner(html.Div(id="loading-output2"),fullscreen=True,fullscreen_style={"opacity":"0.8"}),
         ]
     )
+    modal = dbc.Modal(
+                [
+                    dbc.ModalHeader("Error", id="result_modal_header"),
+                    dbc.ModalBody("Message", id="result_modal_body"),
+                    dbc.ModalFooter(
+                       html.Span('* Click outside of the modal or press ESC to hide it', style={"fontSize":"10px","color":"orange"}) 
+                    ),
+                ],
+                id="result_modal",
+                centered=True,
+                is_open=False,
+            )
+
     layout = dbc.Container(children=[
             html.Hr(),
             uid_input,
@@ -300,9 +314,12 @@ def get_layout():
                 n_intervals=0
             ),
             html.Div('',id='garbage3',style={'display':'none'}),
+            html.Div('',id='reset_waitter',style={'display':'none'}),
+            modal
     ])
 
     return layout
+
 
 @app.callback(
         Output("config_download","data"),
@@ -525,6 +542,11 @@ def load_config(config_file):
         paras_dict = {}
     return paras_dict
 
+def save_config(config,config_file):
+
+    with open(config_file, 'w') as f:
+        toml.dump(config, f)
+
 
 @app.callback(
     [
@@ -641,6 +663,54 @@ def trigger(nonsense,pathname):
        
     return results_arr
 
+@app.callback(
+    [
+        Output('result_modal_body', 'children'),
+        Output('result_modal', 'is_open'),
+        Output('reset_waitter', 'children'),
+    ],
+    [
+        Input("reset_resolution_btn","n_clicks")
+    ],
+    [
+        State("reset_resolution","value"),
+        State("url","pathname"),
+        State("uid_span","children")
+    ],
+    prevent_initial_call=True,
+)
+def trigger_reset_resolution(n_clicks,resolution,pathname,uid):
+
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    config_file = f"{CONFIG_PATH}/{uid}.toml"
+    config_dict = load_config(config_file)
+    if resolution == config_dict['group_resolution']:
+        return 'Same resolution, no need to re-run',True,''
+    
+    config_dict['group_resolution'] = float(resolution)
+    save_config(config_dict,config_file)
+
+    write_status(uid,'running')
+    redis_conn = Redis()
+    q = Queue('default',connection=redis_conn)
+    job = q.enqueue(execute,config_file)
+
+    return '',False,'Go'
+
+app.clientside_callback(
+    """
+    function(command) {
+        if (command=='Go'){
+            document.location.reload()
+        }
+        return ''
+    }
+    """,
+    Output('garbage3', 'children'),
+    Input('reset_waitter', 'children'),
+)
 
 @app.callback(
     Output("refresh_count","children"),
