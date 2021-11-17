@@ -54,3 +54,6 @@ if not os.path.exists(FA_PATH):
     os.makedirs(FA_PATH, exist_ok=True)
 if not os.path.exists(CONFIG_PATH):
     os.makedirs(CONFIG_PATH, exist_ok=True)
+
+if not os.path.exists(os.path.dirname(CONFIG_PATH)):
+    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
