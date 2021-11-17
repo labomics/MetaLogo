@@ -55,5 +55,5 @@ if not os.path.exists(FA_PATH):
 if not os.path.exists(CONFIG_PATH):
     os.makedirs(CONFIG_PATH, exist_ok=True)
 
-if not os.path.exists(os.path.dirname(CONFIG_PATH)):
-    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+if not os.path.exists(os.path.dirname(SQLITE3_DB)):
+    os.makedirs(os.path.dirname(SQLITE3_DB), exist_ok=True)
