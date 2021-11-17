@@ -257,26 +257,14 @@ def get_layout():
                                     dbc.Button("Phylogenetic Tree",   color='info',id='phylo_download_btn',style=btn_style),
                                     dcc.Download(id="phylo_download",type='text',),
                                 ]),
-                            ],style={'margin':'20px'}),
-                        dbc.Row([
                             dbc.Col(
                                 [
                                     dbc.Button("Grouping details", color='info',id='grouping_download_btn',style=btn_style),
                                     dcc.Download(id="grouping_download",type='text',),
                                 ]
                             ),
-                            dbc.Col(
-                                [
-                                    dbc.Button("space",   color='info',style={'display':'none'}),
-                                    dcc.Download(id="spacer1",type='text',),
-                                ]
-                            ),
-                            dbc.Col(
-                                [
-                                    dbc.Button("space",   color='info',style={'display':'none'}),
-                                    dcc.Download(id="spacer2",type='text',),
-                                ]
-                            )],style={'margin':'20px'})
+
+                            ],style={'margin':'20px'}),
                     ])
                 ]
             )
