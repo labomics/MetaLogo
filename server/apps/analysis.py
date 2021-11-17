@@ -6,7 +6,7 @@
 
 import os, sys
 
-from MetaLogo.MetaLogo.pholy import rate4site, treecluster
+from MetaLogo.MetaLogo.pholy import fasttree, treecluster
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -47,7 +47,7 @@ from ..redis_queue import enqueue
 from ..config import PNG_PATH,FA_PATH,EXAMPLE_PATH,CONFIG_PATH,\
                      GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_INPUT_SIZE,\
                      MAX_SEQ_LEN,BAIDU_TONGJI_ID,SQLITE3_DB,\
-                     CLUSTALO_BIN,RATE4SITE_BIN,TREECLUSTER_BIN
+                     CLUSTALO_BIN,FASTTREE_BIN,TREECLUSTER_BIN
 
 
 
@@ -1280,7 +1280,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
                           group_resolution=group_resolution,create_time=int(time.time()),
                           analysis=analysis,clustering_method=clustering_method,withtree=withtree,
-                          clustalo_bin=CLUSTALO_BIN,rate4site_bin=RATE4SITE_BIN,treecluster_bin=TREECLUSTER_BIN
+                          clustalo_bin=CLUSTALO_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

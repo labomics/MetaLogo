@@ -16,7 +16,7 @@ GOOGLE_ANALYTICS_ID = ''
 BAIDU_TONGJI_ID = ''
 SQLITE3_DB = 'MetaLogo/db/metalogo.db'
 CLUSTALO_BIN = ''
-RATE4SITE_BIN = ''
+FASTTREE_BIN = ''
 TREECLUSTER_BIN = ''
 
 if os.path.exists('MetaLogo/server.toml'):
@@ -43,8 +43,8 @@ if os.path.exists('MetaLogo/server.toml'):
         SQLITE3_DB = paras_dict['sqlite3_db']
     if 'clustalo_bin' in paras_dict:
         CLUSTALO_BIN = paras_dict['clustalo_bin']
-    if 'rate4site_bin' in paras_dict:
-        RATE4SITE_BIN = paras_dict['rate4site_bin']
+    if 'fasttree_bin' in paras_dict:
+        FASTTREE_BIN = paras_dict['fasttree_bin']
     if 'treecluster_bin' in paras_dict:
         TREECLUSTER_BIN = paras_dict['treecluster_bin']
 

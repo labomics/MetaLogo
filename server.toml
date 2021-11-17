@@ -15,7 +15,8 @@ baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 
 #bins
 clustalo_bin = 'MetaLogo/bins/clustalo'
-rate4site_bin = 'MetaLogo/bins/bin/rate4site'
-treecluster_bin  = '/home/achen/anaconda3/envs/dash2/bin/TreeCluster.py'
+fasttree_bin = 'MetaLogo/bins/FastTree'
+#treecluster_bin  = '/home/achen/anaconda3/envs/dash2/bin/TreeCluster.py'
+treecluster_bin  = 'TreeCluster.py'
 
 sqlite3_db = 'MetaLogo/db/metalogo.db'

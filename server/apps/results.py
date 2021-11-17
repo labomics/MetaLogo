@@ -194,16 +194,6 @@ def get_layout():
                     dbc.Row([
                         html.Img(id='dists_img_res',src='',style={"margin":"auto","width":"60%"}),
                         ]),
-                    html.Hr(),
-                    dbc.Row(
-                        dbc.Col(
-                            html.Span('Figure 6. Conservation scores for positions of the target sequence by rate4site. (Only for auto-grouping mode)')
-                    )),
-                    dbc.Row([
-                        html.Img(id='score_img_res',src='',style={"margin":"auto","width":"60%"}),
-                        ]),
-
-
                 ]
             )
         ], id='statistics_panel', style={'marginBottom':'10px'}
@@ -266,11 +256,6 @@ def get_layout():
                                 [
                                     dbc.Button("Phylogenetic Tree",   color='info',id='phylo_download_btn',style=btn_style),
                                     dcc.Download(id="phylo_download",type='text',),
-                                ]),
-                            dbc.Col(
-                                [
-                                    dbc.Button("Conservation scores",   color='info',id='scores_download_btn',style=btn_style),
-                                    dcc.Download(id="scores_download",type='text',),
                                 ]),
                             ],style={'margin':'20px'}),
                         dbc.Row([
@@ -435,30 +420,13 @@ def update_phylo_download(n_clicks,pathname):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
-    target =  f"{FA_PATH}/server.{uid}.rate4site.rawid.tree"
+    target =  f"{FA_PATH}/server.{uid}.fasttree.rawid.tree"
     print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
         return None
 
-@app.callback(
-        Output("scores_download","data"),
-        Input("scores_download_btn","n_clicks"),
-        State('url','pathname'),
-        prevent_initial_call=True,
-    )
-def update_scores_download(n_clicks,pathname):
-    if ('/results' in pathname) and (not pathname == '/results'):
-        uid = pathname.split('/')[-1]
-    else:
-        uid = ''
-    target =  f"{FA_PATH}/server.{uid}.rate4site.scores"
-    print(target)
-    if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
-        return dcc.send_file(target)
-    else:
-        return None
 
 @app.callback(
         Output("grouping_download","data"),
@@ -598,12 +566,10 @@ def save_config(config,config_file):
         Output('entropy_boxplot_img_res', 'src'),
         Output('clustermap_img_res', 'src'),
         Output('dists_img_res', 'src'),
-        Output('score_img_res', 'src'),
         #nondisplay/active
         Output('other_panel','style'),
         Output('msa_download_btn','disabled'),
         Output('phylo_download_btn','disabled'),
-        Output('scores_download_btn','disabled'),
         Output('grouping_download_btn','disabled'),
         Output('reset_resolution_btn','disabled'),
         Output('reset_resolution','disabled'),
@@ -677,7 +643,6 @@ def trigger(nonsense,pathname):
     entropy_src = ''
     boxplot_entropy_src = ''
     clustermap_src = ''
-    score_src = ''
     dists_src = ''
     if LOADED and status == 'finished':
         if  config_dict['analysis']: 
@@ -696,15 +661,11 @@ def trigger(nonsense,pathname):
             dists_name = f'{PNG_PATH}/{uid}.treedistances.png'
             dists_src = get_img_src(dists_name)
 
-            score_name = f'{PNG_PATH}/{uid}.scores.png'
-            score_src = get_img_src(score_name)
-    
-    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,dists_src, score_src]
+    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,dists_src]
 
     show_other_panel = False
     disabled_msa_download = True
     disabled_phylo_download =  True
-    disabled_scores_download = True
     disabled_grouping_download = True
     disabled_reset_resolution_btn = True
     disabled_reset_resolution_input = True
@@ -713,7 +674,6 @@ def trigger(nonsense,pathname):
         show_other_panel = True
         disabled_msa_download = False
         disabled_phylo_download = False
-        disabled_scores_download = False
         disabled_grouping_download = False
         disabled_reset_resolution_btn = False
         disabled_reset_resolution_input = False
@@ -726,7 +686,7 @@ def trigger(nonsense,pathname):
     else:
         results_arr += [{}]
     results_arr += [disabled_msa_download,disabled_phylo_download,
-                    disabled_scores_download,disabled_grouping_download,
+                    disabled_grouping_download,
                     disabled_reset_resolution_btn,disabled_reset_resolution_input]
     
     interval_disabled = False

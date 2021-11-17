@@ -52,7 +52,7 @@ def read_file(filename, filetype, min_length, max_length):
     return [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>=min_length) and (len(seq_dict[seqname])<=max_length)]
 
 def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustering_method='max',
-             clustalo_bin='', rate4site_bin='', treecluster_bin='',
+             clustalo_bin='', fasttree_bin='', treecluster_bin='',
              uid='',fa_output_dir='',figure_output_dir=''):
     print('group_by:', group_by)
     print('group_resolution: ', group_resolution)
@@ -74,7 +74,7 @@ def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustering_me
                 groups_dict[group_id].append([name,seq])
     elif group_by.lower() == 'auto':
         groups_dict = auto_detect_groups(seqs,seq_file,group_resolution,clustering_method,
-                                         clustalo_bin,rate4site_bin,treecluster_bin,
+                                         clustalo_bin,fasttree_bin,treecluster_bin,
                                          uid,fa_output_dir,figure_output_dir)
     
     return groups_dict

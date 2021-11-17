@@ -35,16 +35,6 @@ def get_score_df(score_f):
     df['BASE'] = df['POS'] + '-' + df['SEQ']
     return df
 
-def drawscore(input,output):
-    df = get_score_df(input)
-    if df is None:
-        return
-    fig,ax = plt.subplots()
-    g = sns.barplot(data=df,x='BASE',y='SCORE',ax=ax)
-    ax.xaxis.set_tick_params(rotation=45)
-    fig.savefig(output,bbox_inches='tight')
-    return
-
 def drawdists(dists,output):
     fig,ax = plt.subplots()
     g = sns.distplot(pd.Series(dists,name='Pairwise distances'))
@@ -110,7 +100,7 @@ def save_seqs(seqs, filename):
 
     
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
-                       clustalo_bin='',rate4site_bin='',treecluster_bin='',
+                       clustalo_bin='',fasttree_bin='',treecluster_bin='',
                        uid='', fa_output_dir='', figure_output_dir=''):
     print('enter auto detect')
 
@@ -128,24 +118,23 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
     msa_dict = msa(dep_seq_fa,f'{fa_output_dir}/server.{uid}.msa.fa',clustalo_bin)
 
 
-    rate4site(f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.rate4site.scores',
-                f'{fa_output_dir}/server.{uid}.rate4site.tree',
-                f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates',rate4site_bin)
+    fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
+                f'{fa_output_dir}/server.{uid}.fasttree.tree',
+                fasttree_bin)
     
 
-    dists = get_distance_range(f'{fa_output_dir}/server.{uid}.rate4site.tree')
+    dists = get_distance_range(f'{fa_output_dir}/server.{uid}.fasttree.tree')
 
     
-    treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster',treecluster_bin)
+    treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.cluster',treecluster_bin)
 
     reverse_msa_seqname(name_dict,f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.msa.rawid.fa')
-    reverse_tree_seqname(name_dict,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.rawid.tree')
+    reverse_tree_seqname(name_dict,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.rawid.tree')
 
     drawdists(dists,f'{figure_output_dir}/{uid}.treedistances.png')
-    drawscore(f'{fa_output_dir}/server.{uid}.rate4site.scores',f'{figure_output_dir}/{uid}.scores.png')
-    drawtree(f'{fa_output_dir}/server.{uid}.rate4site.rawid.tree',f'{figure_output_dir}/{uid}.tree.png')
+    drawtree(f'{fa_output_dir}/server.{uid}.fasttree.rawid.tree',f'{figure_output_dir}/{uid}.tree.png')
 
-    cluster_df = pd.read_csv(f'{fa_output_dir}/server.{uid}.rate4site.cluster',sep='\t')
+    cluster_df = pd.read_csv(f'{fa_output_dir}/server.{uid}.fasttree.cluster',sep='\t')
     groups_dict = {}
     for index, grp in cluster_df.groupby('ClusterNumber'):
         #if str(index) == '-1':
@@ -181,10 +170,10 @@ def msa(seq_fa,outfile,clustalo_bin):
             msa_dict[seqname] = seq
     return msa_dict
 
-def rate4site(msa_fa,outfile_score,outfile_tree,outfile_unnorm_rates,rate4site_bin=''):
-    print('in rate4site...')
-    if (not os.path.exists(outfile_score)) or (not os.path.exists(outfile_tree)):
-        cmd = f'{rate4site_bin} -s {msa_fa} -o {outfile_score} -x {outfile_tree} -y {outfile_unnorm_rates}'
+def fasttree(msa_fa,outfile_tree,fasttree_bin=''):
+    print('in fasttree...')
+    if (not os.path.exists(outfile_tree)):
+        cmd = f'{fasttree_bin}  {msa_fa} > {outfile_tree} '
         print(cmd)
         return os.system(cmd)
     return -1
