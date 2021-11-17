@@ -3,7 +3,6 @@ import sys
 import os
 import argparse
 
-from MetaLogo.MetaLogo.pholy import treecluster
 from .logo import LogoGroup
 from .utils import read_file
 from .colors import get_color_scheme
