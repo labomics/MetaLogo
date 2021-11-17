@@ -14,8 +14,8 @@ google_analytics_id = 'G-0EZX46EYE9'
 baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 
 #bins
-clustalo_bin = 'MetaLogo/dependencies/clustalo'
-fasttree_bin = 'MetaLogo/dependencies/FastTree'
+clustalo_bin = '/usr/bin/clustalo'
+fasttree_bin = '/usr/bin/FastTree'
 #treecluster_bin  = '/home/achen/anaconda3/envs/dash2/bin/TreeCluster.py'
 treecluster_bin  = 'TreeCluster.py'
 
