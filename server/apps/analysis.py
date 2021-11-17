@@ -1296,13 +1296,3 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     return '','','',False,f'finished{uid}'
     
-
-if __name__ == '__main__':
-
-    if not os.path.exists(PNG_PATH):
-        os.makedirs(PNG_PATH, exist_ok=True)
-    if not os.path.exists(FA_PATH):
-        os.makedirs(FA_PATH, exist_ok=True)
-
-    app.run_server(debug=True)
-

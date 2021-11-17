@@ -4,10 +4,10 @@ import os
 import toml
 
 #read config file
-PNG_PATH = 'figure_output'
-FA_PATH = 'sequence_input'
-EXAMPLE_PATH = 'examples'
-CONFIG_PATH = 'configs'
+PNG_PATH = 'MetaLogo/figure_output'
+FA_PATH = 'MetaLogo/sequence_input'
+EXAMPLE_PATH = 'MetaLogo/examples'
+CONFIG_PATH = 'MetaLogo/configs'
 GOOGLE_ANALYTICS_ID = ''
 MAX_SEQ_LIMIT = 50000
 MAX_INPUT_SIZE = 5242880
@@ -23,8 +23,8 @@ if os.path.exists('MetaLogo/server.toml'):
     paras_dict = toml.load('MetaLogo/server.toml')
     if 'example_path' in paras_dict:
         EXAMPLE_PATH = paras_dict['example_path']
-    if 'output_fa_dir' in paras_dict:
-        FA_PATH = paras_dict['output_fa_dir']
+    if 'output_fa_path' in paras_dict:
+        FA_PATH = paras_dict['output_fa_path']
     if 'output_png_path' in paras_dict:
         PNG_PATH = paras_dict['output_png_path']
     if 'config_path' in paras_dict:
