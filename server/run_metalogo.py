@@ -1,11 +1,18 @@
 import os
 import sys
+import toml
+from ..MetaLogo.entry import run_from_config
+from .sqlite3 import write_status
 
 def execute(config_file):
-    cmd = f"/home/achen/anaconda3/envs/dash2/bin/python -m MetaLogo.entry --config {config_file}"
+
+    config = toml.load(config_file)
     try:
-        print(cmd)
-        os.system(cmd)
+        write_status(config['uid'],'running')
+        run_from_config(config_file)
+        write_status(config['uid'],'finished',config['sqlite3_db'])
         return 0
     except Exception as e:
+        print(e)
+        write_status(config['uid'],'error',config['sqlite3_db'])
         return e

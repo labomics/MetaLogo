@@ -16,11 +16,10 @@ import toml
 
 from ..app import app
 from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
-from .analysis import get_status,write_status 
 from ..utils import get_img_src
+from ..sqlite3 import get_status
+from ..redis_queue import enqueue
 
-from contextlib import closing
-import sqlite3
 from dash.exceptions import PreventUpdate
 import base64
 import datetime
@@ -28,9 +27,6 @@ import re
 import pandas as pd
 
 
-from rq import Connection, Queue
-from redis import Redis
-from ..run_metalogo import execute
 
 
 def get_layout():
@@ -56,7 +52,11 @@ def get_layout():
         [
             html.Span(
                 [
-                    html.Div([html.Div('The task is still running, please check it later: ',style={'color':'black'}),
+                    html.Div([html.Div([
+                                         html.Span('The task is still running'),
+                                         html.Span('',id='in_queue_note'),
+                                         html.Span(' please check it later: '),
+                                        ],style={'color':'black'}),
                               html.Div('',id='page_url')]), 
                     html.Div(
                         [ 
@@ -564,10 +564,13 @@ def save_config(config,config_file):
     [
         Output("loading-output2", "children"),
         Output('uid_span','children') ,
+
         Output('not_found_span','style'),
         Output('running_span','style'),
         Output('error_span','style'),
         Output('result_panel','style'),
+        Output('in_queue_note','children'),
+
         Output('logo_img','src'),
         #info 1L
         Output('task_name_span','children') ,
@@ -641,6 +644,11 @@ def trigger(nonsense,pathname):
         LOADED = True
     else:
         LOADED = True
+    
+    if status == 'in-queue':
+        results_arr += ['(in queue)']
+    else:
+        results_arr += ['']
 
     src = '' 
     if LOADED and status == 'finished':
@@ -767,10 +775,7 @@ def trigger_reset_resolution(n_clicks,resolution,pathname,uid):
     config_dict['group_resolution'] = float(resolution)
     save_config(config_dict,config_file)
 
-    write_status(uid,'running')
-    redis_conn = Redis()
-    q = Queue('default',connection=redis_conn)
-    job = q.enqueue(execute,config_file)
+    enqueue(config_file)
 
     return '',False,'Go'
 

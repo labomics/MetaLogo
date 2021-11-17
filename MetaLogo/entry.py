@@ -10,24 +10,117 @@ import matplotlib.pyplot as plt
 import json
 import uuid
 import toml
-from contextlib import closing
-import sqlite3
-import time
+
+def run_from_args(args):
+
+    seqs = read_file(args.seq_file, args.seq_file_type, args.min_length, args.max_length)
+
+    if args.color_scheme_json_file is not None:
+        with open(args.color_scheme_json_file) as jsinf:
+            color_scheme = json.load(jsinf)
+    elif args.color_scheme_json_string is not None:
+        color_scheme = json.loads(args.color_scheme_json_string)
+    else:
+        color_scheme = get_color_scheme(args.color_scheme)
+    logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
+                          align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
+                          color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
+                          hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
+                          hide_top_axis = args.hide_top_axis, show_grid = args.show_grid, show_group_id = args.show_group_id,
+                          hide_x_ticks = args.hide_x_ticks, hide_y_ticks = args.hide_y_ticks, hide_z_ticks=args.hide_z_ticks,
+                          x_label=args.x_label, y_label=args.y_label, z_label=args.z_label,
+                          title_size=args.title_size, label_size=args.label_size, group_id_size=args.group_id_size,
+                          tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
+                          figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
+                          char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
+                          display_range_left=args.display_range_left, display_range_right=args.display_range_right,
+                          gap_score = args.gap_score,
+                          padding_align = args.padding_align,
+                          hide_version_tag=args.hide_version_tag,
+                          sequence_type = args.sequence_type,
+                          height_algorithm=args.height_algorithm,
+                          seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
+                          group_resolution=args.group_resolution,clustering_method=args.clustering_method,
+                          withtree=args.withtree
+                          )
+    logogroup.draw()
+    logogroup.savefig(f'{args.output_dir}/{args.output_name}')
+    print(f'{args.output_dir}/{args.output_name}',' saved')
+    base_name = '.'.join(args.output_name.split('.')[:-1]) 
+    if not args.output_name.endswith('.png'):
+        logogroup.savefig(f'{args.output_dir}/{base_name}.png')
+        print(f'{args.output_dir}/{base_name}.png', ' saved')
+
+    if args.analysis:
+
+        fig = logogroup.get_grp_counts_figure().figure
+        count_name = f'{args.output_dir}/{base_name}.counts.png'
+        fig.savefig(count_name,bbox_inches='tight')
+        plt.close(fig)
 
 
+        fig = logogroup.get_entropy_figure()
+        entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
+        fig.savefig(entropy_name,bbox_inches='tight')
+        plt.close(fig)
 
-def write_status(uid,status,db):
-    with closing(sqlite3.connect(db)) as connection:
-        with closing(connection.cursor()) as cursor:
-            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
-            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
-            if len(rows) == 1:
-                cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
-            else:
-                print('insert')
-                print(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
-                cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
-        connection.commit()
+        boxplot_entropy_name = f'{args.output_dir}/{base_name}.boxplot_entropy.png'
+        fig = logogroup.get_boxplot_entropy_figure().figure
+        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+        plt.close(fig)
+
+        if args.padding_align or args.group_strategy=='auto':
+            clustermap_name = f'{args.output_dir}/{base_name}.clustermap.png'
+            fig = logogroup.get_correlation_figure()
+            if fig:
+                fig.savefig(clustermap_name,bbox_inches='tight')
+    
+    return 0
+ 
+
+def run_from_config(config_file):
+
+    config = toml.load(config_file)
+    uid = config['uid']
+    print('in entry')
+    print(config)
+    seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
+    logogroup = LogoGroup(seqs, **config)
+    logogroup.draw()
+
+    logogroup.savefig(f"{config['output_dir']}/{uid}.{config['logo_format']}")
+
+    if  config['logo_format'].lower() != 'png':
+        logogroup.savefig(f"{config['output_dir']}/{uid}.png")
+        print(f"{config['output_dir']}/{uid}.png', ' saved")
+    
+
+    if config['analysis']:
+
+        fig = logogroup.get_grp_counts_figure().figure
+        count_name = f"{config['output_dir']}/{uid}.counts.png"
+        fig.savefig(count_name,bbox_inches='tight')
+        plt.close(fig)
+
+
+        fig = logogroup.get_entropy_figure()
+        entropy_name = f"{config['output_dir']}/{uid}.entropy.png"
+        fig.savefig(entropy_name,bbox_inches='tight')
+        plt.close(fig)
+
+        boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.png"
+        fig = logogroup.get_boxplot_entropy_figure().figure
+        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+        plt.close(fig)
+
+        if config['padding_align'] or config['group_strategy']=='auto':
+            clustermap_name = f"{config['output_dir']}/{uid}.clustermap.png"
+            fig = logogroup.get_correlation_figure()
+            if fig:
+                fig.savefig(clustermap_name,bbox_inches='tight')
+    
+    return 0
+
 
 
 
@@ -129,122 +222,8 @@ def main():
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
-    try:
-        args = parser.parse_args()
-        print('args: ', args)
-
-        if args.config is not None:
-            config = toml.load(args.config)
-            uid = config['uid']
-            print('in entry')
-            print(config)
-            seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
-            logogroup = LogoGroup(seqs, **config)
-            logogroup.draw()
-
-            logogroup.savefig(f"{config['output_dir']}/{uid}.{config['logo_format']}")
-
-            if  config['logo_format'].lower() != 'png':
-                logogroup.savefig(f"{config['output_dir']}/{uid}.png")
-                print(f"{config['output_dir']}/{uid}.png', ' saved")
-            
-    
-            if config['analysis']:
-
-                fig = logogroup.get_grp_counts_figure().figure
-                count_name = f"{config['output_dir']}/{uid}.counts.png"
-                fig.savefig(count_name,bbox_inches='tight')
-                plt.close(fig)
-
-
-                fig = logogroup.get_entropy_figure()
-                entropy_name = f"{config['output_dir']}/{uid}.entropy.png"
-                fig.savefig(entropy_name,bbox_inches='tight')
-                plt.close(fig)
-
-                boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.png"
-                fig = logogroup.get_boxplot_entropy_figure().figure
-                fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-                plt.close(fig)
-
-                if config['padding_align'] or config['group_strategy']=='auto':
-                    clustermap_name = f"{config['output_dir']}/{uid}.clustermap.png"
-                    fig = logogroup.get_correlation_figure()
-                    if fig:
-                        fig.savefig(clustermap_name,bbox_inches='tight')
-
-
-        else:
-            seqs = read_file(args.seq_file, args.seq_file_type, args.min_length, args.max_length)
-
-            if args.color_scheme_json_file is not None:
-                with open(args.color_scheme_json_file) as jsinf:
-                    color_scheme = json.load(jsinf)
-            elif args.color_scheme_json_string is not None:
-                color_scheme = json.loads(args.color_scheme_json_string)
-            else:
-                color_scheme = get_color_scheme(args.color_scheme)
-            logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
-                                  align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
-                                  color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
-                                  hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
-                                  hide_top_axis = args.hide_top_axis, show_grid = args.show_grid, show_group_id = args.show_group_id,
-                                  hide_x_ticks = args.hide_x_ticks, hide_y_ticks = args.hide_y_ticks, hide_z_ticks=args.hide_z_ticks,
-                                  x_label=args.x_label, y_label=args.y_label, z_label=args.z_label,
-                                  title_size=args.title_size, label_size=args.label_size, group_id_size=args.group_id_size,
-                                  tick_size=args.tick_size, logo_margin_ratio = args.logo_margin_ratio, column_margin_ratio = args.column_margin_ratio,
-                                  figure_size_x=args.figure_size_x, figure_size_y=args.figure_size_y,
-                                  char_margin_ratio = args.char_margin_ratio, align_color=args.align_color,align_alpha=args.align_alpha ,
-                                  display_range_left=display_range_left, display_range_right=display_range_right,
-                                  gap_score = args.gap_score,
-                                  padding_align = args.padding_align,
-                                  hide_version_tag=args.hide_version_tag,
-                                  sequence_type = args.sequence_type,
-                                  height_algorithm=args.height_algorithm,
-                                  seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
-                                  group_resolution=args.group_resolution,clustering_method=args.clustering_method,
-                                  withtree=args.withtree
-                                  )
-            logogroup.draw()
-            logogroup.savefig(f'{args.output_dir}/{args.output_name}')
-            print(f'{args.output_dir}/{args.output_name}',' saved')
-            base_name = '.'.join(args.output_name.split('.')[:-1]) 
-            if not args.output_name.endswith('.png'):
-                logogroup.savefig(f'{args.output_dir}/{base_name}.png')
-                print(f'{args.output_dir}/{base_name}.png', ' saved')
-    
-            if args.analysis:
-
-                fig = logogroup.get_grp_counts_figure().figure
-                count_name = f'{args.output_dir}/{base_name}.counts.png'
-                fig.savefig(count_name,bbox_inches='tight')
-                plt.close(fig)
-
-
-                fig = logogroup.get_entropy_figure()
-                entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
-                fig.savefig(entropy_name,bbox_inches='tight')
-                plt.close(fig)
-
-                boxplot_entropy_name = f'{args.output_dir}/{base_name}.boxplot_entropy.png'
-                fig = logogroup.get_boxplot_entropy_figure().figure
-                fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-                plt.close(fig)
-
-                if args.padding_align or args.group_strategy=='auto':
-                    clustermap_name = f'{args.output_dir}/{basename}.clustermap.png'
-                    fig = logogroup.get_correlation_figure()
-                    if fig:
-                        fig.savefig(clustermap_name,bbox_inches='tight')
-    
-        if args.config is not None:
-            write_status(config['uid'],'finished',config['sqlite3_db'])
-    except Exception as e:
-        print(e)
-        write_status(config['uid'],'error',config['sqlite3_db'])
-
-
-    
+    args = parser.parse_args()
+    print('args: ', args)
 
 if __name__ == '__main__':
     main()

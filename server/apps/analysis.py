@@ -43,12 +43,8 @@ from MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_co
 import json
 import toml
 
-from contextlib import closing
-import sqlite3
-
-from rq import Connection, Queue
-from redis import Redis
-from ..run_metalogo import execute
+from ..sqlite3 import get_status,write_status
+from ..redis_queue import enqueue
 
 
 
@@ -124,32 +120,6 @@ with open('server/assets/baidu.js','w') as outpf:
 
 
 alphabets_list = ['A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V','-','B','J','O','U','X','Z']
-
-
-
-def get_status(uid):
-    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
-        with closing(connection.cursor()) as cursor:
-            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
-            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
-            if len(rows) == 1:
-                return rows[0][1]
-            else:
-                return 'not found'
-    
-
-def write_status(uid,status):
-    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
-        print(SQLITE3_DB)
-        with closing(connection.cursor()) as cursor:
-            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
-            rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
-            if len(rows) == 1:
-                cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
-            else:
-                cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
-        connection.commit()
-
 
 input_format_dropdown = dbc.FormGroup(
     [
@@ -1272,7 +1242,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     uid = str(uuid.uuid4())
     #seq_file = f"tmp/server-{uid}.fasta"
 
-    write_status(uid,'running')
 
     seq_file = f"{FA_PATH}/server.{uid}.fasta"
     save_seqs(seqs, seq_file)
@@ -1359,9 +1328,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     #print(cmd)
     #os.system(cmd)
 
-    redis_conn = Redis()
-    q = Queue('default',connection=redis_conn)
-    job = q.enqueue(execute,f"{CONFIG_PATH}/{uid}.toml")
+    enqueue(f"{CONFIG_PATH}/{uid}.toml")
 
     return '','','',False,f'finished{uid}'
     
