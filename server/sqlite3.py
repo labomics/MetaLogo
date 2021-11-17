@@ -4,7 +4,7 @@
 from contextlib import closing
 import sqlite3
 import time
-from .apps.analysis import SQLITE3_DB
+from .config import  SQLITE3_DB
 
 def get_status(uid):
     with closing(sqlite3.connect(SQLITE3_DB)) as connection:
@@ -17,9 +17,10 @@ def get_status(uid):
                 return 'not found'
     
 
-def write_status(uid,status):
-    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
-        print(SQLITE3_DB)
+def write_status(uid,status,db=SQLITE3_DB):
+    print('SQLITE3_DB:', db)
+    with closing(sqlite3.connect(db)) as connection:
+        print(db)
         with closing(connection.cursor()) as cursor:
             cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
             rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()

@@ -5,7 +5,7 @@ import dash_bootstrap_components as dbc
 
 from .app import app
 from .apps import results, analysis,about,msa,tree
-import MetaLogo
+from .. import MetaLogo
 
 nav = dbc.Nav(
     [

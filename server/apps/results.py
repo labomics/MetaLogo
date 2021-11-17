@@ -15,7 +15,7 @@ import toml
 
 
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH,FA_PATH
+from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH
 from ..utils import get_img_src
 from ..sqlite3 import get_status
 from ..redis_queue import enqueue
@@ -632,23 +632,22 @@ def trigger(nonsense,pathname):
 
     if status == 'not found':
         LOADED = True
-        results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'}]
+        results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'},'']
     elif status == 'running':
         LOADED = False
-        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'}]
+        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'']
+    elif status == 'in-queue':
+        LOADED = False
+        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'(in queue)']
     elif status == 'error':
         LOADED = True
-        results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'}]
+        results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'},'']
     elif status == 'finished':
-        results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{}]
+        results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{},'']
         LOADED = True
     else:
         LOADED = True
     
-    if status == 'in-queue':
-        results_arr += ['(in queue)']
-    else:
-        results_arr += ['']
 
     src = '' 
     if LOADED and status == 'finished':
@@ -738,7 +737,7 @@ def trigger(nonsense,pathname):
     ###
     logo_type = config_dict['logo_format']
     results_arr += [f'Sequence Logo ({logo_type})']
-       
+
     return results_arr
 
 @app.callback(

@@ -2,7 +2,7 @@
 from collections import namedtuple
 import os
 import uuid
-from . import utils
+#from . import utils
 import pandas as pd
 import re
 import dendropy
@@ -100,8 +100,18 @@ def save_group_seqs(group_dict,outfa):
         for grpid in group_dict:
             for seqname,seq in group_dict[grpid]:
                 outpf.write(f'{seqname} \t {grpid} \n')
+
+def save_seqs(seqs, filename):
+    with open(filename,'w') as outpf:
+        for seqname,seq in seqs:
+            outpf.write(f'>{seqname}\n')
+            outpf.write(f'{seq}\n')
+
+
     
-def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', clustalo='clustalo',uid='', fa_output_dir='', figure_output_dir=''):
+def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
+                       clustalo_bin='',rate4site_bin='',treecluster_bin='',
+                       uid='', fa_output_dir='', figure_output_dir=''):
     print('enter auto detect')
 
     if seq_fa == '':
@@ -110,23 +120,23 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
         seq_fa = f'{fa_output_dir}/server.{uid}.fa'
 
     if not os.path.exists(seq_fa): 
-        utils.save_seqs(seqs, seq_fa)
+        save_seqs(seqs, seq_fa)
 
     dep_seq_fa = f'{fa_output_dir}/server.{uid}.dep.fa'
     name_dict, seq_dict = deduplicate(seq_fa,dep_seq_fa)
 
-    msa_dict = msa(dep_seq_fa,clustalo,f'{fa_output_dir}/server.{uid}.msa.fa')
+    msa_dict = msa(dep_seq_fa,f'{fa_output_dir}/server.{uid}.msa.fa',clustalo_bin)
 
 
     rate4site(f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.rate4site.scores',
                 f'{fa_output_dir}/server.{uid}.rate4site.tree',
-                f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates')
+                f'{fa_output_dir}/server.{uid}.rate4site.unnorm_rates',rate4site_bin)
     
 
     dists = get_distance_range(f'{fa_output_dir}/server.{uid}.rate4site.tree')
 
     
-    treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster')
+    treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.cluster',treecluster_bin)
 
     reverse_msa_seqname(name_dict,f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.msa.rawid.fa')
     reverse_tree_seqname(name_dict,f'{fa_output_dir}/server.{uid}.rate4site.tree',f'{fa_output_dir}/server.{uid}.rate4site.rawid.tree')
@@ -148,12 +158,12 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
         
     return groups_dict
 
-def msa(seq_fa,clustalo,outfile):
+def msa(seq_fa,outfile,clustalo_bin):
     print(f'in msa, {outfile}')
     if not os.path.exists(outfile):
-        cmd = f'{clustalo} --auto -i {seq_fa} -o {outfile}'
+        cmd = f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}'
         print(cmd)
-        os.system(f'{clustalo} --auto -i {seq_fa} -o {outfile}')
+        os.system(f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}')
     msa_dict = {}
     with open(outfile,'r') as inpf:
         seqname = ''
@@ -171,7 +181,7 @@ def msa(seq_fa,clustalo,outfile):
             msa_dict[seqname] = seq
     return msa_dict
 
-def rate4site(msa_fa,outfile_score,outfile_tree,outfile_unnorm_rates,rate4site_bin='bins/bin/rate4site'):
+def rate4site(msa_fa,outfile_score,outfile_tree,outfile_unnorm_rates,rate4site_bin=''):
     print('in rate4site...')
     if (not os.path.exists(outfile_score)) or (not os.path.exists(outfile_tree)):
         cmd = f'{rate4site_bin} -s {msa_fa} -o {outfile_score} -x {outfile_tree} -y {outfile_unnorm_rates}'
@@ -179,11 +189,11 @@ def rate4site(msa_fa,outfile_score,outfile_tree,outfile_unnorm_rates,rate4site_b
         return os.system(cmd)
     return -1
 
-def treecluster(threshold,clustering_method,dists,treefile,outfile):
+def treecluster(threshold,clustering_method,dists,treefile,outfile,treecluster_bin=''):
     sorted_dists = sorted(dists)
     adj_threshold_idx = round(threshold*len(dists))
     adj_threshold = sorted_dists[min(len(dists)-1,adj_threshold_idx)]
-    cmd = f'python /home/achen/anaconda3/envs/dash2/bin/TreeCluster.py -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
+    cmd = f'{treecluster_bin} -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
     return os.system(cmd)
 
 def deduplicate(seq_fa,out_fa):

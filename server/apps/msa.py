@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 import dash_bio as dashbio
 from dash.dependencies import Input, Output, State
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
+from ..config import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
 import os
 import re
 

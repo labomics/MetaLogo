@@ -3,8 +3,8 @@
 
 from rq import Connection, Queue
 from redis import Redis
-from .run_metalogo import execute
 from .sqlite3 import write_status
+from .run_metalogo import execute
 import toml
 
 def enqueue(config_file,queue='default'):

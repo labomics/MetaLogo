@@ -40,10 +40,10 @@ MetaLogo also provide webserver to draw sequence logos without coding. For serve
     $pip install .[webserver]
 
 Then you could run a development Dash webserver with Debug mode on:
-
-    $cat server.dev.sh
-     python -m server.main
-    $sh server.dev.sh
+    $cd ..
+    $cat MetaLogo/server.dev.sh
+     python -m MetaLogo.server.main
+    $sh MetaLogo/server.dev.sh
      Dash is running on http://127.0.0.1:8050/
      * Serving Flask app 'main' (lazy loading)
      * Environment: production
@@ -57,10 +57,10 @@ A MetaLogo webserver will be like:
 
 For a production server, you can build a docker container to provide the service:
 
-    $cat server.docker.sh
+    $cat MetaLogo/server.docker.sh
      docker build -t metalogo:v1 .
      docker run -d  --expose 8050 --name metalogo -e VIRTUAL_HOST=metalogo.omicsnet.org -v "$(pwd)":/code metalogo:v1 
-    $sh server.docker.sh
+    $sh MetaLogo/server.docker.sh
      ...
     $docker ps
      CONTAINER ID    IMAGE          COMMAND                  CREATED      STATUS      PORTS       NAMES

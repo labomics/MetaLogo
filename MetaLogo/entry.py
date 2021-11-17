@@ -2,6 +2,8 @@
 import sys
 import os
 import argparse
+
+from MetaLogo.MetaLogo.pholy import treecluster
 from .logo import LogoGroup
 from .utils import read_file
 from .colors import get_color_scheme
@@ -41,6 +43,7 @@ def run_from_args(args):
                           height_algorithm=args.height_algorithm,
                           seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
+                          clustalo_bin=args.clustalo_bin,rate4site_bin=args.rate4site_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree
                           )
     logogroup.draw()
@@ -219,6 +222,11 @@ def main():
 
     #analysis
     parser.add_argument('--analysis',action='store_true',dest='analysis',help='If perform basic analysis on data')
+
+    #software
+    parser.add_argument('--clustalo_bin',type=str,help='The path of clustalo bin ',default='')
+    parser.add_argument('--rate4site_bin',type=str,help='The path of rate4site bin ',default='')
+    parser.add_argument('--treecluster_bin',type=str,help='The path of treecluster bin ',default='')
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
 

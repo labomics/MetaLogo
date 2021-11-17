@@ -2,11 +2,11 @@
 
 title = "MetaLogo webserver configure example"
 
-example_path = 'examples'
-output_png_path = 'figure_output'
-output_fa_path = 'sequence_input'
-config_path = 'configs'
-log_path = 'logs'
+example_path = 'MetaLogo/examples'
+output_png_path = 'MetaLogo/figure_output'
+output_fa_path = 'MetaLogo/sequence_input'
+config_path = 'MetaLogo/configs'
+log_path = 'MetaLogo/logs'
 max_seq_limit = 200000
 max_seq_len = 200
 max_input_size = 5242880
@@ -14,9 +14,8 @@ google_analytics_id = 'G-0EZX46EYE9'
 baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 
 #bins
-clustalo_bin = '/home/achen/softwares/clustalo-1.2.4-Ubuntu-x86_64'
-rate4site_bin = ''
-treecluster_bin  = ''
+clustalo_bin = 'MetaLogo/bins/clustalo'
+rate4site_bin = 'MetaLogo/bins/bin/rate4site'
+treecluster_bin  = '/home/achen/anaconda3/envs/dash2/bin/TreeCluster.py'
 
-sqlite3_db = 'db/metalogo.db'
-
+sqlite3_db = 'MetaLogo/db/metalogo.db'

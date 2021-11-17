@@ -8,7 +8,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
 import os
 from ..app import app
-from .analysis import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
+from ..config import CONFIG_PATH, SQLITE3_DB, PNG_PATH, FA_PATH
 from ..utils import get_img_src
 
 loading_spinner = html.Div(

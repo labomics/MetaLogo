@@ -5,6 +5,8 @@
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import os, sys
+
+from MetaLogo.MetaLogo.pholy import rate4site, treecluster
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -36,63 +38,24 @@ from plotly.tools import mpl_to_plotly
 from io import BytesIO
 import base64
 
-import MetaLogo
-from MetaLogo.logo import LogoGroup
-from MetaLogo.utils import read_file
-from MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_color_scheme,basic_rna_color_scheme
+from ...MetaLogo.colors import get_color_scheme,basic_aa_color_scheme, basic_dna_color_scheme,basic_rna_color_scheme
 import json
 import toml
 
 from ..sqlite3 import get_status,write_status
 from ..redis_queue import enqueue
+from ..config import PNG_PATH,FA_PATH,EXAMPLE_PATH,CONFIG_PATH,\
+                     GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_INPUT_SIZE,\
+                     MAX_SEQ_LEN,BAIDU_TONGJI_ID,SQLITE3_DB,\
+                     CLUSTALO_BIN,RATE4SITE_BIN,TREECLUSTER_BIN
+
 
 
 
 from ..app import app
 
-#read config file
-PNG_PATH = 'figure_output'
-FA_PATH = 'sequence_input'
-EXAMPLE_PATH = 'examples'
-CONFIG_PATH = 'configs'
-GOOGLE_ANALYTICS_ID = ''
-MAX_SEQ_LIMIT = 50000
-MAX_INPUT_SIZE = 5242880
-MAX_SEQ_LEN = 100
-GOOGLE_ANALYTICS_ID = ''
-BAIDU_TONGJI_ID = ''
-SQLITE3_DB = 'db/metalogo.db'
 
-if os.path.exists('server.toml'):
-    paras_dict = toml.load('server.toml')
-    if 'example_path' in paras_dict:
-        EXAMPLE_PATH = paras_dict['example_path']
-    if 'output_fa_dir' in paras_dict:
-        FA_PATH = paras_dict['output_fa_dir']
-    if 'output_png_path' in paras_dict:
-        PNG_PATH = paras_dict['output_png_path']
-    if 'config_path' in paras_dict:
-        CONFIG_PATH = paras_dict['config_path']
-    if 'max_seq_limit' in paras_dict:
-        MAX_SEQ_LIMIT = paras_dict['max_seq_limit']
-    if 'max_input_size' in paras_dict:
-        MAX_INPUT_SIZE = paras_dict['max_input_size']
-    if 'max_seq_len' in paras_dict:
-        MAX_SEQ_LEN = paras_dict['max_seq_len']
-    if 'google_analytics_id' in paras_dict:
-        GOOGLE_ANALYTICS_ID = paras_dict['google_analytics_id']
-    if 'baidu_tongji_id' in paras_dict:
-        BAIDU_TONGJI_ID = paras_dict['baidu_tongji_id']
-    if 'sqlite_db' in paras_dict:
-        SQLITE3_DB = paras_dict['sqlite_db']
-
-if not os.path.exists(PNG_PATH):
-    os.makedirs(PNG_PATH, exist_ok=True)
-if not os.path.exists(FA_PATH):
-    os.makedirs(FA_PATH, exist_ok=True)
-if not os.path.exists(CONFIG_PATH):
-    os.makedirs(CONFIG_PATH, exist_ok=True)
-
+cur_dir = os.path.dirname(os.path.realpath(__file__))
 #google
 gtag_js = '''
 window.dataLayer = window.dataLayer || [];
@@ -100,7 +63,7 @@ window.dataLayer = window.dataLayer || [];
  gtag('js', new Date());
  gtag('config', '%s');
 '''%GOOGLE_ANALYTICS_ID
-with open('server/assets/google.js','w') as outpf:
+with open(f'{cur_dir}/../assets/google.js','w') as outpf:
     outpf.write(gtag_js)
 
 #baidu
@@ -113,7 +76,7 @@ var _hmt = _hmt || [];
   s.parentNode.insertBefore(hm, s);
 })();
 '''%BAIDU_TONGJI_ID
-with open('server/assets/baidu.js','w') as outpf:
+with open(f'{cur_dir}/../assets/baidu.js','w') as outpf:
     outpf.write(tongji_js)
 
 
@@ -1316,7 +1279,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           min_length=min_len_input,max_length=max_len_input,seq_file_type=input_format_dropdown,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
                           group_resolution=group_resolution,create_time=int(time.time()),
-                          analysis=analysis,clustering_method=clustering_method,withtree=withtree
+                          analysis=analysis,clustering_method=clustering_method,withtree=withtree,
+                          clustalo_bin=CLUSTALO_BIN,rate4site_bin=RATE4SITE_BIN,treecluster_bin=TREECLUSTER_BIN
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
