@@ -27,4 +27,4 @@ WORKDIR /code
 RUN cp supervisord.conf /etc/
 COPY server.cmd.sh /code/
 EXPOSE 8050
-CMD sh server.cmd.sh
+CMD sh MetaLogo/server.cmd.sh
