@@ -10,6 +10,7 @@ EXAMPLE_PATH = 'MetaLogo/examples'
 CONFIG_PATH = 'MetaLogo/configs'
 GOOGLE_ANALYTICS_ID = ''
 MAX_SEQ_LIMIT = 50000
+MAX_SEQ_LIMIT_AUTO = 10000
 MAX_INPUT_SIZE = 5242880
 MAX_SEQ_LEN = 100
 GOOGLE_ANALYTICS_ID = ''
@@ -31,6 +32,8 @@ if os.path.exists('MetaLogo/server.toml'):
         CONFIG_PATH = paras_dict['config_path']
     if 'max_seq_limit' in paras_dict:
         MAX_SEQ_LIMIT = paras_dict['max_seq_limit']
+    if 'max_seq_limit_auto' in paras_dict:
+        MAX_SEQ_LIMIT_AUTO = paras_dict['max_seq_limit_auto']
     if 'max_input_size' in paras_dict:
         MAX_INPUT_SIZE = paras_dict['max_input_size']
     if 'max_seq_len' in paras_dict:

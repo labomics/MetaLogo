@@ -8,6 +8,7 @@ output_fa_path = 'MetaLogo/sequence_input'
 config_path = 'MetaLogo/configs'
 log_path = 'MetaLogo/logs'
 max_seq_limit = 200000
+max_seq_limit_auto = 10000
 max_seq_len = 200
 max_input_size = 5242880
 google_analytics_id = 'G-0EZX46EYE9'

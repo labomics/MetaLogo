@@ -35,7 +35,7 @@ from scipy.cluster import hierarchy
 from scipy.cluster.hierarchy import dendrogram, linkage
 
 
-from .utils import grouping,check_group,detect_seq_type
+from .utils import grouping,detect_seq_type
 from .logobits import compute_bits, compute_prob
 from .colors import get_color_scheme
 from .version import __version__
@@ -305,6 +305,8 @@ class LogoGroup(Item):
         self.logos = []
 
         self.prepare_bits()
+        if hasattr(self,'error'):
+            return
 
         if ax is None:
             withtree = False
@@ -322,7 +324,15 @@ class LogoGroup(Item):
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
                                clustalo_bin=self.clustalo_bin,fasttree_bin=self.fasttree_bin,treecluster_bin=self.treecluster_bin,
                                uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
-        check_group(self.groups)
+
+        if self.group_strategy.lower() == 'identifier':
+            for group_id in self.groups:
+                seqs = self.groups[group_id]
+                if len(set([len(x[1]) for x in seqs])) > 1:
+                    print('Sequence lengths not same in one group')
+                    self.error = 'In identifier-grouping mode, sequence lengths should be the same in one group'
+                    return
+
 
         self.probs = compute_prob(self.groups,threshold=self.omit_prob)
 
@@ -480,6 +490,9 @@ class LogoGroup(Item):
         pass
     
     def draw(self):
+        if hasattr(self,'error'):
+            print('error: ', self.error)
+            return
         self.compute_positions()
 
         z_height_3d = max([logo.get_height() for logo in self.logos]+[0])

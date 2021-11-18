@@ -45,6 +45,10 @@ def run_from_args(args):
                           clustalo_bin=args.clustalo_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree
                           )
+    if hasattr(logogroup,'error'):
+        print('error:',logogroup.error)
+        return {'error':logogroup.error}
+
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
     print(f'{args.output_dir}/{args.output_name}',' saved')
@@ -77,7 +81,7 @@ def run_from_args(args):
             if fig:
                 fig.savefig(clustermap_name,bbox_inches='tight')
     
-    return 0
+    return None
  
 
 def run_from_config(config_file):
@@ -87,6 +91,11 @@ def run_from_config(config_file):
     print(config)
     seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
     logogroup = LogoGroup(seqs, **config)
+
+    if hasattr(logogroup,'error'):
+        print('error:',logogroup.error)
+        return {'error':logogroup.error}
+
     logogroup.draw()
 
     logogroup.savefig(f"{config['output_dir']}/{uid}.{config['logo_format']}")
@@ -121,7 +130,7 @@ def run_from_config(config_file):
             if fig:
                 fig.savefig(clustermap_name,bbox_inches='tight')
     
-    return 0
+    return None
 
 
 

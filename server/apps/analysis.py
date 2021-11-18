@@ -45,7 +45,7 @@ import toml
 from ..sqlite3 import get_status,write_status
 from ..redis_queue import enqueue
 from ..config import PNG_PATH,FA_PATH,EXAMPLE_PATH,CONFIG_PATH,\
-                     GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_INPUT_SIZE,\
+                     GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_SEQ_LIMIT_AUTO,MAX_INPUT_SIZE,\
                      MAX_SEQ_LEN,BAIDU_TONGJI_ID,SQLITE3_DB,\
                      CLUSTALO_BIN,FASTTREE_BIN,TREECLUSTER_BIN
 
@@ -1181,6 +1181,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     if max_len_input < min_len_input:
         return '','Error','Maximum length < Minimum length',True,''
+
+    if max_len_input > MAX_SEQ_LEN:
+        return '','Error',f'Maximum length should be <= {MAX_SEQ_LEN}.',True,''
     
     if (len(seq_textarea) == 0) and ((file_upload_content is None) or (len(file_upload_content) == 0)):
         return '','Error','Please paste sequences into the textarea or upload a fasta/fastq file',True,''
@@ -1199,6 +1202,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
 
     if len(seqs) > MAX_SEQ_LIMIT:
         return '','Error','Sequence number exceed the limitation',True,''
+    
+    if len(seqs) > MAX_SEQ_LIMIT_AUTO and grouping_by_dropdown.lower() == 'auto':
+        return '','Error',f'In auto-grouping mode (MSA+Phylogenic tree+clustering), the input sequence number is limited to under {MAX_SEQ_LIMIT_AUTO}.',True,''
 
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,''

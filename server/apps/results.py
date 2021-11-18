@@ -18,7 +18,7 @@ from ..app import app
 from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH
 from ..utils import get_img_src
 from ..sqlite3 import get_status
-from ..redis_queue import enqueue
+from ..redis_queue import enqueue,check_failed
 
 from dash.exceptions import PreventUpdate
 import base64
@@ -45,7 +45,12 @@ def get_layout():
     )
 
     error_panel = html.Div(
-        [html.Span('Task failed', id='error_span', style={'display':'none'})], style={'fontSize':'25px','color':'#ff3400','margin':'20px'}
+        [
+            html.Div([
+                        html.Div('Task failed. '),
+                        html.Div('',id='error_info_panel'),
+                    ], id='error_span', style={'display':'none'})
+        ], style={'fontSize':'25px','color':'#ff3400','margin':'20px'}
     )
 
     running_panel = html.Div(
@@ -532,6 +537,7 @@ def save_config(config,config_file):
         Output('error_span','style'),
         Output('result_panel','style'),
         Output('in_queue_note','children'),
+        Output('error_info_panel','children'),
 
         Output('logo_img','src'),
         #info 1L
@@ -594,26 +600,40 @@ def trigger(nonsense,pathname,loaded_count):
 
     results_arr = ['',uid]
     status = get_status(uid)
+    rq_failed = check_failed(uid)
+
+       
 
     global LOADED
-
-    if status == 'not found':
-        LOADED = True
-        results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'},'']
-    elif status == 'running':
-        LOADED = False
-        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'']
-    elif status == 'in-queue':
-        LOADED = False
-        results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'(in queue)']
-    elif status == 'error':
-        LOADED = True
-        results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'},'']
-    elif status == 'finished':
-        results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{},'']
-        LOADED = True
+    if not rq_failed:
+        if status == 'not found':
+            LOADED = True
+            results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'},'']
+        elif status == 'running':
+            LOADED = False
+            results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'']
+        elif status == 'in-queue':
+            LOADED = False
+            results_arr += [{'display':'none'},{},{'display':'none'},{'display':'none'},'(in queue)']
+        elif status in ['error','failed']:
+            LOADED = True
+            results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'},'']
+        elif status == 'finished':
+            results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{},'']
+            LOADED = True
+        else:
+            LOADED = True
     else:
         LOADED = True
+        results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'},'']
+    
+    err_info = ''
+    if status == 'error':
+        err_info = get_status(f"{uid}-errinfo")
+        if err_info == 'not found':
+            err_info = ''
+    results_arr += [err_info]
+ 
     
 
     src = '' 

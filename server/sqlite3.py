@@ -15,7 +15,6 @@ def get_status(uid):
                 return rows[0][1]
             else:
                 return 'not found'
-    
 
 def write_status(uid,status,db=SQLITE3_DB):
     with closing(sqlite3.connect(db)) as connection:
