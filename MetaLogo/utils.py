@@ -54,8 +54,6 @@ def read_file(filename, filetype, min_length, max_length):
 def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustering_method='max',
              clustalo_bin='', fasttree_bin='', treecluster_bin='',
              uid='',fa_output_dir='',figure_output_dir=''):
-    print('group_by:', group_by)
-    print('group_resolution: ', group_resolution)
 
     groups_dict = {}
     if group_by.lower() == 'length':

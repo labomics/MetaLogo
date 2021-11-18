@@ -18,9 +18,7 @@ def get_status(uid):
     
 
 def write_status(uid,status,db=SQLITE3_DB):
-    print('SQLITE3_DB:', db)
     with closing(sqlite3.connect(db)) as connection:
-        print(db)
         with closing(connection.cursor()) as cursor:
             cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
             rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()

@@ -16,6 +16,8 @@ loading_spinner = html.Div(
     [
         dbc.Spinner(html.Div(id="loading-output3"), fullscreen=True,
                     fullscreen_style={"opacity": "0.8"}),
+        dbc.Spinner(html.Div(id="loading-output4"), fullscreen=True,
+                    fullscreen_style={"opacity": "0.8"}),
     ]
 )
 
@@ -54,7 +56,6 @@ layout = dbc.Container([
 
 def display_page(pathname):
     arrs = pathname.split('/msa/')
-    print('enter msa')
     if len(arrs) > 1:
         uid = arrs[-1]
         msa_file = f'{FA_PATH}/server.{uid}.msa.rawid.fa'
@@ -70,11 +71,12 @@ def display_page(pathname):
 
 
 @app.callback(
-    Output('default-alignment-viewer-output', 'children'),
+    [Output('default-alignment-viewer-output', 'children'),
+    Output("loading-output4", "children")],
     Input('my-default-alignment-viewer', 'eventDatum')
 )
 def update_output(value):
     if value is None:
-        return 'No data.'
+        return 'No data.',''
     else:
-        return str(value)
+        return str(value),''

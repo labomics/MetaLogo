@@ -7,7 +7,6 @@ from ..MetaLogo.entry import run_from_config
 
 
 def execute(config_file):
-    print('enter execute')
     config = toml.load(config_file)
     try:
         write_status(config['uid'],'running')

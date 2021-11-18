@@ -8,7 +8,6 @@ class Item():
         pass
 
     def generate_ax(self,threed=False,withtree=False):
-        print('in generate ax', withtree)
         if threed:
             fig, ax = plt.subplots(1, 1,figsize=(10,10),subplot_kw=dict(projection="3d"))
             self.ax = ax    

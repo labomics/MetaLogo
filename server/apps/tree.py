@@ -41,7 +41,6 @@ layout = dbc.Container([
               )
 
 def display_page(pathname):
-    print('in')
     arrs = pathname.split('/tree/')
     if len(arrs) > 1:
         uid = arrs[-1]

@@ -9,7 +9,6 @@ def save_seqs(seqs, filename):
             outpf.write(f'{seq}\n')
 
 def handle_seqs_file(content,format="fasta",sequence_type="dna"):
-    print('enter handle seqs')
     try:
         data = content.split(";base64,")[1]
         data = base64.b64decode(data).decode('utf-8')

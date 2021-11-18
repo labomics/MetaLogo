@@ -12,7 +12,7 @@ import os
 from flask import config
 from pandas.io.formats import style
 import toml
-
+import math
 
 from ..app import app
 from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH
@@ -104,11 +104,11 @@ def get_layout():
                             dbc.Col([html.Span('Clustering Method ',style=label_style), html.Span('auto',style=value_style,id='clustering_method_value')]),
                         ],style={'marginTop':'10px'}),
                         dbc.Row([
-                            dbc.Col([html.Span('Minimum Length ',style=label_style), html.Span('auto',style=value_style,id='min_len')]),
-                            dbc.Col([html.Span('Maximum Length ',style=label_style), html.Span('auto',style=value_style,id='max_len')]),
+                            dbc.Col([html.Span('Min Length ',style=label_style), html.Span('auto',style=value_style,id='min_len')]),
+                            dbc.Col([html.Span('Max Length ',style=label_style), html.Span('auto',style=value_style,id='max_len')]),
                             dbc.Col([html.Span('Display Range',style=label_style), html.Span('auto',style=value_style,id='display_left_right')]),
                             dbc.Col([html.Span('Basic Analysis',style=label_style), html.Span('auto',style=value_style,id='basic_analysis')]),
-                            dbc.Col([html.Span('Height Algorithm',style=label_style), html.Span('auto',style=value_style,id='height_algorithm')]),
+                            dbc.Col([html.Span('Height',style=label_style), html.Span('auto',style=value_style,id='height_algorithm')]),
                         ],style={'marginTop':'10px'}),
                         dbc.Row([
                             dbc.Col([html.Span('Adjacent Alignment ',style=label_style), html.Span('auto',style=value_style,id='adjacent_alignment')]),
@@ -314,6 +314,7 @@ def get_layout():
             ),
             html.Div('',id='garbage3',style={'display':'none'}),
             html.Div('',id='reset_waitter',style={'display':'none'}),
+            dbc.Input(id='loaded_count',style={'display':'none'},value=0,type='number'),
             modal
     ])
 
@@ -351,7 +352,6 @@ def update_seq_input_download(n_clicks,pathname):
     else:
         uid = ''
     target =  f"{FA_PATH}/server.{uid}.fasta"
-    print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
@@ -373,7 +373,6 @@ def update_logo_input_download(n_clicks,pathname):
     config_dict = load_config(config_file)
 
     target =  f"{PNG_PATH}/{uid}.{config_dict['logo_format']}"
-    print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
@@ -391,7 +390,6 @@ def update_msa_download(n_clicks,pathname):
     else:
         uid = ''
     target =  f"{FA_PATH}/server.{uid}.msa.rawid.fa"
-    print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
@@ -409,7 +407,6 @@ def update_phylo_download(n_clicks,pathname):
     else:
         uid = ''
     target =  f"{FA_PATH}/server.{uid}.fasttree.rawid.tree"
-    print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
@@ -428,7 +425,6 @@ def update_grouping_download(n_clicks,pathname):
     else:
         uid = ''
     target =  f"{FA_PATH}/server.{uid}.grouping.fa"
-    print(target)
     if len(uid) > 0 and n_clicks > 0 and os.path.exists(target):
         return dcc.send_file(target)
     else:
@@ -480,22 +476,32 @@ def get_left_time(n_intervals):
         return left
     return (60*10 - n_intervals%(60*10))%(60*10)
 
+def get_supposed_count(n_intervals):
+    #in case of network issue
+    if n_intervals < 60:
+        supposed_count = math.ceil(n_intervals/10)
+    if n_intervals > 60:
+        supposed_count = math.ceil(n_intervals/60) + 6
+    return supposed_count
 
 LOADED = False
 
 @app.callback(
     Output("trigger_panel","children"),
     Input("interval-component","n_intervals"),
-    State("trigger_panel","children")
+    [
+        State("trigger_panel","children"),
+        State("loaded_count","value"),
+    ]
 )
-def fire_trigger(n_intervals,old_trigger):
+def fire_trigger(n_intervals,old_trigger,loaded_count):
     if n_intervals == 0:
         if len(old_trigger) > 1:
             return old_trigger[:-1]
         else:
             return 'x'
     left = get_left_time(n_intervals)
-    if left == 0 and (not LOADED):
+    if (left == 0 and (not LOADED)) :#or (loaded_count<get_supposed_count(n_intervals)):
         if len(old_trigger) > 1:
             return old_trigger[:-1]
         else:
@@ -507,7 +513,7 @@ def load_config(config_file):
     if os.path.exists(config_file):
         paras_dict = toml.load(config_file)
     else:
-        paras_dict = {}
+        paras_dict = None
     return paras_dict
 
 def save_config(config,config_file):
@@ -564,20 +570,27 @@ def save_config(config,config_file):
         #interval
         Output("interval-component","disabled"),
         #other
-        Output("seq_logo_download_btn","children")
+        Output("seq_logo_download_btn","children"),
+        #loaded count
+        Output("loaded_count","value")
 
     ],
     [
         Input('trigger_panel','children'),
     ],
-        State('url','pathname')
+        State('url','pathname'),
+        State("loaded_count","value")
     )
-def trigger(nonsense,pathname):
+def trigger(nonsense,pathname,loaded_count):
+
+    if ('result' not in pathname):
+        raise PreventUpdate
 
     if ('/results' in pathname) and (not pathname == '/results'):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
+    
 
     results_arr = ['',uid]
     status = get_status(uid)
@@ -611,6 +624,9 @@ def trigger(nonsense,pathname):
 
     config_file = f"{CONFIG_PATH}/{uid}.toml"
     config_dict = load_config(config_file)
+
+    if not config_dict:
+        raise PreventUpdate
 
     for item in ['task_name','create_time','seq_file_type','sequence_type','group_strategy','group_resolution','clustering_method',
                  'min_length','max_length','display_left_right','analysis','height_algorithm','align','padding_align','align_metric','connect_threshold','logo_type']:
@@ -685,6 +701,8 @@ def trigger(nonsense,pathname):
     ###
     logo_type = config_dict['logo_format']
     results_arr += [f'Sequence Logo ({logo_type})']
+
+    results_arr += [loaded_count+1]
 
     return results_arr
 

@@ -834,6 +834,8 @@ def change_color_scheme(seqtype):
         return 'basic_dna_color'
     if seqtype == 'aa':
         return 'basic_aa_color'
+    if seqtype == 'auto':
+        return 'auto'
     return 'basic_aa_color'
 
 
@@ -1028,7 +1030,7 @@ def change_labels(logo_shape,height_algorithm):
             if height_algorithm == 'bits':
                 return dash.no_update, 'Bits', dash.no_update, dash.no_update
             elif height_algorithm =='probabilities':
-                return dash.no_update, 'Probabilites', dash.no_update, dash.no_update
+                return dash.no_update, 'Probabilities', dash.no_update, dash.no_update
 
     return dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
@@ -1286,7 +1288,6 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
         toml.dump(config, f)
     
-    print('grouping_resolution: ', group_resolution)
     
     #cmd = f"python -m MetaLogo.entry --config {CONFIG_PATH}/{uid}.toml &"
     #print(cmd)

@@ -17,7 +17,6 @@ def get_distance_range(tree_file):
     return dists
 
 def get_score_df(score_f):
-    print(score_f)
     arrs = []
     with open(score_f,'r') as inpf:
         for line in inpf:
@@ -37,7 +36,8 @@ def get_score_df(score_f):
 
 def drawdists(dists,output):
     fig,ax = plt.subplots()
-    g = sns.distplot(pd.Series(dists,name='Pairwise distances'))
+    df = pd.DataFrame({'Pairwise distance':list(dists)})
+    g = sns.histplot(df,x='Pairwise distance',kde=True,ax=ax)
     fig.savefig(output,bbox_inches='tight')
     return
 
@@ -102,7 +102,6 @@ def save_seqs(seqs, filename):
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
                        clustalo_bin='',fasttree_bin='',treecluster_bin='',
                        uid='', fa_output_dir='', figure_output_dir=''):
-    print('enter auto detect')
 
     if seq_fa == '':
         if uid == '':
@@ -148,10 +147,8 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
     return groups_dict
 
 def msa(seq_fa,outfile,clustalo_bin):
-    print(f'in msa, {outfile}')
     if not os.path.exists(outfile):
         cmd = f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}'
-        print(cmd)
         os.system(f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}')
     msa_dict = {}
     with open(outfile,'r') as inpf:
@@ -171,10 +168,8 @@ def msa(seq_fa,outfile,clustalo_bin):
     return msa_dict
 
 def fasttree(msa_fa,outfile_tree,fasttree_bin=''):
-    print('in fasttree...')
     if (not os.path.exists(outfile_tree)):
         cmd = f'{fasttree_bin}  {msa_fa} > {outfile_tree} '
-        print(cmd)
         return os.system(cmd)
     return -1
 

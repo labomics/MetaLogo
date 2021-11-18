@@ -74,7 +74,6 @@ class Logo(Item):
         
         self.generate_components()
 
-
     def generate_components(self):
         for index,bit in enumerate(self.bits):
             chars = [x[0] for x in bit]
@@ -305,7 +304,6 @@ class LogoGroup(Item):
 
         self.logos = []
 
-        self.prep_env()
         self.prepare_bits()
 
         if ax is None:
@@ -319,36 +317,6 @@ class LogoGroup(Item):
 
         self.generate_components()
     
-    def prep_env(self):
-
-        print('in prep env')
-
-        if self.clustalo_bin == '':
-            cur_path = pathlib.Path().resolve()
-            os.makedirs(f'{cur_path}/bins',exist_ok = True)
-            self.clustalo_bin = f'{cur_path}/bins/clustalo'
-            if not os.path.exists(f'{cur_path}/bins/clustalo'):
-                #determine os
-                import platform
-                import struct
-                platform = platform.system()
-                url = ''
-                if platform == 'Linux':
-                    is_64bit = struct.calcsize('P') * 8 == 64
-                    if is_64bit:
-                        url = 'wget http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64'
-                    else:
-                        url = 'http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-32-bit'
-                elif platform == 'Darwin':
-                    url = 'http://www.clustal.org/omega/clustal-omega-1.2.3-macosx'
-            
-                os.system(f'wget {url} -O {cur_path}/bins/clustalo')
-                os.system(f'chmod u+x {cur_path}/bins/clustalo')
-        
-        print('self clustalo_bin:', self.clustalo_bin)
-
-
-    
     def prepare_bits(self):
         self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
@@ -359,12 +327,21 @@ class LogoGroup(Item):
         self.probs = compute_prob(self.groups,threshold=self.omit_prob)
 
         if self.height_algorithm == 'probabilities':
-            self.seq_bits = self.probs
+            self.seq_bits = self.probs.copy()
+            seq_bits = {}
+            for key in self.probs:
+                seq_bits[key] = []
+                for pos in self.probs[key]:
+                    item = []
+                    for base,height in pos:
+                        if base != '-':
+                            item.append((base,height))
+                    seq_bits[key].append(item)
+            self.seq_bits = seq_bits
+
         elif self.height_algorithm == 'bits':
             self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
-
-
-
+        
         try:
             if self.group_order.lower() == 'length':
                 self.group_ids = sorted(self.seq_bits.keys(),key=lambda d: len(self.seq_bits[d]))
@@ -379,9 +356,6 @@ class LogoGroup(Item):
         except Exception as e:
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
-        
-        print('group_ids:',self.group_ids)
-
         
         if self.height_algorithm == 'bits':
             to_del_ids = []
@@ -439,6 +413,7 @@ class LogoGroup(Item):
                 self.dendrogram = dendrogram(self.row_linkage,orientation='left')
                 self.before_clustering_group_ids = self.group_ids.copy()
                 self.group_ids = list(self.correlation.index[self.dendrogram['leaves']])
+
                 
 
     
@@ -769,10 +744,11 @@ class LogoGroup(Item):
                     ticks.append(0)
                     ticklabels.append(0)
                 ticks.append(start+height*(1+self.logo_margin_ratio))
+                label = round(height*(1+self.logo_margin_ratio),2)
                 if i == len(self.logos) - 1:
-                    ticklabels.append('%s'%round(height,2))
+                    ticklabels.append('%s'%label)
                 else:
-                    ticklabels.append('%s/0'%round(height,2))
+                    ticklabels.append('%s/0'%label)
         
             self.ax.set_yticks(ticks)
             self.ax.set_yticklabels(ticklabels)

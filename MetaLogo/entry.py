@@ -13,7 +13,7 @@ import uuid
 import toml
 
 def run_from_args(args):
-
+    print('args: ', args)
     seqs = read_file(args.seq_file, args.seq_file_type, args.min_length, args.max_length)
 
     if args.color_scheme_json_file is not None:
@@ -84,13 +84,13 @@ def run_from_config(config_file):
 
     config = toml.load(config_file)
     uid = config['uid']
-    print('in entry')
     print(config)
     seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
     logogroup = LogoGroup(seqs, **config)
     logogroup.draw()
 
     logogroup.savefig(f"{config['output_dir']}/{uid}.{config['logo_format']}")
+    print(f"{config['output_dir']}/{uid}.{config['logo_format']}",' saved')
 
     if  config['logo_format'].lower() != 'png':
         logogroup.savefig(f"{config['output_dir']}/{uid}.png")
@@ -230,7 +230,10 @@ def main():
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
-    print('args: ', args)
+
+    if args.config is not None:
+        run_from_config(args.config)
+
 
 if __name__ == '__main__':
     main()
