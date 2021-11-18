@@ -34,7 +34,7 @@ def check_failed(job_id):
     q  = Queue(connection=redis_conn)
     job = q.fetch_job(job_id)
     if job is not None:
-        return job.is_failed
+        return job.is_failed,job.exc_info
     else:
-        return True
+        return True,''
 
