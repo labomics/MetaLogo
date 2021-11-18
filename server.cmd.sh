@@ -1,4 +1,4 @@
-if [ -f "/etc/init.d/redis_6379" ]; then
+if [ -f "/var/run/redis_6379.pid" ]; then
     echo "redis already running."
 else
     /etc/init.d/redis_6379 start
