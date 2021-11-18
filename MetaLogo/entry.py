@@ -43,7 +43,7 @@ def run_from_args(args):
                           seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
-                          withtree=args.withtree
+                          withtree=args.withtree, group_limit = args.group_limit
                           )
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
@@ -157,6 +157,7 @@ def main():
     parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['length','identifier'],default='length')
     parser.add_argument('--clustering_method',type=str,help='The method for tree clustering',default='max')
     parser.add_argument('--group_resolution',type=float,help='The resolution for sequence grouping',default=0)
+    parser.add_argument('--group_limit',type=int,help='The limit for group number',default=20)
 
     #sort
     parser.add_argument('--group_order',type=str,help='The order of groups',choices=['length','length_reverse','identifier','identifier_reverse'],default='length')

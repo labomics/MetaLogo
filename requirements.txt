@@ -15,4 +15,5 @@ DendroPy==4.5.2
 supervisor==4.2.2
 rq==1.10.0
 hiredis==2.0.0
+ete3==3.1.1
 dash-bio==0.8.0

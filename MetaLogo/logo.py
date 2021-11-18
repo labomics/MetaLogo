@@ -221,7 +221,7 @@ class LogoGroup(Item):
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
-                 withtree = False,
+                 withtree = False,group_limit=20,
                  clustalo_bin = '', fasttree_bin = '', treecluster_bin = '',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
@@ -294,6 +294,8 @@ class LogoGroup(Item):
 
         self.clustering_method = clustering_method
         self.withtree = withtree
+        
+        self.group_limit = group_limit
 
 
         if sequence_type == 'auto':
@@ -324,6 +326,8 @@ class LogoGroup(Item):
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
                                clustalo_bin=self.clustalo_bin,fasttree_bin=self.fasttree_bin,treecluster_bin=self.treecluster_bin,
                                uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
+        
+        self.raw_group_count = len(self.groups)
 
         if self.group_strategy.lower() == 'identifier':
             for group_id in self.groups:
@@ -332,7 +336,16 @@ class LogoGroup(Item):
                     print('Sequence lengths not same in one group')
                     self.error = 'In identifier-grouping mode, sequence lengths should be the same in one group'
                     return
-
+        
+        if len(self.groups) > self.group_limit :
+            new_groups = {}
+            i = -1
+            for gid  in self.groups:
+                i += 1 
+                if i < self.group_limit:
+                    new_groups[gid] = self.groups[gid]
+            self.groups = new_groups
+        
 
         self.probs = compute_prob(self.groups,threshold=self.omit_prob)
 
@@ -512,9 +525,11 @@ class LogoGroup(Item):
         self.compute_xy()
         self.set_figsize()
         if self.group_strategy == 'auto':
-            task_name = self.task_name + '\n' + 'resolution: %s (0-1)'%(self.group_resolution)
+            task_name = self.task_name + '\n' + 'resolution: %s'%(self.group_resolution)
         else:
-            task_name = self.task_name
+            task_name = self.task_name + '\n'
+        if hasattr(self,'raw_group_count'):
+            task_name += f' [{len(self.groups)}/{self.raw_group_count} groups presented]' 
         self.ax.set_title(task_name,fontsize=self.title_size)
 
         self.ax.tick_params(labelsize=self.tick_size)

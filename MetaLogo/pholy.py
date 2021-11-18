@@ -10,12 +10,21 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from Bio import Phylo
+from ete3 import Tree
 
 def get_distance_range(tree_file):
     tree = dendropy.Tree.get(path=tree_file,schema='newick')
-    pdm = tree.phylogenetic_distance_matrix()
-    dists = pdm.distances()
+    pdc = tree.phylogenetic_distance_matrix()
+    dists = pdc.distances()
     return dists
+
+def get_distance_range_lessmem(tree_file):
+    tree = Tree(tree_file)
+    dists = []
+    for node in tree:
+        dists.append(node.get_farthest_node()[1])
+    return dists
+
 
 def get_score_df(score_f):
     arrs = []
@@ -126,9 +135,10 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
                 fasttree_bin)
     
-
-    dists = get_distance_range(f'{fa_output_dir}/server.{uid}.fasttree.tree')
-
+    if len(seqs) > 1000:
+        dists = get_distance_range_lessmem(f'{fa_output_dir}/server.{uid}.fasttree.tree')
+    else:
+        dists = get_distance_range(f'{fa_output_dir}/server.{uid}.fasttree.tree')
     
     treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.cluster',treecluster_bin)
 
@@ -174,7 +184,7 @@ def msa(seq_fa,outfile,clustalo_bin):
 
 def fasttree(msa_fa,outfile_tree,fasttree_bin=''):
     if (not os.path.exists(outfile_tree)):
-        cmd = f'{fasttree_bin}  {msa_fa} > {outfile_tree} '
+        cmd = f'{fasttree_bin}  -quiet -nopr {msa_fa} > {outfile_tree} '
         return os.system(cmd)
     return -1
 

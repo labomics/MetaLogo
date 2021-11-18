@@ -47,7 +47,8 @@ from ..redis_queue import enqueue
 from ..config import PNG_PATH,FA_PATH,EXAMPLE_PATH,CONFIG_PATH,\
                      GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_SEQ_LIMIT_AUTO,MAX_INPUT_SIZE,\
                      MAX_SEQ_LEN,BAIDU_TONGJI_ID,SQLITE3_DB,\
-                     CLUSTALO_BIN,FASTTREE_BIN,TREECLUSTER_BIN
+                     CLUSTALO_BIN,FASTTREE_BIN,TREECLUSTER_BIN,\
+                     GROUP_LIMIT
 
 
 
@@ -175,6 +176,12 @@ display_range_right_input = dbc.FormGroup(
         html.Span("-1 means till the end",style={'fontSize':'10px','color':'#ff6f00'})
     ]
 )
+group_limit = dbc.FormGroup(
+    [
+        dbc.Label("Group Limit",html_for='input'),
+        dbc.Input(type="number", min=1, max=GROUP_LIMIT, step=1, value=20,id="group_limit"),
+    ]
+)
 
 seqinput_form = html.Div([
     html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
@@ -262,6 +269,7 @@ input_panel = dbc.Card(
                     dbc.Col(max_len_input),
                     dbc.Col(display_range_left_input),
                     dbc.Col(display_range_right_input),
+                    dbc.Col(group_limit),
                 ]),
                 dbc.Row(dbc.Col(seqinput_form)),
                 dbc.Row([dbc.Col(''),dbc.Col(input_submit)],justify='end'),
@@ -1107,6 +1115,7 @@ app.clientside_callback(
         Input('submit4', 'n_clicks')
     ],
     [
+        State('group_limit','value'),
         State('connect_tree_dropdown','value'),
         State('grouping_resolution','value'),
         State('clustering_method_dropdown','value'),
@@ -1153,6 +1162,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            group_limit,
             connect_tree_dropdown,
             group_resolution,clustering_method,
             basic_analysis_dropdown,
@@ -1170,6 +1180,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
+
+    if group_limit > GROUP_LIMIT:
+        return '','Error',f'Group limit not allowed > {GROUP_LIMIT}',True,''
 
     display_left = int(display_left) 
     display_right = int(display_right) 
@@ -1288,7 +1301,8 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
                           group_resolution=group_resolution,create_time=int(time.time()),
                           analysis=analysis,clustering_method=clustering_method,withtree=withtree,
-                          clustalo_bin=CLUSTALO_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN
+                          clustalo_bin=CLUSTALO_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN,
+                          group_limit=group_limit
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

@@ -7,6 +7,7 @@ output_png_path = 'MetaLogo/figure_output'
 output_fa_path = 'MetaLogo/sequence_input'
 config_path = 'MetaLogo/configs'
 log_path = 'MetaLogo/logs'
+group_limit = 20
 max_seq_limit = 200000
 max_seq_limit_auto = 10000
 max_seq_len = 200
@@ -17,7 +18,7 @@ baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 #bins
 clustalo_bin = '/usr/bin/clustalo'
 fasttree_bin = '/usr/bin/FastTree'
-#treecluster_bin  = '/home/achen/anaconda3/envs/dash2/bin/TreeCluster.py'
+#fasttree_bin = '/usr/bin/FastTreeMP'
 treecluster_bin  = 'TreeCluster.py'
 
 sqlite3_db = 'MetaLogo/db/metalogo.db'

@@ -13,6 +13,7 @@ MAX_SEQ_LIMIT = 50000
 MAX_SEQ_LIMIT_AUTO = 10000
 MAX_INPUT_SIZE = 5242880
 MAX_SEQ_LEN = 100
+GROUP_LIMIT = 20
 GOOGLE_ANALYTICS_ID = ''
 BAIDU_TONGJI_ID = ''
 SQLITE3_DB = 'MetaLogo/db/metalogo.db'
@@ -50,6 +51,8 @@ if os.path.exists('MetaLogo/server.toml'):
         FASTTREE_BIN = paras_dict['fasttree_bin']
     if 'treecluster_bin' in paras_dict:
         TREECLUSTER_BIN = paras_dict['treecluster_bin']
+    if 'group_limit' in paras_dict:
+        GROUP_LIMIT = paras_dict['group_limit']
 
 if not os.path.exists(PNG_PATH):
     os.makedirs(PNG_PATH, exist_ok=True)
