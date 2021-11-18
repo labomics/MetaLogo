@@ -23,7 +23,7 @@ layout = dbc.Container([
     dbc.Col(
         [
             dbc.Row([
-                    html.Img(id='tree_img_src',src='',style={"margin":"auto","width":"60%"}),
+                    html.Img(id='tree_img_src',src='',style={"margin":"auto","width":"100%"}),
             ]),
         ]
     ),

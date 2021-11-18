@@ -6,6 +6,7 @@ import uuid
 import pandas as pd
 import re
 import dendropy
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from Bio import Phylo
@@ -44,9 +45,13 @@ def drawdists(dists,output):
 def drawtree(input,output):
     tree = Phylo.read(input, 'newick')
     tree.ladderize()  # Flip branches so deeper clades are displayed at top
-    fig,ax = plt.subplots()
-    g = Phylo.draw(tree)
-    plt.savefig(output)
+
+    matplotlib.rc('font', size=10)
+    fig = plt.figure(figsize=(20, 20), dpi=100)
+    axes = fig.add_subplot(1, 1, 1)
+    Phylo.draw(tree, axes=axes)
+    plt.savefig(output, dpi=100)
+
 
 def reverse_msa_seqname(name_dict,oldfile,newfile):
 
