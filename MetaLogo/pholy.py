@@ -138,11 +138,18 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
         fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
                 fasttree_bin)
-    
-    if len(seqs) > 1000:
+    try:
+        if os.path.exists(f'{fa_output_dir}/server.{uid}.treedists.csv'):
+            dists = pd.read_csv(f'{fa_output_dir}/server.{uid}.treedists.csv',index_col=False,header=0)['0'].tolist()
+        else: 
+            if len(seqs) > 1000:
+                dists = get_distance_range_lessmem(f'{fa_output_dir}/server.{uid}.fasttree.tree')
+            else:
+                dists = get_distance_range(f'{fa_output_dir}/server.{uid}.fasttree.tree')
+            pd.Series(list(dists)).to_csv(f'{fa_output_dir}/server.{uid}.treedists.csv',index=None)
+    except:
         dists = get_distance_range_lessmem(f'{fa_output_dir}/server.{uid}.fasttree.tree')
-    else:
-        dists = get_distance_range(f'{fa_output_dir}/server.{uid}.fasttree.tree')
+
     
     treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.cluster',treecluster_bin)
 
