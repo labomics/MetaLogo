@@ -339,11 +339,9 @@ class LogoGroup(Item):
         
         if len(self.groups) > self.group_limit :
             new_groups = {}
-            i = -1
-            for gid  in self.groups:
-                i += 1 
-                if i < self.group_limit:
-                    new_groups[gid] = self.groups[gid]
+            sorted_groups = sorted(self.groups.items(),key=lambda d:len(d[1]),reverse=True)
+            for gid,group in sorted_groups[:self.group_limit]:
+                new_groups[gid] = self.groups[gid]
             self.groups = new_groups
         
 
@@ -525,12 +523,22 @@ class LogoGroup(Item):
         self.compute_xy()
         self.set_figsize()
         if self.group_strategy == 'auto':
-            task_name = self.task_name + '\n' + 'resolution: %s'%(self.group_resolution)
+            task_name = self.task_name + '\n-' + '[%s resolution]'%(self.group_resolution)
         else:
-            task_name = self.task_name + '\n'
+            task_name = self.task_name + '\n-'
         if hasattr(self,'raw_group_count'):
-            task_name += f' [{len(self.groups)}/{self.raw_group_count} groups presented]' 
-        self.ax.set_title(task_name,fontsize=self.title_size)
+            task_name += f' [{len(self.groups)}/{self.raw_group_count} groups]' 
+        if self.group_strategy == 'auto' or (self.align and self.padding_align ):
+            if len(self.groups)>0:
+                poses = len(self.seq_bits[self.group_ids[0]])
+                left = self.display_range_left
+                right = self.display_range_right
+                if right == -1:
+                    right = poses
+                task_name += f' [{left}:{right} range]' 
+        
+        
+        self.ax.set_title(task_name,fontsize=self.title_size,loc='left')
 
         self.ax.tick_params(labelsize=self.tick_size)
 
