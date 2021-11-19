@@ -114,9 +114,9 @@ def save_seqs(seqs, filename):
 
     
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
-                       clustalo_bin='',fasttree_bin='',treecluster_bin='',
+                       clustalo_bin='',fasttree_bin='',fasttreemp_bin='',treecluster_bin='',
                        uid='', fa_output_dir='', figure_output_dir=''):
-
+    
     if seq_fa == '':
         if uid == '':
             uid = str(uuid.uuid4())
@@ -130,8 +130,12 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
 
     msa_dict = msa(dep_seq_fa,f'{fa_output_dir}/server.{uid}.msa.fa',clustalo_bin)
 
-
-    fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
+    if len(seqs) > 1000:
+        fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
+                f'{fa_output_dir}/server.{uid}.fasttree.tree',
+                fasttreemp_bin)
+    else:
+        fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
                 fasttree_bin)
     

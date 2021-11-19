@@ -47,7 +47,7 @@ from ..redis_queue import enqueue
 from ..config import PNG_PATH,FA_PATH,EXAMPLE_PATH,CONFIG_PATH,\
                      GOOGLE_ANALYTICS_ID,MAX_SEQ_LIMIT,MAX_SEQ_LIMIT_AUTO,MAX_INPUT_SIZE,\
                      MAX_SEQ_LEN,BAIDU_TONGJI_ID,SQLITE3_DB,\
-                     CLUSTALO_BIN,FASTTREE_BIN,TREECLUSTER_BIN,\
+                     CLUSTALO_BIN,FASTTREE_BIN,FASTTREEMP_BIN,TREECLUSTER_BIN,\
                      GROUP_LIMIT
 
 
@@ -1301,7 +1301,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           sqlite3_db=SQLITE3_DB,output_dir = PNG_PATH,logo_format = download_format_dropdown,
                           group_resolution=group_resolution,create_time=int(time.time()),
                           analysis=analysis,clustering_method=clustering_method,withtree=withtree,
-                          clustalo_bin=CLUSTALO_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN,
+                          clustalo_bin=CLUSTALO_BIN,fasttreemp_bin=FASTTREEMP_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN,
                           group_limit=group_limit
     )
 

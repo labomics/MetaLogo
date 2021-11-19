@@ -18,7 +18,7 @@ baidu_tongji_id = '53d867057aa25d8e9cf8e04221f009f8'
 #bins
 clustalo_bin = '/usr/bin/clustalo'
 fasttree_bin = '/usr/bin/FastTree'
-#fasttree_bin = '/usr/bin/FastTreeMP'
+fasttreemp_bin = '/usr/bin/FastTreeMP'
 treecluster_bin  = 'TreeCluster.py'
 
 sqlite3_db = 'MetaLogo/db/metalogo.db'

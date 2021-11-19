@@ -19,6 +19,7 @@ BAIDU_TONGJI_ID = ''
 SQLITE3_DB = 'MetaLogo/db/metalogo.db'
 CLUSTALO_BIN = ''
 FASTTREE_BIN = ''
+FASTTREEMP_BIN = ''
 TREECLUSTER_BIN = ''
 
 if os.path.exists('MetaLogo/server.toml'):
@@ -49,6 +50,8 @@ if os.path.exists('MetaLogo/server.toml'):
         CLUSTALO_BIN = paras_dict['clustalo_bin']
     if 'fasttree_bin' in paras_dict:
         FASTTREE_BIN = paras_dict['fasttree_bin']
+    if 'fasttreemp_bin' in paras_dict:
+        FASTTREEMP_BIN = paras_dict['fasttreemp_bin']
     if 'treecluster_bin' in paras_dict:
         TREECLUSTER_BIN = paras_dict['treecluster_bin']
     if 'group_limit' in paras_dict:
