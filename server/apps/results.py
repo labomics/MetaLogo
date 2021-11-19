@@ -187,6 +187,14 @@ def get_layout():
                 [
                     dbc.Row(
                         dbc.Col(
+                            html.Span('Figure 0. Sequence lengths distribution.')
+                    )),
+                    dbc.Row([
+                        html.Img(id='lengths_img_res',src='',style={"margin":"auto"}),
+                        ]),
+                    html.Hr(),
+                    dbc.Row(
+                        dbc.Col(
                             html.Span('Figure 1. Sequence counts of each group.')
                     )),
                     dbc.Row([
@@ -592,6 +600,7 @@ def save_config(config,config_file):
         Output("reset_resolution","value"),
 
         #statistics
+        Output('lengths_img_res', 'src'),
         Output('count_img_res', 'src'),
         Output('entropy_img_res', 'src'),
         Output('entropy_boxplot_img_res', 'src'),
@@ -696,13 +705,19 @@ def trigger(nonsense,pathname,loaded_count):
     results_arr += [config_dict['display_range_left'],config_dict['display_range_right'], config_dict['group_limit'],config_dict['group_resolution']]
     ###
 
+    lengths_src = ''
     count_src = ''
     entropy_src = ''
     boxplot_entropy_src = ''
     clustermap_src = ''
     dists_src = ''
+
     if LOADED and status == 'finished':
         if  config_dict['analysis']: 
+
+            lengths_name = f'{PNG_PATH}/{uid}.lengths.png'
+            lengths_src = get_img_src(lengths_name)
+
             count_name = f'{PNG_PATH}/{uid}.counts.png'
             count_src = get_img_src(count_name)
 
@@ -718,7 +733,7 @@ def trigger(nonsense,pathname,loaded_count):
             dists_name = f'{PNG_PATH}/{uid}.treedistances.png'
             dists_src = get_img_src(dists_name)
 
-    results_arr += [count_src, entropy_src, boxplot_entropy_src, clustermap_src,dists_src]
+    results_arr += [lengths_src, count_src, entropy_src, boxplot_entropy_src, clustermap_src,dists_src]
 
     show_other_panel = False
     disabled_msa_download = True

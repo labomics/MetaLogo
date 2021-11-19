@@ -2,7 +2,6 @@
 from collections import namedtuple
 import os
 import uuid
-#from . import utils
 import pandas as pd
 import re
 import dendropy
@@ -109,10 +108,8 @@ def save_seqs(seqs, filename):
     with open(filename,'w') as outpf:
         for seqname,seq in seqs:
             outpf.write(f'>{seqname}\n')
-            outpf.write(f'{seq}\n')
+            outpf.write(f'{seq}\n') 
 
-
-    
 def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
                        clustalo_bin='',fasttree_bin='',fasttreemp_bin='',treecluster_bin='',
                        uid='', fa_output_dir='', figure_output_dir=''):

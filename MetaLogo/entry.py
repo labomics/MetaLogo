@@ -64,6 +64,11 @@ def run_from_args(args):
         fig.savefig(count_name,bbox_inches='tight')
         plt.close(fig)
 
+        fig = logogroup.get_seq_lengths_dist().figure
+        lengths_name = f'{args.output_dir}/{base_name}.lengths.png'
+        fig.savefig(lengths_name,bbox_inches='tight')
+        plt.close(fig)
+
 
         fig = logogroup.get_entropy_figure()
         entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
@@ -111,6 +116,11 @@ def run_from_config(config_file):
         fig = logogroup.get_grp_counts_figure().figure
         count_name = f"{config['output_dir']}/{uid}.counts.png"
         fig.savefig(count_name,bbox_inches='tight')
+        plt.close(fig)
+
+        fig = logogroup.get_seq_lengths_dist().figure
+        lengths_name = f"{config['output_dir']}/{uid}.lengths.png"
+        fig.savefig(lengths_name,bbox_inches='tight')
         plt.close(fig)
 
 

@@ -1088,3 +1088,15 @@ class LogoGroup(Item):
         ax.set_title('Sequence counts of each group')
 
         return ax
+    
+    def get_seq_lengths_dist(self):
+        fig,ax = plt.subplots()
+        lens = [len(x[1]) for x in self.seqs]
+        df = pd.DataFrame((pd.Series(lens).value_counts())).reset_index()
+        df.columns = ['Length','Count']
+        ax = df.set_index('Length').loc[sorted(set(lens))].plot.bar(ax=ax,y='Count')
+        for p in ax.patches:
+            ax.annotate(str(p.get_height()), (p.get_x() + p.get_width()/2 , p.get_height() * 1.005),ha='center')
+        ax.set_title('Sequence lengths distribution')
+
+        return ax
