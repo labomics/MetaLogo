@@ -15,7 +15,7 @@ import toml
 import math
 
 from ..app import app
-from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH
+from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH,GROUP_LIMIT,MAX_SEQ_LEN
 from ..utils import get_img_src
 from ..sqlite3 import get_status
 from ..redis_queue import enqueue,check_failed
@@ -141,18 +141,43 @@ def get_layout():
                         html.Img(id='logo_img',src='',style={"width":"100%","margin":"auto"}),
                     ]),
                     html.Hr(),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.FormGroup([
+                                    dbc.Label("Left pos",html_for='input'),
+                                    dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, id="fast_left_pos",step=1,value=0),
+                                ])
+                            ),
+
+                            dbc.Col(
+                                dbc.FormGroup([
+                                    dbc.Label("Right pos",html_for='input'),
+                                    dbc.Input(type="number",  max=MAX_SEQ_LEN, id="fast_right_pos",step=1,value=10),
+                                    ])
+                            ),
+
+                            dbc.Col(
+                                dbc.FormGroup([
+                                    dbc.Label("Group limit",html_for='input'),
+                                    dbc.Input(type="number", min=1, max=GROUP_LIMIT, id="fast_group_limit",step=1,value=1),
+                                    ])
+                            ),
+
+                            dbc.Col(
+                                dbc.FormGroup([
+                                    dbc.Label("Reset resolution",html_for='input'),
+                                    dbc.Input(type="number", min=0, max=1, id="reset_resolution",step=0.000001,value=1),])
+                            )
+                        ]),
+                         
                     html.Div(
                         [
-                            html.Div(
-                                [
-                                    dbc.Label("Reset resolution (0-1)  ",html_for='input'),
-                                    dbc.Input(type="number", min=0, max=1, id="reset_resolution",step=0.000001,style={'width':'100px','margin':'20px'},value=1),
-                                    dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn',color='info'),
-                                ],style={'display':'flex','alignItems':'center','justifyContent':'flex-end'}),
-                            html.Div('* Only for auto-grouping scenario',style={'textAlign':'right','fontSize':'10px'})
-                        ], style={'display':'flex','flexDirection':'column'}),
-                ]
-            )
+                         dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn',color='info'),
+                         html.Div('* Only for auto-grouping scenario'),
+                        ],style={'textAlign':'right','fontSize':'10px'})
+             
+            ])
         ],style={'marginBottom':'10px'},id='seqlogo_panel'
     )
     statistics_panel = dbc.Card(
@@ -560,6 +585,12 @@ def save_config(config,config_file):
         Output('align_metric','children'),
         Output('connect_threshold_value','children'),
         Output('logo_type','children'),
+
+        Output("fast_left_pos","value"),
+        Output("fast_right_pos","value"),
+        Output("fast_group_limit","value"),
+        Output("reset_resolution","value"),
+
         #statistics
         Output('count_img_res', 'src'),
         Output('entropy_img_res', 'src'),
@@ -661,7 +692,8 @@ def trigger(nonsense,pathname,loaded_count):
         else:
             results_arr += ['%s'%(config_dict.get(item,''))]
     
-
+    #fast rerun
+    results_arr += [config_dict['display_range_left'],config_dict['display_range_right'], config_dict['group_limit'],config_dict['group_resolution']]
     ###
 
     count_src = ''
@@ -737,28 +769,49 @@ def trigger(nonsense,pathname,loaded_count):
         Input("reset_resolution_btn","n_clicks")
     ],
     [
+        State("fast_left_pos","value"),
+        State("fast_right_pos","value"),
+        State("fast_group_limit","value"),
         State("reset_resolution","value"),
         State("url","pathname"),
         State("uid_span","children")
     ],
     prevent_initial_call=True,
 )
-def trigger_reset_resolution(n_clicks,resolution,pathname,uid):
+def trigger_reset_resolution(n_clicks,left_pos,right_pos,group_limit,resolution,pathname,uid):
 
     if n_clicks == 0:
         raise PreventUpdate
 
     config_file = f"{CONFIG_PATH}/{uid}.toml"
     config_dict = load_config(config_file)
-    if resolution == config_dict['group_resolution']:
-        return 'Same resolution, no need to re-run',True,''
+
+    if resolution == config_dict['group_resolution'] and left_pos == config_dict['display_range_left'] and right_pos == config_dict['display_range_right'] and group_limit == config_dict['group_limit']:
+        return 'Same configuration, no need to re-run',True,''
     if resolution is None:
         return 'Please input the resolution',True,''
+    if left_pos is None:
+        return 'Please input the left position',True,''
+    if right_pos is None:
+        return 'Please input the right position',True,''
+    if group_limit is None:
+        return 'Please input the group limit',True,''
+
     if resolution > 1 or resolution <0 :
         return 'Resolution value must be between 0 and 1',True,''
-
+    
+    if group_limit > GROUP_LIMIT:
+        return f'Group limit must be <= {GROUP_LIMIT}',True,''
+    
+    if right_pos > MAX_SEQ_LEN:
+        return f'Right pos > Max sequence length {MAX_SEQ_LEN}',True,''
+    if right_pos < -1*MAX_SEQ_LEN:
+        return f'Right pos < -1 * Max sequence length {MAX_SEQ_LEN}',True,''
     
     config_dict['group_resolution'] = float(resolution)
+    config_dict['display_range_left'] = left_pos
+    config_dict['display_range_right'] = right_pos
+    config_dict['group_limit'] = group_limit
     save_config(config_dict,config_file)
 
     enqueue(config_file)

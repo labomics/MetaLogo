@@ -222,7 +222,7 @@ class LogoGroup(Item):
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
                  withtree = False,group_limit=20,
-                 clustalo_bin = '', fasttree_bin = '', treecluster_bin = '',
+                 clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -286,6 +286,7 @@ class LogoGroup(Item):
 
         self.clustalo_bin = clustalo_bin
         self.fasttree_bin = fasttree_bin
+        self.fasttreemp_bin = fasttreemp_bin
         self.treecluster_bin = treecluster_bin
 
         self.fa_output_dir = fa_output_dir
@@ -324,7 +325,7 @@ class LogoGroup(Item):
     def prepare_bits(self):
         self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
-                               clustalo_bin=self.clustalo_bin,fasttree_bin=self.fasttree_bin,treecluster_bin=self.treecluster_bin,
+                               clustalo_bin=self.clustalo_bin,fasttree_bin=self.fasttree_bin,fasttreemp_bin=self.fasttreemp_bin,treecluster_bin=self.treecluster_bin,
                                uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
         
         self.raw_group_count = len(self.groups)
