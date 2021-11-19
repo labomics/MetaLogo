@@ -9,18 +9,15 @@ from dash.dependencies import Input, Output, State
 
 
 about_md = dcc.Markdown('''
-**MetaLogo** is a tool for making sequence logos. It is different from the conventional sequence logo tool in that it can take multiple sets of sequences as input, with different lengths or other characteristics, integrate the logos into one single figure and align them through certain algorithms, so as to display the total sequence population in a more detailed and dynamic view.
+**MetaLogo** is a tool for making sequence logos. It can take multiple sequences as input, automatically identify the heterogeneity among sequences and cluster them into different groups given any wanted resolution, finally output multiple aligned sequence logos in one figure. Grouping can also be specified by users, such as grouping by lengths, grouping by sample Id, etc.  Compared to conventional sequence logo generator, MetaLogo can display the total sequence population in a more detailed, dynamic and informative view.
 
-Users can choose to group sequences by length, or divide sequences of the same length into multiple groups. For each group, MetaLogo will draw a sequence logo separately. At the logo level, alignment is performed through a modified version of sequence alignment and multiple sequence alignment algorithms.
+In the auto-grouping mode, MetaLogo will perform multiple sequence alignment (MSA), phylogenetic tree construction and group clustering for the input sequences. Users can give MetaLogo different resolution values to guide the sequence clustering process and the sequence logos building, which lead to a dynamic understanding of the input data. In the user-defined-grouping mode, MetaLogo will perform an adjusted MSA algorithms to align multiple logos and highlight the conserved connections among groups. MetaLogo also provides a basic analysis module to present statistics of the sequences, involving sequencing distribution, conservation scores, pairwise distances, group correlations, etc.  Almost all the related intermediate results are available for downloading.
 
-There are a total of 4 different logo layouts for users to choose from, such as horizontal, circular, radial and 3D logos, which are suitable for different scenes. At the same time, there are many different algorithms to choose from for the logo comparison and alignment.
+Users have plenty of options to get their custom sequence logos and basic analysis figures. Multiple styles of the output are provided. Users can customize most of the elements of drawing, including title, axis, ticks, labels, font color, graphic size, etc. At the same time, it can export a variety of formats including PDF, PNG, SVG and so on. It is really convenient for users without programming experiences to produce publication-level figures.
 
-Users can customize most of the elements of drawing, including title, axis, ticks, labels, font color, graphic size, etc. At the same time, it can export a variety of formats including PDF, PNG, SVG and so on. Users do not need any programming experience at all to make publication-level pictures.
-
-Due to server resource limitations, this tool has a limit on the number of input sequences. But we also provide a python package that can be run independently, which can facilitate users to integrate the drawing code in their own projects or deploy them on high-performance computing nodes. In addition, we also provide a convenient server dockerfile for users to perform convenient graphical visualization operations locally.
+Users could also download the standalone package of MetaLogo, integrate it into their own python project or easily set up a local MetaLogo server by using docker. A concise and complete front website + a queue organized back end could give users convenience to investigate and understand their sequences in their own computing environments. 
 
 If you think this tool is easy to use, please share it with those who need it. If you have any comments, you can send an email to the maintainer via the feedback button at the top. When our article gets published, please remember to cite our work.
-
 
 ''')  
 
@@ -30,7 +27,7 @@ aboutpanel = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row([
-                    dbc.Col(html.Div(html.Img(src='/assets/introduction.PNG',width='100%')))
+                    dbc.Col(html.Div(html.Img(src='/assets/about.png',width='100%')))
                 ])
                 ,
                 dbc.Row([
