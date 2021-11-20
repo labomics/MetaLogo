@@ -35,7 +35,9 @@ toppanel = html.Div(
 footer_panel = html.Div([
     dbc.Row([
         dbc.Col(['© Developed by Yaowen Chen @ Beijing Institute of Basic Medical Sciences by using ', 
-                html.A('Matplotlib',href='https://matplotlib.org/'),' and ', html.A('Plotly Dash',href='https://dash.plotly.com/')],
+                html.A('Matplotlib',href='https://matplotlib.org/'),', ', html.A('Plotly Dash',href='https://dash.plotly.com/'), ' and ', 
+                html.A('other great tools',href='https://github.com/labomics/MetaLogo/blob/main/requirements.txt')
+                ],
                 )
     ]),
     dbc.Row(dbc.Col('July, 2021'))

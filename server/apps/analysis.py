@@ -198,7 +198,11 @@ seqinput_form = html.Div([
         html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 DNA sequences or >=7 protein sequences if you choose '),
         html.Span('Bits ', style={'fontStyle':'italic'}),
         html.Span('as height algorithm (Default) rather than '),
-        html.Span('Probabilities.', style={'fontStyle':'italic'})
+        html.Span('Probabilities.', style={'fontStyle':'italic'}),
+        html.Span(' Or choose the '), 
+        html.Span('Bits_without_correction',style={'fontStyle':'italic'}),
+        html.Span(' algorithm.'),
+
         ],style={'fontSize':'10px','color':'#ff6f00'}),    
 
     html.Label(f'Or upload a file (<={(MAX_INPUT_SIZE/1024)/1024}MB)'),
