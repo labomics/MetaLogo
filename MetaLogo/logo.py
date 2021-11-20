@@ -325,7 +325,7 @@ class LogoGroup(Item):
         self.generate_components()
     
     def prepare_bits(self):
-        self.groups = grouping(self.seqs,seq_file=self.seq_file,group_by=self.group_strategy,
+        self.groups = grouping(self.seqs,seq_file=self.seq_file,sequence_type=self.sequence_type,group_by=self.group_strategy,
                                group_resolution=self.group_resolution,clustering_method=self.clustering_method,
                                clustalo_bin=self.clustalo_bin,fasttree_bin=self.fasttree_bin,fasttreemp_bin=self.fasttreemp_bin,treecluster_bin=self.treecluster_bin,
                                uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
@@ -352,8 +352,14 @@ class LogoGroup(Item):
         if len(self.groups) > self.group_limit :
             new_groups = {}
             sorted_groups = sorted(self.groups.items(),key=lambda d:len(d[1]),reverse=True)
-            for gid,group in sorted_groups[:self.group_limit]:
-                new_groups[gid] = self.groups[gid]
+            for gid,group in sorted_groups[:max(0,self.group_limit-1)]:
+                new_groups[gid] = group
+            if self.target_group is not None:
+                new_groups[self.target_group] = self.groups[self.target_group]
+            else:
+                if self.group_limit > 0 :
+                    add_grp_id,add_grp = sorted_groups[self.group_limit-1]
+                    new_groups[add_grp_id] = add_grp
             self.groups = new_groups
         
 

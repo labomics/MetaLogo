@@ -821,6 +821,8 @@ def trigger_reset_resolution(n_clicks,left_pos,right_pos,group_limit,resolution,
     
     if group_limit > GROUP_LIMIT:
         return f'Group limit must be <= {GROUP_LIMIT}',True,''
+    if group_limit == 0:
+        return f'Group limit must > 0 ',True,''
     
     if right_pos > MAX_SEQ_LEN:
         return f'Right pos > Max sequence length {MAX_SEQ_LEN}',True,''
