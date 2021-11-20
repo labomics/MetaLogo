@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure, get
 import numpy as np
 from matplotlib.patches import Circle
+from pandas.core import algorithms
 from scipy import cluster
 
 from .character import Character
@@ -371,8 +372,8 @@ class LogoGroup(Item):
                     seq_bits[key].append(item)
             self.seq_bits = seq_bits
 
-        elif self.height_algorithm == 'bits':
-            self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type)
+        elif self.height_algorithm in ['bits','bits_without_correction']:
+            self.seq_bits = compute_bits(self.groups, self.probs, seq_type=self.sequence_type,no_correction=self.height_algorithm=='bits_without_correction')
         
         try:
             if self.group_order.lower() == 'length':
@@ -389,7 +390,7 @@ class LogoGroup(Item):
             print(e)
             self.group_ids = sorted(self.seq_bits.keys())
         
-        if self.height_algorithm == 'bits':
+        if self.height_algorithm in ['bits','bits_without_correction']:
             to_del_ids = []
             for gid in self.group_ids:
                 total = sum([sum([x[1] for x in col]) for col in self.seq_bits[gid]])
@@ -1093,6 +1094,8 @@ class LogoGroup(Item):
     def get_grp_counts_figure(self):
         fig,ax = plt.subplots()
         lens = []
+        if len(self.group_ids) == 0:
+            return None
         for grp in self.group_ids:
             lens.append([grp,len(self.groups[grp])])
         df = pd.DataFrame(lens,columns=['Group','Counts'])

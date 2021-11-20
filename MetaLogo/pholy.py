@@ -197,9 +197,12 @@ def fasttree(msa_fa,outfile_tree,fasttree_bin=''):
     return -1
 
 def treecluster(threshold,clustering_method,dists,treefile,outfile,treecluster_bin=''):
-    sorted_dists = sorted(dists)
-    adj_threshold_idx = round(threshold*len(dists))
-    adj_threshold = sorted_dists[min(len(dists)-1,adj_threshold_idx)]
+    if threshold == 0:
+        adj_threshold = threshold
+    else:
+        sorted_dists = sorted(dists)
+        adj_threshold_idx = round(threshold*len(dists))
+        adj_threshold = sorted_dists[min(len(dists)-1,adj_threshold_idx)]
     cmd = f'{treecluster_bin} -i {treefile} -o {outfile} -t {adj_threshold} -m {clustering_method}'
     return os.system(cmd)
 
