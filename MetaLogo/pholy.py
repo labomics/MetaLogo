@@ -110,7 +110,7 @@ def save_seqs(seqs, filename):
             outpf.write(f'>{seqname}\n')
             outpf.write(f'{seq}\n') 
 
-def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max', 
+def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clustering_method='max', 
                        clustalo_bin='',fasttree_bin='',fasttreemp_bin='',treecluster_bin='',
                        uid='', fa_output_dir='', figure_output_dir=''):
     
@@ -130,11 +130,11 @@ def auto_detect_groups(seqs, seq_fa, group_resolution=1,clustering_method='max',
     if len(seqs) > 1000:
         fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
-                fasttreemp_bin)
+                fasttreemp_bin,sequence_type)
     else:
         fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
-                fasttree_bin)
+                fasttree_bin,sequence_type)
     try:
         if os.path.exists(f'{fa_output_dir}/server.{uid}.treedists.csv'):
             dists = pd.read_csv(f'{fa_output_dir}/server.{uid}.treedists.csv',index_col=False,header=0)['0'].tolist()
@@ -190,9 +190,12 @@ def msa(seq_fa,outfile,clustalo_bin):
             msa_dict[seqname] = seq
     return msa_dict
 
-def fasttree(msa_fa,outfile_tree,fasttree_bin=''):
+def fasttree(msa_fa,outfile_tree,fasttree_bin='',sequence_type='aa'):
     if (not os.path.exists(outfile_tree)):
-        cmd = f'{fasttree_bin}  -quiet -nopr {msa_fa} > {outfile_tree} '
+        if sequence_type != 'aa':
+            cmd = f'{fasttree_bin} -nt  -quiet -nopr {msa_fa} > {outfile_tree} '
+        else:
+            cmd = f'{fasttree_bin}  -quiet -nopr {msa_fa} > {outfile_tree} '
         return os.system(cmd)
     return -1
 
