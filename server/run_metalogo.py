@@ -20,7 +20,9 @@ def execute(config_file):
             write_status(config['uid'],'finished',config['sqlite3_db'])
 
     except Exception as e:
-        print('error:',e)
+        print('error: ', repr(e))
         write_status(config['uid'],'error',config['sqlite3_db'])
-        write_status(f"{config['uid']}-errinfo",e,config['sqlite3_db'])
+        error = ' '.join(e.args).replace('\'','').replace('\"','')
+        print(error)
+        write_status(f"{config['uid']}-errinfo",error,config['sqlite3_db'])
         return e

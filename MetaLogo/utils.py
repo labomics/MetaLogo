@@ -17,7 +17,7 @@ from .pholy import auto_detect_groups
 
 
 
-def read_file(filename, filetype, min_length, max_length):
+def read_file(filename, filetype):
 
     seq_dict = {}
     seqnames = []
@@ -42,14 +42,14 @@ def read_file(filename, filetype, min_length, max_length):
                 num += 1
                 if num%4 == 0:
                     assert line[0] == '@'
-                    seqname = line[1:]
+                    seqname = f"{line[1:]} {num+1}"
                     seqnames.append(seqname)
                 if num%4 == 1:
                     seq_dict[seqname] = line.upper()
     else:
         pass
 
-    return [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>=min_length) and (len(seq_dict[seqname])<=max_length)]
+    return seq_dict, seqnames
 
 def grouping(seqs,seq_file='',group_by='length',group_resolution=1,clustering_method='max',
              clustalo_bin='', fasttree_bin='',fasttreemp_bin='', treecluster_bin='',

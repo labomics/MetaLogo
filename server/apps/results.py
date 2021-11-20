@@ -641,6 +641,8 @@ def trigger(nonsense,pathname,loaded_count):
     results_arr = ['',uid]
     status = get_status(uid)
     rq_failed,exc_info = check_failed(uid)
+    if exc_info is None:
+        exc_info = ''
 
        
 
@@ -670,6 +672,8 @@ def trigger(nonsense,pathname,loaded_count):
     err_info = ''
     if status in ['error','failed']:
         err_info = get_status(f"{uid}-errinfo")
+        if err_info is None:
+            err_info = ''
         if err_info == 'not found':
             err_info = ''
         err_info += ' ('+exc_info + ') '

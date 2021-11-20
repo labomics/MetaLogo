@@ -33,13 +33,19 @@ def compute_prob(groups,threshold=0):
     
     return probs
     
-def compute_bits(groups, probs, seq_type='dna'):
+def compute_bits(groups, probs, seq_type='dna',no_correction=False):
     bits = {}
     for gid,prob in probs.items():
         if seq_type.lower() in ['dna','rna']:
-            e = np.log2(4) - (4-1)/(np.log(2)*2*len(groups[gid]))
+            if no_correction:
+                e = np.log2(4) 
+            else:
+                e = np.log2(4) - (4-1)/(np.log(2)*2*len(groups[gid]))
         elif seq_type.lower() == 'aa':
-            e = np.log2(20) - (20-1)/(np.log(2)*2*len(groups[gid]))
+            if no_correction:
+                e = np.log2(20)
+            else:
+                e = np.log2(20) - (20-1)/(np.log(2)*2*len(groups[gid]))
         bit = [] 
         for i in range(len(prob)):
             h = 0

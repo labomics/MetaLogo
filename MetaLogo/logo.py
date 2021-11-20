@@ -221,12 +221,13 @@ class LogoGroup(Item):
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
-                 withtree = False,group_limit=20,
+                 withtree = False,group_limit=20, target_sequence = '',
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
         self.seq_file = seq_file
+        self.target_sequence = target_sequence
         self.group_order = group_order
         self.group_strategy = group_strategy
         self.group_resolution = float(group_resolution)
@@ -329,6 +330,15 @@ class LogoGroup(Item):
                                uid=self.uid,fa_output_dir=self.fa_output_dir,figure_output_dir=self.output_dir)
         
         self.raw_group_count = len(self.groups)
+
+        self.target_group = None
+        for grpid in self.groups:
+            for name,seq in self.groups[grpid]:
+                if name == self.target_sequence:
+                    self.target_group = grpid
+                    break
+            if self.target_group is not None:
+                break
 
         if self.group_strategy.lower() == 'identifier':
             for group_id in self.groups:
@@ -654,9 +664,13 @@ class LogoGroup(Item):
                     Zx += [[p1[0],p2[0],p3[0],p4[0]]]
                     Zy += [[p1[1],p2[1],p3[1],p4[1]]]
                     cluster_center[len(self.group_ids)+i] = [branch,p1[1]+(p4[1]-p1[1])/2]
-
+                
             for path_x,path_y in zip(Zx,Zy):
                 self.ax0.plot(path_x,path_y)
+
+            if self.target_group is not None:
+                target_y = intervals[self.group_ids.index(self.target_group)]
+                self.ax0.plot(0,target_y,'ro',color='red')
             
             self.ax0.invert_xaxis()
             self.ax0.spines['left'].set_visible(False)

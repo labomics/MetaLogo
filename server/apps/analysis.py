@@ -286,6 +286,7 @@ height_algorithm_dropdown = dbc.FormGroup(
             id="height_algorithm_dropdown",
             options=[
                 {"label": "Bits", "value": 'bits'},
+                {"label": "Bits without correction", "value": 'bits_without_correction'},
                 {"label": "Probabilities", "value": 'probabilities'}
             ],
             value='bits'
@@ -314,7 +315,7 @@ padding_align_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'}
             ],
-            value='No'
+            value='Yes'
         ),
         html.Span("Avaliable when grouping by length or identifier",style={'fontSize':'10px','color':'#ff6f00'})
     ]
@@ -1035,7 +1036,7 @@ def change_labels(logo_shape,height_algorithm):
             if logo_shape == 'Threed':
                 return 'Position','','Bits',['hideyticks']
         if example_id == 'height_algorithm_dropdown':
-            if height_algorithm == 'bits':
+            if height_algorithm in ['bits','bits_without_correction']:
                 return dash.no_update, 'Bits', dash.no_update, dash.no_update
             elif height_algorithm =='probabilities':
                 return dash.no_update, 'Probabilities', dash.no_update, dash.no_update

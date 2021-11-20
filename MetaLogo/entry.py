@@ -14,7 +14,19 @@ import toml
 
 def run_from_args(args):
     print('args: ', args)
-    seqs = read_file(args.seq_file, args.seq_file_type, args.min_length, args.max_length)
+
+    seq_dict,seqnames = read_file(args.seq_file, args.seq_file_type)
+
+    if len(seqnames) == 0:
+        print('No sequences detected')
+        return {'error':'No sequences detected'}
+    
+    if (len(seq_dict[seqnames[0]]) < args.min_length) or (len(seq_dict[seqnames[0]]) > args.max_length):
+        print('The first sequence not satisfied the length limit')
+        return {'error':'The first sequence not satisfied the length limit'}
+
+    seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>args.min_length) and (len(seq_dict[seqname])<args.max_length)]
+    target_sequence = ' ' .join(seqnames[0].split(' ')[:-1])
 
     if args.color_scheme_json_file is not None:
         with open(args.color_scheme_json_file) as jsinf:
@@ -43,7 +55,8 @@ def run_from_args(args):
                           seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttreemp_bin=args.fasttreemp_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
-                          withtree=args.withtree, group_limit = args.group_limit
+                          withtree=args.withtree, group_limit = args.group_limit,
+                          target_sequence = target_sequence
                           )
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
@@ -94,7 +107,20 @@ def run_from_config(config_file):
     config = toml.load(config_file)
     uid = config['uid']
     print(config)
-    seqs = read_file(config['seq_file'], config['seq_file_type'], config['min_length'], config['max_length'])
+    seq_dict,seqnames = read_file(config['seq_file'], config['seq_file_type'])#
+    if len(seqnames) == 0:
+        print('No sequences detected')
+        return {'error':'No sequences detected'}
+    min_len = int(config['min_length'])
+    max_len = int(config['max_length'])
+    if (len(seq_dict[seqnames[0]]) < min_len) or (len(seq_dict[seqnames[0]]) > max_len):
+        print('The first sequence not satisfied the length limit')
+        return {'error':'The first sequence not satisfied the length limit'}
+    seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])> min_len) and (len(seq_dict[seqname])< max_len)]
+
+    target_sequence = ' ' .join(seqnames[0].split(' ')[:-1])
+    config['target_sequence'] = target_sequence
+
     logogroup = LogoGroup(seqs, **config)
 
     if hasattr(logogroup,'error'):
@@ -178,7 +204,7 @@ def main():
     parser.add_argument('--color_scheme_json_file',type=str,help='The json file of color scheme',default=None)
 
     #align
-    parser.add_argument('--height_algorithm',type=str,help='The algorithm for character height',default='bits',choices=['bits','probabilities'])
+    parser.add_argument('--height_algorithm',type=str,help='The algorithm for character height',default='bits',choices=['bits','bits_without_correction','probabilities'])
 
     parser.add_argument('--align',action='store_true',dest='align', help='If show alignment of adjacent sequence logo')
     parser.add_argument('--padding_align',action='store_true',dest='padding_align', help='If padding logos to make multiple logo alignment')

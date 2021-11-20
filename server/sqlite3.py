@@ -24,5 +24,5 @@ def write_status(uid,status,db=SQLITE3_DB):
             if len(rows) == 1:
                 cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
             else:
-                cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}','{round(time.time())}',-1) ")
+                cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}',{round(time.time())},-1) ")
         connection.commit()
