@@ -138,9 +138,12 @@ def get_layout():
         [
             dbc.CardHeader("Sequence Logo",style={'fontWeight':'bold'}),
             dbc.CardBody([
+                    #html.Div([
+                    #    html.Img(id='logo_img',src='',style={"height":"100%","verticalAlign":"top"}),
+                    #], style={"height":"100%","overflowX":"scroll","whiteSpace":"nowrap","width":"100%"}),
                     html.Div([
-                        html.Img(id='logo_img',src='',style={"width":"100%","margin":"auto"}),
-                    ]),
+                        html.Img(id='logo_img',src='',style={"width":"100%","verticalAlign":"top"}),
+                    ], ),
 
                     html.Div('* The red dot on the tree indicates the group your target sequence (first sequence of your input) is in.',style={'fontSize':'10px','color':'#ff6f00'}),
                     html.Hr(),

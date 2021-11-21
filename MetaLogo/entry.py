@@ -56,7 +56,7 @@ def run_from_args(args):
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttreemp_bin=args.fasttreemp_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree, group_limit = args.group_limit,
-                          target_sequence = target_sequence
+                          target_sequence = target_sequence,auto_size=args.auto_size
                           )
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
@@ -254,6 +254,7 @@ def main():
 
     parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=10)
     parser.add_argument('--figure_size_y',type=float,help='The height of figure',default=10)
+    parser.add_argument('--auto_size',action='store_true',dest='auto_size',help='Let MetaLogo determine the size of figures')
 
     parser.add_argument('--align_color',type=str,help='The color of alignment',default='blue')
     parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default='0.2')

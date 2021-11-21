@@ -224,6 +224,7 @@ class LogoGroup(Item):
                  seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
                  withtree = False,group_limit=20, target_sequence = '',
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
+                 auto_size=True,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -299,6 +300,7 @@ class LogoGroup(Item):
         self.withtree = withtree
         
         self.group_limit = group_limit
+        self.auto_size = auto_size
 
 
         if sequence_type == 'auto':
@@ -934,7 +936,12 @@ class LogoGroup(Item):
 
     
     def set_figsize(self):
-        if self.figure_size_x != -1 and self.figure_size_y != -1:
+        if self.auto_size:
+            height =self.get_height()
+            width = self.get_width()
+            self.ax.get_figure().set_figheight(10)
+            self.ax.get_figure().set_figwidth(min(40,max(15,round((10/height)*width))))
+        elif self.figure_size_x != -1 and self.figure_size_y != -1:
             self.ax.get_figure().set_figwidth(self.figure_size_x)
             self.ax.get_figure().set_figheight(self.figure_size_y)
         else:

@@ -693,6 +693,19 @@ titlesize_input = dbc.FormGroup(
         dbc.Input(type="number", min=0,value=20,id="title_size"),
     ]
 )
+auto_size_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Auto figure size?", html_for="dropdown"),
+        dcc.Dropdown(
+            id="auto_size_dropdown",
+            options=[
+                {"label": "Yes", "value": 'Yes'},
+                {"label": "No", "value": 'No'}
+            ],
+            value='Yes'
+        ),
+    ]
+)
 
 
 idsize_input = dbc.FormGroup(
@@ -724,14 +737,15 @@ style_panel = dbc.Card(
         dbc.CardHeader("Step4. Set Output Style"),
         dbc.CardBody(
             [
+                dbc.Row([dbc.Col(title_input)]),
                 dbc.Row([
-                    dbc.Col(title_input),
+                    dbc.Col(titlesize_input),
                     dbc.Col(xlabel_input),
                     dbc.Col(ylabel_input),
                     dbc.Col(zlabel_input),
                 ]),
                 dbc.Row([
-                    dbc.Col(titlesize_input),
+                    dbc.Col(auto_size_dropdown),
                     dbc.Col(labelsize_input),
                     dbc.Col(ticksize_input),
                     dbc.Col(idsize_input),
@@ -825,7 +839,18 @@ layout = dbc.Container(children=[
         html.Div('',id='finished_item',style={'display':'none'})
        ])
 
-
+@app.callback(
+    [
+         Output('width_input','disabled'),
+         Output('height_input','disabled'),
+    ],
+    Input('auto_size_dropdown','value')
+)
+def disable_figsize(auto):
+    if auto=='Yes':
+        return True,True
+    else:
+        return False,False
 
 @app.callback(
     [
@@ -1120,6 +1145,7 @@ app.clientside_callback(
         Input('submit4', 'n_clicks')
     ],
     [
+        State('auto_size_dropdown','value'),
         State('group_limit','value'),
         State('connect_tree_dropdown','value'),
         State('grouping_resolution','value'),
@@ -1167,6 +1193,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            auto_size_dropdown,
             group_limit,
             connect_tree_dropdown,
             group_resolution,clustering_method,
@@ -1251,6 +1278,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     color_scheme['scheme_name'] = color_dropdown
 
     align = align_dropdown=='Yes'
+    auto_size = auto_size_dropdown=='Yes'
 
     hide_left,hide_right,hide_bottom,hide_top = [False]*4
     hide_x_ticks,hide_y_ticks,hide_z_ticks = [False]*3
@@ -1307,7 +1335,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           group_resolution=group_resolution,create_time=int(time.time()),
                           analysis=analysis,clustering_method=clustering_method,withtree=withtree,
                           clustalo_bin=CLUSTALO_BIN,fasttreemp_bin=FASTTREEMP_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN,
-                          group_limit=group_limit
+                          group_limit=group_limit,auto_size=auto_size,
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:
