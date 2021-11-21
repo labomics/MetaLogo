@@ -678,8 +678,9 @@ class LogoGroup(Item):
                 self.ax0.plot(path_x,path_y)
 
             if self.target_group is not None:
-                target_y = intervals[self.group_ids.index(self.target_group)]
-                self.ax0.plot(0,target_y,'ro',color='red')
+                if self.target_group in self.group_ids:
+                    target_y = intervals[self.group_ids.index(self.target_group)]
+                    self.ax0.plot(0,target_y,'ro',color='red')
             
             self.ax0.invert_xaxis()
             self.ax0.spines['left'].set_visible(False)
