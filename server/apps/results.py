@@ -140,6 +140,8 @@ def get_layout():
                     html.Div([
                         html.Img(id='logo_img',src='',style={"width":"100%","margin":"auto"}),
                     ]),
+
+                    html.Div('* The red dot on the tree indicates the group your target sequence (first sequence of your input) is in.',style={'fontSize':'10px','color':'#ff6f00'}),
                     html.Hr(),
                     dbc.Row(
                         [
@@ -174,7 +176,7 @@ def get_layout():
                     html.Div(
                         [
                          dbc.Button("Fast Re-Run", n_clicks=0,id='reset_resolution_btn',color='info'),
-                         html.Div('* Only for auto-grouping scenario'),
+                         html.Div('* Only for auto-grouping or global alignment scenario'),
                         ],style={'textAlign':'right','fontSize':'10px'})
              
             ])

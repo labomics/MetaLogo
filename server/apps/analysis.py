@@ -186,6 +186,7 @@ group_limit = dbc.FormGroup(
 seqinput_form = html.Div([
     html.Label([f'Paste sequences (<= {MAX_SEQ_LIMIT}  sequences) ',html.A("Load example1, ",href='#input_panel',id="load_example"),
                 html.A(" example2,",href='#input_panel',id="load_example2"), html.A(" example3",href='#input_panel',id="load_example3")]),
+    html.Div('*The first sequence of the input should be your target sequence, if you have one. MetaLogo will track the grouping position of the first sequence for you. ',style={'fontSize':'10px','color':'#ff6f00'}),
     dcc.Textarea(
         placeholder='Paste sequences in chosen input format',
         value='',
@@ -204,7 +205,6 @@ seqinput_form = html.Div([
         html.Span(' algorithm.'),
 
         ],style={'fontSize':'10px','color':'#ff6f00'}),    
-
     html.Label(f'Or upload a file (<={(MAX_INPUT_SIZE/1024)/1024}MB)'),
     html.Label('',id='uploaded_label2',style={"color":"orange"}),
     html.Label('',id='uploaded_label',style={"color":"#11FF00"}),
