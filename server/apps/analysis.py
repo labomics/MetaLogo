@@ -152,7 +152,7 @@ grouping_resolution = dbc.FormGroup(
 max_len_input = dbc.FormGroup(
     [
         dbc.Label("Maximum Length",html_for='input'),
-        dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=20, id="max_len_input"),
+        dbc.Input(type="number", min=0, max=MAX_SEQ_LEN, step=1, value=100, id="max_len_input"),
     ]
 )
 
