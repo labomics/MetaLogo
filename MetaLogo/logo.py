@@ -938,10 +938,14 @@ class LogoGroup(Item):
     
     def set_figsize(self):
         if self.auto_size:
-            height =self.get_height()
-            width = self.get_width()
-            self.ax.get_figure().set_figheight(10)
-            self.ax.get_figure().set_figwidth(min(40,max(15,round((10/height)*width))))
+            if self.logo_type == 'Circle':
+                self.ax.get_figure().set_figheight(10)
+                self.ax.get_figure().set_figwidth(10)
+            else:
+                height =self.get_height()
+                width = self.get_width()
+                self.ax.get_figure().set_figheight(10)
+                self.ax.get_figure().set_figwidth(min(40,max(15,round((10/height)*width))))
         elif self.figure_size_x != -1 and self.figure_size_y != -1:
             self.ax.get_figure().set_figwidth(self.figure_size_x)
             self.ax.get_figure().set_figheight(self.figure_size_y)
