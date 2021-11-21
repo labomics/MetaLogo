@@ -87,6 +87,7 @@ def get_layout():
 
     task_info_panel = dbc.Card(
         [
+            html.Div('Please save the link of this page for future use. MetaLogo will keep it for at least 7 days.',style={'fontWeight':'bold','color':'#576ef2','background':'#568af13b'}),
             dbc.CardHeader("Task info and parameters",style={'fontWeight':'bold'}),
             dbc.CardBody(
                 [
