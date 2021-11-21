@@ -1013,7 +1013,7 @@ class LogoGroup(Item):
         ent_df = ent_df.replace('-',0)
         ent_df = ent_df.fillna(0)
 
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(figsize=(18,6))
         im = ax.imshow(ent_df)
         cbar = ax.figure.colorbar(im, ax=ax,orientation='horizontal')
         cbar.ax.set_xlabel('Entropy')
@@ -1035,7 +1035,7 @@ class LogoGroup(Item):
         ax.set_xticks(np.arange(ent_df.columns.size))
         ax.set_yticks(np.arange(len(self.group_ids)))
         ax.set_yticklabels(self.group_ids)
-        ax.set_xticklabels(np.arange(ent_df.columns.size))
+        ax.set_xticklabels(np.arange(ent_df.columns.size),rotation=90)
         ax.set_xlabel('Position')
         ax.set_ylabel('Group')
         ax.set_title('Entropy Heatmap')

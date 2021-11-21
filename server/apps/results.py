@@ -208,7 +208,7 @@ def get_layout():
                             html.Span('Figure 2. Entropies of each position. ("X"s mean gaps)')
                     )),
                     dbc.Row([
-                        html.Img(id='entropy_img_res',src='',style={"margin":"auto"}),
+                        html.Img(id='entropy_img_res',src='',style={"margin":"auto","width":"100%"}),
                         ]),
                     html.Hr(),
                     dbc.Row(
