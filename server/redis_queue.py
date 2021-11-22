@@ -29,12 +29,14 @@ def report_success(job,connection,result,*args,**kwargs):
     print('args: ', job.args)
 
 
-def check_failed(job_id):
+def check_queue_status(job_id):
+    #return if_found, is_failed, exc_info
+    ret = []
     redis_conn = Redis()
     q  = Queue(connection=redis_conn)
     job = q.fetch_job(job_id)
     if job is not None:
-        return job.is_failed,job.exc_info
+        return True,job.is_failed,job.exc_info
     else:
-        return True,''
+        return False,False,''
 

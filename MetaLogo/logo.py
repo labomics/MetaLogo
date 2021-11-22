@@ -938,7 +938,7 @@ class LogoGroup(Item):
     
     def set_figsize(self):
         if self.auto_size:
-            if self.logo_type == 'Circle':
+            if self.logo_type in ['Circle','Radiation','Threed']:
                 self.ax.get_figure().set_figheight(10)
                 self.ax.get_figure().set_figwidth(10)
             else:
@@ -950,12 +950,13 @@ class LogoGroup(Item):
             self.ax.get_figure().set_figwidth(self.figure_size_x)
             self.ax.get_figure().set_figheight(self.figure_size_y)
         else:
-            if self.logo_type == 'Circle':
-                self.ax.get_figure().set_figheight(10)
-                self.ax.get_figure().set_figwidth(10)
             if self.logo_type == 'Horizontal':
                 self.ax.get_figure().set_figheight(6)
                 self.ax.get_figure().set_figwidth(12)
+            else:
+                self.ax.get_figure().set_figheight(10)
+                self.ax.get_figure().set_figwidth(10)
+
     
 
     def get_entropy(self):

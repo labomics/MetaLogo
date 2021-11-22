@@ -196,7 +196,7 @@ seqinput_form = html.Div([
         persistence='true'
     ),  
     html.Div([
-        html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains >=2 DNA sequences or >=7 protein sequences if you choose '),
+        html.Span('* Because of small-sample correction, make sure each group (grouping by length or others) contains sufficient DNA or protein sequences if you choose '),
         html.Span('Bits ', style={'fontStyle':'italic'}),
         html.Span('as height algorithm (Default) rather than '),
         html.Span('Probabilities.', style={'fontStyle':'italic'}),

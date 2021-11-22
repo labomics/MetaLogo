@@ -17,12 +17,12 @@ import math
 from ..app import app
 from ..config import PNG_PATH,CONFIG_PATH,SQLITE3_DB,FA_PATH,GROUP_LIMIT,MAX_SEQ_LEN
 from ..utils import get_img_src
-from ..sqlite3 import get_status
-from ..redis_queue import enqueue,check_failed
+from ..sqlite3 import get_finished_time, get_status
+from ..redis_queue import check_queue_status, enqueue
 
 from dash.exceptions import PreventUpdate
 import base64
-import datetime
+import datetime,time
 import re
 import pandas as pd
 
@@ -646,7 +646,7 @@ def trigger(nonsense,pathname,loaded_count):
 
     results_arr = ['',uid]
     status = get_status(uid)
-    rq_failed,exc_info = check_failed(uid)
+    rq_found,rq_failed,exc_info = check_queue_status(uid)
     if exc_info is None:
         exc_info = ''
 
@@ -667,7 +667,12 @@ def trigger(nonsense,pathname,loaded_count):
             LOADED = True
             results_arr += [{'display':'none'},{'display':'none'},{},{'display':'none'},'']
         elif status == 'finished':
-            results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{},'']
+            finished_time = get_finished_time(uid)
+            if finished_time - time.time() > 7 * 24 * 60 * 60:
+                results_arr += [{},{'display':'none'},{'display':'none'},{'display':'none'},'']
+                status = 'not found'
+            else:
+                results_arr += [{'display':'none'},{'display':'none'},{'display':'none'},{},'']
             LOADED = True
         else:
             LOADED = True

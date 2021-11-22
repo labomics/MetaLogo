@@ -16,13 +16,36 @@ def get_status(uid):
             else:
                 return 'not found'
 
+def get_create_time(uid):
+    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
+        with closing(connection.cursor()) as cursor:
+            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
+            rows = cursor.execute(f"SELECT uid, created FROM metalogo_server WHERE uid = '{uid}'").fetchall()
+            if len(rows) == 1:
+                return rows[0][1]
+            else:
+                return -1
+
+def get_finished_time(uid):
+    with closing(sqlite3.connect(SQLITE3_DB)) as connection:
+        with closing(connection.cursor()) as cursor:
+            cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
+            rows = cursor.execute(f"SELECT uid, finished FROM metalogo_server WHERE uid = '{uid}'").fetchall()
+            if len(rows) == 1:
+                return rows[0][1]
+            else:
+                return -1
+
 def write_status(uid,status,db=SQLITE3_DB):
     with closing(sqlite3.connect(db)) as connection:
         with closing(connection.cursor()) as cursor:
             cursor.execute("create table if not exists metalogo_server (uid TEXT primary key, status TEXT, created INTEGER, finished INTEGER )")
             rows = cursor.execute(f"SELECT uid, status FROM metalogo_server WHERE uid = '{uid}'").fetchall()
             if len(rows) == 1:
-                cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
+                if status == 'finished':
+                    cursor.execute(f"UPDATE metalogo_server SET status = '{status}', finished = {round(time.time())} where uid = '{uid}' ")
+                else:
+                    cursor.execute(f"UPDATE metalogo_server SET status = '{status}' where uid = '{uid}' ")
             else:
                 cursor.execute(f"INSERT INTO metalogo_server VALUES ('{uid}','{status}',{round(time.time())},-1) ")
         connection.commit()
