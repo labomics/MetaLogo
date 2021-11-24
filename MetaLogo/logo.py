@@ -34,6 +34,8 @@ import os
 from scipy.spatial import distance
 from scipy.cluster import hierarchy
 from scipy.cluster.hierarchy import dendrogram, linkage
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 
 from .utils import grouping,detect_seq_type
@@ -229,7 +231,7 @@ class LogoGroup(Item):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
         self.seq_file = seq_file
-        self.target_sequence_name = target_sequence_name
+        self.target_sequence_name = target_sequence
         self.target_sequence_content = None
         self.group_order = group_order
         self.group_strategy = group_strategy
@@ -1028,9 +1030,12 @@ class LogoGroup(Item):
         ent_df = ent_df.replace('-',0)
         ent_df = ent_df.fillna(0)
 
-        fig,ax = plt.subplots(figsize=(18,6))
+        fig,ax = plt.subplots(figsize=(8,6))
         im = ax.imshow(ent_df)
-        cbar = ax.figure.colorbar(im, ax=ax,orientation='horizontal')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.1)
+
+        cbar = ax.figure.colorbar(im, ax=ax,orientation='vertical',cax=cax)
         cbar.ax.set_xlabel('Entropy')
 
         kw = dict(horizontalalignment="center",
