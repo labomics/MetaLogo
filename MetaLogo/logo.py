@@ -229,7 +229,8 @@ class LogoGroup(Item):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
         self.seq_file = seq_file
-        self.target_sequence = target_sequence
+        self.target_sequence_name = target_sequence_name
+        self.target_sequence_content = None
         self.group_order = group_order
         self.group_strategy = group_strategy
         self.group_resolution = float(group_resolution)
@@ -337,8 +338,9 @@ class LogoGroup(Item):
         self.target_group = None
         for grpid in self.groups:
             for name,seq in self.groups[grpid]:
-                if name == self.target_sequence:
+                if name == self.target_sequence_name:
                     self.target_group = grpid
+                    self.target_sequence_content = seq
                     break
             if self.target_group is not None:
                 break
@@ -1136,3 +1138,9 @@ class LogoGroup(Item):
         ax.set_title('Sequence lengths distribution')
 
         return ax
+    
+
+    #To do
+    #def get_target_consist_score(self):
+    #    if (self.target_group is not None) and (self.target_sequence_content is  not None):
+
