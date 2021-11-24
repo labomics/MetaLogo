@@ -369,7 +369,7 @@ style_submit =  html.Div(
 )
 
 algorithm_panel = dbc.Card([
-    dbc.CardHeader("Step2. Choose Algorithm"),
+    dbc.CardHeader("Step2. Logo Alignment Algorithm"),
     dbc.CardBody([
         dbc.Row([
             dbc.Col(height_algorithm_dropdown),
