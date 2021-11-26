@@ -223,7 +223,7 @@ class LogoGroup(Item):
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
-                 seq_file = '', fa_output_dir = '', output_dir = '', uid = '',
+                 seq_file = '', fa_output_dir = '.', output_dir = '.', uid = '',
                  withtree = False,group_limit=20, target_sequence = '',
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
                  auto_size=True,
@@ -310,7 +310,10 @@ class LogoGroup(Item):
             self.sequence_type = detect_seq_type(self.seqs)
         else:
             self.sequence_type = sequence_type
-
+        
+        self.check_dep()
+        if hasattr(self,'error'):
+            return
 
         self.logos = []
 
@@ -328,6 +331,24 @@ class LogoGroup(Item):
 
 
         self.generate_components()
+    
+    def check_dep(self):
+        if not os.path.exists(self.clustalo_bin): 
+            err = 'Clustal omega not found'
+            print(err)
+            self.error = err
+        elif not os.path.exists(self.fasttree_bin):
+            err = 'FastTree not found'
+            print(err)
+            self.error = err
+        elif not os.path.exists(self.fasttreemp_bin):
+            err = 'FastTreeMP not found'
+            print(err)
+            self.error = err
+        else:
+            pass
+        return
+
     
     def prepare_bits(self):
         self.groups = grouping(self.seqs,seq_file=self.seq_file,sequence_type=self.sequence_type,group_by=self.group_strategy,
@@ -1023,12 +1044,14 @@ class LogoGroup(Item):
 
     def get_entropy_figure(self):
 
-        ents = self.get_entropy()
+        ents = self.get_entropy()[::-1]
 
 
         ent_df = pd.DataFrame(ents)
         ent_df = ent_df.replace('-',0)
         ent_df = ent_df.fillna(0)
+
+        #ent_df = ent_df.loc[ent_df.index[::-1]]
 
         fig,ax = plt.subplots(figsize=(8,6))
         im = ax.imshow(ent_df)
@@ -1054,7 +1077,7 @@ class LogoGroup(Item):
 
         ax.set_xticks(np.arange(ent_df.columns.size))
         ax.set_yticks(np.arange(len(self.group_ids)))
-        ax.set_yticklabels(self.group_ids)
+        ax.set_yticklabels(self.group_ids[::-1])
         ax.set_xticklabels(np.arange(ent_df.columns.size),rotation=90)
         ax.set_xlabel('Position')
         ax.set_ylabel('Group')

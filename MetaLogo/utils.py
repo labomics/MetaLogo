@@ -53,8 +53,8 @@ def read_file(filename, filetype):
 
 def grouping(seqs,seq_file='',sequence_type='aa',group_by='length',group_resolution=1,clustering_method='max',
              clustalo_bin='', fasttree_bin='',fasttreemp_bin='', treecluster_bin='',
-             uid='',fa_output_dir='',figure_output_dir=''):
-
+             uid='',fa_output_dir='.',figure_output_dir='.'):
+    
     groups_dict = {}
     if group_by.lower() == 'length':
         for name,seq in seqs:

@@ -14,6 +14,11 @@ import toml
 
 def run_from_args(args):
     print('args: ', args)
+    print('-----------------')
+    print(f'uid: {args.uid}')
+
+    os.makedirs(args.output_dir,exist_ok=True)
+    os.makedirs(args.fa_output_dir,exist_ok=True)
 
     seq_dict,seqnames = read_file(args.seq_file, args.seq_file_type)
 
@@ -31,10 +36,11 @@ def run_from_args(args):
     if args.color_scheme_json_file is not None:
         with open(args.color_scheme_json_file) as jsinf:
             color_scheme = json.load(jsinf)
-    elif args.color_scheme_json_string is not None:
-        color_scheme = json.loads(args.color_scheme_json_string)
+    elif args.color_scheme_json_str is not None:
+        color_scheme = json.loads(args.color_scheme_json_str)
     else:
         color_scheme = get_color_scheme(args.color_scheme)
+
     logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
                           align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
                           color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
@@ -52,7 +58,7 @@ def run_from_args(args):
                           hide_version_tag=args.hide_version_tag,
                           sequence_type = args.sequence_type,
                           height_algorithm=args.height_algorithm,
-                          seq_file=args.seq_file, fa_output_dir=args.fa_output_dir,uid=args.uid,
+                          seq_file=args.seq_file, output_dir=args.output_dir,fa_output_dir=args.fa_output_dir,uid=args.uid,
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttreemp_bin=args.fasttreemp_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree, group_limit = args.group_limit,
@@ -61,6 +67,7 @@ def run_from_args(args):
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
         return {'error':logogroup.error}
+    
 
     logogroup.draw()
     logogroup.savefig(f'{args.output_dir}/{args.output_name}')
@@ -105,8 +112,15 @@ def run_from_args(args):
 def run_from_config(config_file):
 
     config = toml.load(config_file)
-    uid = config['uid']
     print(config)
+    print('-----------------')
+
+    uid = config['uid']
+    print('uid: ', uid)
+
+    os.makedirs(config['output_dir'],exist_ok=True)
+    os.makedirs(config['fa_output_dir'],exist_ok=True)
+
     seq_dict,seqnames = read_file(config['seq_file'], config['seq_file_type'])#
     if len(seqnames) == 0:
         print('No sequences detected')
@@ -191,9 +205,9 @@ def main():
     parser.add_argument('--max_length',type=int,help='The maximum length of sequences to be included',default=20)
 
     #group
-    parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['length','identifier'],default='length')
+    parser.add_argument('--group_strategy',type=str,help='The strategy to separate sequences into groups',choices=['auto','length','identifier'],default='auto')
     parser.add_argument('--clustering_method',type=str,help='The method for tree clustering',default='max')
-    parser.add_argument('--group_resolution',type=float,help='The resolution for sequence grouping',default=0)
+    parser.add_argument('--group_resolution',type=float,help='The resolution for sequence grouping',default=0.5)
     parser.add_argument('--group_limit',type=int,help='The limit for group number',default=20)
 
     #sort
@@ -252,7 +266,7 @@ def main():
     parser.add_argument('--tick_size',type=int,help='The size of figure ticks',default=10)
     parser.add_argument('--group_id_size',type=int,help='The size of group labels',default=10)
 
-    parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=10)
+    parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=20)
     parser.add_argument('--figure_size_y',type=float,help='The height of figure',default=10)
     parser.add_argument('--auto_size',action='store_true',dest='auto_size',help='Let MetaLogo determine the size of figures')
 
@@ -260,9 +274,9 @@ def main():
     parser.add_argument('--align_alpha',type=float,help='The transparency of alignment',default='0.2')
 
     #output 
-    parser.add_argument('--output_dir',type=str,help='Output path of figure',default='.')
+    parser.add_argument('--output_dir',type=str,help='Output path of figure',default='figure_output')
     parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
-    parser.add_argument('--fa_output_dir',type=str,help='Output path of fas',default='./sequence_inputs/')
+    parser.add_argument('--fa_output_dir',type=str,help='Output path of fas',default='sequence_input')
     parser.add_argument('--uid',type=str,help='Task id',default=str(uuid.uuid4()))
 
     parser.add_argument('--logo_format',type=str,help='The format of figures',choices=['png','pdf'],default='png')
@@ -271,17 +285,20 @@ def main():
     parser.add_argument('--analysis',action='store_true',dest='analysis',help='If perform basic analysis on data')
 
     #software
-    parser.add_argument('--clustalo_bin',type=str,help='The path of clustalo bin ',default='')
-    parser.add_argument('--fasttree_bin',type=str,help='The path of fasttree bin ',default='')
-    parser.add_argument('--fasttreemp_bin',type=str,help='The path of fasttreeMP bin ',default='')
-    parser.add_argument('--treecluster_bin',type=str,help='The path of treecluster bin ',default='')
+    parser.add_argument('--clustalo_bin',type=str,help='The path of clustalo bin ',default='dependencies/clustalo')
+    parser.add_argument('--fasttree_bin',type=str,help='The path of fasttree bin ',default='dependencies/FastTree')
+    parser.add_argument('--fasttreemp_bin',type=str,help='The path of fasttreeMP bin ',default='dependencies/FastTreeMP')
+    parser.add_argument('--treecluster_bin',type=str,help='The path of treecluster bin ',default='TreeCluster.py')
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
 
     args = parser.parse_args()
 
+
     if args.config is not None:
         run_from_config(args.config)
+    else:
+        run_from_args(args)
 
 
 if __name__ == '__main__':
