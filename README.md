@@ -2,7 +2,7 @@
 
 ## Introduction
 
-MetaLogo is a tool for making sequence logos. Unlike other sequence logo tools, MetaLogo allows you to input sequences with different lengths or from different groups, then it can plot multiple sequence logos in one figure and align the logos to highlight the conserved patterns among different sequence groups.
+**MetaLogo** is a tool for making sequence logos. It can take multiple sequences as input, automatically identify the homogeneity and heterogeneity among sequences and cluster them into different groups given any wanted resolution, finally output multiple aligned sequence logos in one figure. Grouping can also be specified by users, such as grouping by lengths, grouping by sample Id, etc.  Compared to conventional sequence logo generator, MetaLogo can display the total sequence population in a more detailed, dynamic and informative view.
 
 To use MetaLogo, you could visit our public webserver http://metalogo.omicsnet.org. You could also install MetaLogo as a python package to using MetaLogo in your python scripts or in your OS terminal. If you want to provide MetaLogo to people in your local network, you could also setup a webserver by using docker.
 
