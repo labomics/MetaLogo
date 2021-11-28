@@ -8,7 +8,7 @@ To use MetaLogo, you could visit our public webserver http://metalogo.omicsnet.o
 
 Please check the [tutorial](https://github.com/labomics/MetaLogo/wiki) for deWeb-servertailed usage of MetaLogo package and webserver.
 
-![Introduction](./pngs/introduction.PNG)
+![Introduction](./pngs/about.PNG)
 
 ## Install
 
