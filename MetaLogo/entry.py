@@ -150,29 +150,46 @@ def run_from_config(config_file):
         logogroup.savefig(f"{config['output_dir']}/{uid}.png")
         print(f"{config['output_dir']}/{uid}.png', ' saved")
     
+    
 
     if config['analysis']:
+        format = 'png'
+        if 'analysis_format' in config:
+            format = config['analysis_format']
 
         fig = logogroup.get_grp_counts_figure().figure
         if fig:
             count_name = f"{config['output_dir']}/{uid}.counts.png"
             fig.savefig(count_name,bbox_inches='tight')
+            if format != 'png':
+                count_name = f"{config['output_dir']}/{uid}.counts.{format}"
+                fig.savefig(count_name,bbox_inches='tight')
             plt.close(fig)
 
         fig = logogroup.get_seq_lengths_dist().figure
         lengths_name = f"{config['output_dir']}/{uid}.lengths.png"
         fig.savefig(lengths_name,bbox_inches='tight')
+        if format != 'png':
+            lengths_name = f"{config['output_dir']}/{uid}.lengths.{format}"
+            fig.savefig(lengths_name,bbox_inches='tight')
         plt.close(fig)
 
 
         fig = logogroup.get_entropy_figure()
         entropy_name = f"{config['output_dir']}/{uid}.entropy.png"
         fig.savefig(entropy_name,bbox_inches='tight')
+        if format != 'png':
+            entropy_name = f"{config['output_dir']}/{uid}.entropy.{format}"
+            fig.savefig(entropy_name,bbox_inches='tight')
         plt.close(fig)
 
         boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.png"
         fig = logogroup.get_boxplot_entropy_figure().figure
         fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+        if format != 'png':
+            boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.{format}"
+            fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+
         plt.close(fig)
 
         if config['padding_align'] or config['group_strategy']=='auto':
@@ -180,6 +197,9 @@ def run_from_config(config_file):
             fig = logogroup.get_correlation_figure()
             if fig:
                 fig.savefig(clustermap_name,bbox_inches='tight')
+                if format != 'png':
+                    clustermap_name = f"{config['output_dir']}/{uid}.clustermap.{format}"
+                    fig.savefig(clustermap_name,bbox_inches='tight')
     
     return None
 

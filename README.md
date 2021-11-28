@@ -23,39 +23,31 @@ Then, you can install MetaLogo using following commands:
     $cd MetaLogo
     $pip install .
 
-If succeed, you can run metalogo directly:
+If succeed, you can run MetaLogo directly:
 
     $metalogo -h
 
 If you want to using MetaLogo in your scripts, it is also very easy:
 
     from MetaLogo import logo
-    sequences = [['seq1','ATACAGATACAC'],['seq2','ATACAGAGACAGAC']]
-    lg = logo.LogoGroup(sequences,height_algorithm='probabilities')
+    sequences = [['seq1','ATACAGATACACATCACAG'],['seq2','ATACAGAGATACCAACAGAC'],['seq3','ATACAGAGTTACCCACGGAC']]
+
+    bin_args = {
+        'clustalo_bin':'../MetaLogo/dependencies/clustalo',
+        'fasttree_bin':'../MetaLogo/dependencies/FastTree',
+        'fasttreemp_bin':'../MetaLogo/dependencies/FastTreeMP',
+        }
+
+    lg = logo.LogoGroup(sequences,height_algorithm='probabilities',group_strategy='length', **args)
     lg.draw()
-    lg.savefig('output.png')
+
+Note that the paths of clustal omega and fasttree bins should be given to MetaLogo, which are required for grouping.
 
 MetaLogo also provide webserver to draw sequence logos without coding. For server setup, you need to install the required packages first.
 
     $pip install .[webserver]
 
-Then you could run a development Dash webserver with Debug mode on:
-    $cd ..
-    $cat MetaLogo/server.dev.sh
-     python -m MetaLogo.server.main
-    $sh MetaLogo/server.dev.sh
-     Dash is running on http://127.0.0.1:8050/
-     * Serving Flask app 'main' (lazy loading)
-     * Environment: production
-     WARNING: This is a development server. Do not use it in a production deployment.
-     Use a production WSGI server instead.
-     * Debug mode: on
-
-A MetaLogo webserver will be like:
-    
-![Webserver](./pngs/server.PNG)
-
-For a production server, you can build a docker container to provide the service:
+You need to start the redis server and the redis queue service. We recommend that you can build a docker container to provide the service:
 
     $cat MetaLogo/server.docker.sh
      docker build -t metalogo:v1 .
@@ -74,7 +66,7 @@ More detailed instructions please check the [tutorial](https://github.com/labomi
 
 MetaLogo is currently in submission. Please remember to cite our work after MetaLogo get published.
 
-Currently you can get a [preprint version of our manuscript](https://www.biorxiv.org/content/10.1101/2021.08.12.456038v1).
+Currently you can get a [preprint version of our manuscript](https://www.biorxiv.org/content/10.1101/2021.08.12.456038v3).
 
     MetaLogo: a generator and aligner for multiple sequence logos
     Yaowen Chen, Zhen He, Yahui Men, Guohua Dong, Shuofeng Hu, Xiaomin Ying
