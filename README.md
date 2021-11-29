@@ -47,7 +47,7 @@ MetaLogo also provide webserver to draw sequence logos without coding. For serve
 
     $pip install .[webserver]
 
-You need to start a redis server and the redis queue servic before running the MetaLogo server locally (see [tutorial](https://github.com/labomics/MetaLogo/wiki)). We recommend that you can build a docker container to provide the service:
+You need to start a redis server and the redis queue servic before running the MetaLogo server locally (see [tutorial](https://github.com/labomics/MetaLogo/wiki/Install)). We recommend that you can build a docker container to provide the service:
 
     $cat MetaLogo/server.docker.sh
      docker build -t metalogo:v1 .
