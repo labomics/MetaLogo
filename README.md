@@ -19,7 +19,7 @@ Before you install MetaLogo, you could first set up a virtual environment for Me
 
 Then, you can install MetaLogo using following commands:
 
-    $git clone https://github.com/labomics/MetaLogo .
+    $git clone https://github.com/labomics/MetaLogo 
     $cd MetaLogo
     $pip install .
 

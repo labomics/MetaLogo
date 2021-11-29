@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys
 import os
-from typing_extensions import IntVar
 
 from matplotlib import transforms
 from matplotlib.colors import get_named_colors_mapping
