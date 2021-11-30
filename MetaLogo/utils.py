@@ -28,6 +28,8 @@ def read_file(filename, filetype):
         with open(filename,'r') as inpf:
             for line in inpf:
                 line = line.strip()
+                if len(line)==0:
+                    continue
                 if line[0] == '>':
                     ith += 1
                     seqname = f'{line[1:]} {ith}'
@@ -39,6 +41,8 @@ def read_file(filename, filetype):
             num = -1
             for line in inpf:
                 line = line.strip()
+                if len(line)==0:
+                    continue
                 num += 1
                 if num%4 == 0:
                     assert line[0] == '@'
