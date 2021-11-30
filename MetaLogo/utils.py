@@ -36,7 +36,7 @@ def read_file(filename, filetype):
                     seqnames.append(seqname)
                 else:
                     seq_dict[seqname]  = seq_dict.get(seqname,'') + line.upper()
-    elif filetype.lower() == ['fastq','fq']:
+    elif filetype.lower() in ['fastq','fq']:
         with open(filename,'r') as inpf:
             num = -1
             for line in inpf:

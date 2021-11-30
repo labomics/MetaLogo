@@ -11,6 +11,7 @@ from matplotlib.patches import Circle
 from pandas.core import algorithms
 from scipy import cluster
 
+from .utils import read_file,save_seqs
 from .character import Character
 from .column import Column
 from .item import Item
@@ -210,7 +211,7 @@ class Logo(Item):
 
 class LogoGroup(Item):
     def __init__(self,  seqs, ax=None, group_order='length', group_strategy='length', group_resolution=0.5,
-                 clustering_method = 'max',
+                 clustering_method = 'max', min_length = 0, max_length = 100,
                  start_pos = (0,0), logo_type = 'Horizontal', init_radius=1, 
                  logo_margin_ratio = 0.1, column_margin_ratio = 0.05, char_margin_ratio = 0.05,
                  align = True, align_metric='sort_consistency', connect_threshold=0.8, 
@@ -222,15 +223,18 @@ class LogoGroup(Item):
                  title_size=20, label_size=10, tick_size=10, group_id_size=10,align_color='blue',align_alpha=0.1,
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
-                 seq_file = '', fa_output_dir = '.', output_dir = '.', uid = '',
-                 withtree = False,group_limit=20, target_sequence = '',
+                 seq_file = '', seq_file_type = 'fasta', fa_output_dir = '.', output_dir = '.', uid = '',
+                 withtree = False,group_limit=20, target_sequence_name = '',
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
                  auto_size=True,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
         self.seq_file = seq_file
-        self.target_sequence_name = target_sequence
+        self.seq_file_type = seq_file_type
+        self.min_length = 0
+        self.max_length = 100
+        self.target_sequence_name = target_sequence_name
         self.target_sequence_content = None
         self.group_order = group_order
         self.group_strategy = group_strategy
@@ -304,6 +308,50 @@ class LogoGroup(Item):
         self.group_limit = group_limit
         self.auto_size = auto_size
 
+        if (self.seqs is None) and (not os.path.exists(self.seq_file)):
+            print('No sequences provided')
+            self.error = 'No sequences detected'
+            return
+
+        if (self.seqs is None) and os.path.exists(self.seq_file):
+            seq_dict,seqnames = read_file(self.seq_file, self.seq_file_type)
+
+            if len(seqnames) == 0:
+                print('No sequences detected')
+                self.error = 'No sequences detected'
+                return
+
+            if (len(seq_dict[seqnames[0]]) < self.min_length) or (len(seq_dict[seqnames[0]]) > self.max_length):
+                print('The first sequence not satisfied the length limit')
+                self.error = 'The first sequence not satisfied the length limit'
+                return
+
+            seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>self.min_length) and (len(seq_dict[seqname])<self.max_length)]
+            target_sequence_name = ' ' .join(seqnames[0].split(' ')[:-1])
+
+            if len(seqs) == 0:
+                print('No sequences left after length filter')
+                self.error = 'No sequences left after length filter'
+                return
+            
+            self.seqs = seqs
+            if self.target_sequence_name == '':
+                self.target_sequence_name = target_sequence_name
+        
+        if self.seqs is not None:
+            if self.target_sequence_name == '':
+                self.target_sequence_name = self.seqs[0][0]
+        
+        if self.seqs is not None:
+            if not os.path.exists(self.seq_file):
+                if self.seq_file != '':
+                    save_seqs(self.seqs,self.seq_file)
+                else:
+                    save_seqs(self.seqs,f'{self.fa_output_dir}/server.{self.uid}.fasta')
+
+        if self.seq_file_type.lower() in ['fastq','fq']:
+            save_seqs(self.seqs,f'{self.fa_output_dir}/server.{self.uid}.fasta')
+            self.seq_file = f'server.{self.uid}.fasta'
 
         if sequence_type == 'auto':
             self.sequence_type = detect_seq_type(self.seqs)

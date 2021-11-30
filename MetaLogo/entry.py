@@ -20,19 +20,6 @@ def run_from_args(args):
     os.makedirs(args.output_dir,exist_ok=True)
     os.makedirs(args.fa_output_dir,exist_ok=True)
 
-    seq_dict,seqnames = read_file(args.seq_file, args.seq_file_type)
-
-    if len(seqnames) == 0:
-        print('No sequences detected')
-        return {'error':'No sequences detected'}
-    
-    if (len(seq_dict[seqnames[0]]) < args.min_length) or (len(seq_dict[seqnames[0]]) > args.max_length):
-        print('The first sequence not satisfied the length limit')
-        return {'error':'The first sequence not satisfied the length limit'}
-
-    seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>args.min_length) and (len(seq_dict[seqname])<args.max_length)]
-    target_sequence = ' ' .join(seqnames[0].split(' ')[:-1])
-
     if args.color_scheme_json_file is not None:
         with open(args.color_scheme_json_file) as jsinf:
             color_scheme = json.load(jsinf)
@@ -41,7 +28,8 @@ def run_from_args(args):
     else:
         color_scheme = get_color_scheme(args.color_scheme)
 
-    logogroup = LogoGroup(seqs, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
+    logogroup = LogoGroup(seqs=None, group_order = args.group_order, logo_type = args.type, group_strategy = args.group_strategy,
+                          min_length = args.min_length, max_length = args.max_length, seq_file_type=args.seq_file_type,
                           align=args.align, align_metric=args.align_metric, connect_threshold = args.connect_threshold,
                           color=color_scheme, task_name=args.task_name, hide_left_axis = args.hide_left_axis,
                           hide_right_axis = args.hide_right_axis, hide_bottom_axis = args.hide_bottom_axis,
@@ -62,7 +50,7 @@ def run_from_args(args):
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttreemp_bin=args.fasttreemp_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree, group_limit = args.group_limit,
-                          target_sequence = target_sequence,auto_size=args.auto_size
+                          auto_size=args.auto_size
                           )
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
@@ -121,21 +109,7 @@ def run_from_config(config_file):
     os.makedirs(config['output_dir'],exist_ok=True)
     os.makedirs(config['fa_output_dir'],exist_ok=True)
 
-    seq_dict,seqnames = read_file(config['seq_file'], config['seq_file_type'])#
-    if len(seqnames) == 0:
-        print('No sequences detected')
-        return {'error':'No sequences detected'}
-    min_len = int(config['min_length'])
-    max_len = int(config['max_length'])
-    if (len(seq_dict[seqnames[0]]) < min_len) or (len(seq_dict[seqnames[0]]) > max_len):
-        print('The first sequence not satisfied the length limit')
-        return {'error':'The first sequence not satisfied the length limit'}
-    seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])> min_len) and (len(seq_dict[seqname])< max_len)]
-
-    target_sequence = ' ' .join(seqnames[0].split(' ')[:-1])
-    config['target_sequence'] = target_sequence
-
-    logogroup = LogoGroup(seqs, **config)
+    logogroup = LogoGroup(seqs=None, **config)
 
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
