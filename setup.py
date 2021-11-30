@@ -36,15 +36,15 @@ Please check the tutorial for detailed usage of MetaLogo package and webserver (
       ],
       extras_require={
           'webserver': [
-              'dash>=1.21.0',
-              'dash-bio>=0.8.0',
-              'dash-bootstrap-components>=0.12.2',
-              'Flask>=2.0.1',
-              'gunicorn>=20.1.0',
-              'plotly>=5.1.0',
-              'supervisor>=4.2.2',
-              'rq>=1.10.0',
-              'hiredis>=2.0.0',
+              'dash==1.21.0',
+              'dash-bio==0.8.0',
+              'dash-bootstrap-components==0.12.2',
+              'Flask==2.0.1',
+              'gunicorn==20.1.0',
+              'plotly==5.1.0',
+              'supervisor==4.2.2',
+              'rq==1.10.0',
+              'hiredis==2.0.0',
           ]
       }
       )
