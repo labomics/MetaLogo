@@ -235,7 +235,7 @@ def deduplicate(seq_fa,out_fa):
                     seq = ''
                     seqname = line[1:]
                 else:
-                    seq += line
+                    seq += line.upper()
             if seq != '' and seqname != '':
                 if seq not in seq2seqno:
                     seq_no += 1
