@@ -305,9 +305,9 @@ def main():
     parser.add_argument('--analysis',action='store_true',dest='analysis',help='If perform basic analysis on data')
 
     #software
-    parser.add_argument('--clustalo_bin',type=str,help='The path of clustalo bin ',default='dependencies/clustalo')
-    parser.add_argument('--fasttree_bin',type=str,help='The path of fasttree bin ',default='dependencies/FastTree')
-    parser.add_argument('--fasttreemp_bin',type=str,help='The path of fasttreeMP bin ',default='dependencies/FastTreeMP')
+    parser.add_argument('--clustalo_bin',type=str,help='The path of clustalo bin ',default='/usr/bin/clustalo')
+    parser.add_argument('--fasttree_bin',type=str,help='The path of fasttree bin ',default='/usr/bin/FastTree')
+    parser.add_argument('--fasttreemp_bin',type=str,help='The path of fasttreeMP bin ',default='/usr/bin/FastTreeMP')
     parser.add_argument('--treecluster_bin',type=str,help='The path of treecluster bin ',default='TreeCluster.py')
 
     parser.add_argument('-v', '--version', action='version', version=__version__)
