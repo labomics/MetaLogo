@@ -1,1 +1,1 @@
-python -m server.main
+python -m MetaLogo.server.index
