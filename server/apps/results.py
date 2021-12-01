@@ -539,7 +539,6 @@ LOADED = False
     ]
 )
 def fire_trigger(n_intervals,old_trigger,loaded_count):
-    print(n_intervals)
     if n_intervals == 0:
         if len(old_trigger) > 1:
             return old_trigger[:-1]
@@ -635,7 +634,6 @@ def save_config(config,config_file):
         State("loaded_count","value")
     )
 def trigger(nonsense,pathname,loaded_count):
-    print('in trigger')
 
     if ('result' not in pathname):
         raise PreventUpdate
@@ -786,7 +784,6 @@ def trigger(nonsense,pathname,loaded_count):
     if LOADED or (uid == '') :
         interval_disabled = True
     results_arr += [interval_disabled]
-    print('disabled: ', interval_disabled)
 
     ###
     logo_type = config_dict.get('logo_format','')
