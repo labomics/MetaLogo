@@ -65,7 +65,7 @@ def get_layout():
                               html.Div('',id='page_url')]), 
                     html.Div(
                         [ 
-                            html.Span('The page will be refreshed after '),
+                            html.Span('The page will be refreshed every '),
                             html.Span('10',id='refresh_count',style={'color':'red'}),
                             html.Span(' seconds')
                         ],style={'fontSize':'5px'})
