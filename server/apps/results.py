@@ -824,7 +824,7 @@ app.clientside_callback(
 app.clientside_callback(
     """
     function(status) {
-        if(status == 'running'){
+        if((status == 'running')||(status=='in-queue')){
             setTimeout(function(){
                 window.location.reload(1);
              }, 10000);
