@@ -94,7 +94,9 @@ input_format_dropdown = dbc.FormGroup(
                 {"label": "Fasta", "value": 'Fasta'},
                 {"label": "Fastq", "value": 'Fastq'}
             ],
-            value='Fasta'
+            value='Fasta',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -110,7 +112,9 @@ sequence_type_dropdown = dbc.FormGroup(
                 {"label": "RNA", "value": 'rna'},
                 {"label": "Protein", "value": 'aa'},
             ],
-            value='auto'
+            value='auto',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -124,7 +128,9 @@ grouping_by_dropdown = dbc.FormGroup(
                 {"label": "Length", "value": 'length'},
                 {"label": "Seq identifier", "value": 'identifier'},
             ],
-            value='auto'
+            value='auto',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -138,7 +144,9 @@ cluster_method_dropdown = dbc.FormGroup(
                 {"label": "Max_clade", "value": 'max_clade'},
                 {"label": "Single_linkage", "value": 'single_linkage'},
             ],
-            value='max'
+            value='max',
+            searchable=False,
+            clearable=False,
         ),
 
     ]
@@ -248,7 +256,9 @@ basic_analysis_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'}
             ],
-            value='Yes'
+            value='Yes',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -293,7 +303,9 @@ height_algorithm_dropdown = dbc.FormGroup(
                 {"label": "Bits without correction", "value": 'bits_without_correction'},
                 {"label": "Probabilities", "value": 'probabilities'}
             ],
-            value='bits'
+            value='bits',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -306,7 +318,9 @@ align_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'}
             ],
-            value='Yes'
+            value='Yes',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -319,7 +333,9 @@ padding_align_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'}
             ],
-            value='Yes'
+            value='Yes',
+            searchable=False,
+            clearable=False,
         ),
         html.Span("Avaliable when grouping by length or identifier",style={'fontSize':'10px','color':'#ff6f00'})
     ]
@@ -337,7 +353,9 @@ align_metric = dbc.FormGroup(
                 {"label": "Cosine", "value": 'cosine'},
                 {"label": "Entropy weighted Bhattacharyya Coefficient", "value": 'entropy_bhattacharyya'},
             ],
-            value='dot_product'
+            value='dot_product',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -396,7 +414,9 @@ logo_type_dropdown = dbc.FormGroup(
                 {"label": "Radial", "value": 'Radiation'},
                 {"label": "3D", "value": 'Threed'},
             ],
-            value='Horizontal'
+            value='Horizontal',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -409,7 +429,9 @@ logo_connect_tree_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'},
             ],
-            value='Yes'
+            value='Yes',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -427,7 +449,9 @@ sort_dropdown = dbc.FormGroup(
                 {"label": "Group Id Reverse", "value": 'identifier_reverse'},
                 {"label": "Auto", "value": 'auto'},
             ],
-            value='length'
+            value='length',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -585,7 +609,9 @@ download_format_dropdown = dbc.FormGroup(
                 {"label": "EPS", "value": 'eps'},
                 {"label": "SVG", "value": 'svg'}
             ],
-            value='png'
+            value='png',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -601,7 +627,9 @@ color_scheme_dropdown = dbc.FormGroup(
                 {"label": "Protein Basic", "value": 'basic_aa_color'},
                 {"label": "Custom (click color pickers to choose)", "value": 'custom'},
             ],
-            value='auto'
+            value='auto',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -702,7 +730,9 @@ auto_size_dropdown = dbc.FormGroup(
                 {"label": "Yes", "value": 'Yes'},
                 {"label": "No", "value": 'No'}
             ],
-            value='Yes'
+            value='Yes',
+            searchable=False,
+            clearable=False,
         ),
     ]
 )
@@ -1212,6 +1242,32 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
             showid_check_input, showgrid_check_input,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
+    
+    #check input
+    for para in [
+                    auto_size_dropdown,
+                    group_limit,
+                    connect_tree_dropdown,
+                    group_resolution,clustering_method,
+                    basic_analysis_dropdown,
+                    display_left, display_right,
+                    height_algorithm_dropdown,
+                    hide_version_checklist,
+                    padding_align,
+                    gap_score,
+                    align_color, align_alpha,
+                    title_size, tick_size, label_size, id_size,  
+                    title_input, input_format_dropdown, 
+                    sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
+                    seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,
+                    align_dropdown,align_metric, connect_threshold, logo_margin_input, column_margin_input,
+                    char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
+                    showid_check_input, showgrid_check_input,
+                    hidexy_check_input, download_format_dropdown, color_dropdown
+        ]:
+        if para is None:
+            return '','Error',f'None parameter not allowed, please check',True,''
+
 
     if group_limit > GROUP_LIMIT:
         return '','Error',f'Group limit not allowed > {GROUP_LIMIT}',True,''
