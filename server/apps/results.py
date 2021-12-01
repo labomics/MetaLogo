@@ -599,8 +599,15 @@ def trigger(nonsense,pathname):
     
 
     results_arr = ['',uid]
-    status = get_status(uid)
-    rq_found,rq_failed,exc_info = check_queue_status(uid)
+
+    if uid != '':
+        status = get_status(uid)
+        rq_found,rq_failed,exc_info = check_queue_status(uid)
+    else:
+        status = 'not found'
+        rq_found = False
+        rq_failed = False
+        exc_info = ''
     if exc_info is None:
         exc_info = ''
 
