@@ -21,4 +21,4 @@ app = dash.Dash(
     }]
 
 )
-app.title = "MetaLogo, multiple sequence logos generator and aligner"
+app.title = "MetaLogo: a heterogeneity-aware sequence logo generator and aligner"
