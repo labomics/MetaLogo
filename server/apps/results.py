@@ -351,14 +351,10 @@ def get_layout():
                 trigger_panel
             ],id='result_panel',style={"display":"none"}),
             loading_spinner,
-            dcc.Interval(
-                id='interval-component',
-                interval=1000,
-                n_intervals=0
-            ),
             html.Div('',id='garbage3',style={'display':'none'}),
+            html.Div('',id='garbage4',style={'display':'none'}),
             html.Div('',id='reset_waitter',style={'display':'none'}),
-            dbc.Input(id='loaded_count',style={'display':'none'},value=0,type='number'),
+            dbc.Input(id='status',style={'display':'none'},type='string'),
             modal
     ])
 
@@ -510,48 +506,8 @@ def change_link(uid):
 #        raise PreventUpdate
 
 
-def get_left_time(n_intervals):
-
-    if n_intervals <= 60:
-        left = (10 - n_intervals%10)%10
-        return left
-    if n_intervals <= 600:
-        left = (60 - n_intervals%60)%60
-        return left
-    return (60*10 - n_intervals%(60*10))%(60*10)
-
-def get_supposed_count(n_intervals):
-    #in case of network issue
-    if n_intervals < 60:
-        supposed_count = math.ceil(n_intervals/10)
-    if n_intervals > 60:
-        supposed_count = math.ceil(n_intervals/60) + 6
-    return supposed_count
-
 LOADED = False
 
-@app.callback(
-    Output("trigger_panel","children"),
-    Input("interval-component","n_intervals"),
-    [
-        State("trigger_panel","children"),
-        State("loaded_count","value"),
-    ]
-)
-def fire_trigger(n_intervals,old_trigger,loaded_count):
-    if n_intervals == 0:
-        if len(old_trigger) > 1:
-            return old_trigger[:-1]
-        else:
-            return 'x'
-    left = get_left_time(n_intervals)
-    if (left == 0 and (not LOADED)) :#or (loaded_count<get_supposed_count(n_intervals)):
-        if len(old_trigger) > 1:
-            return old_trigger[:-1]
-        else:
-            return 'x'
-    else:
-        raise PreventUpdate
 
 def load_config(config_file):
     if os.path.exists(config_file):
@@ -619,21 +575,18 @@ def save_config(config,config_file):
         Output('grouping_download_btn','disabled'),
         Output('reset_resolution_btn','disabled'),
         Output('reset_resolution','disabled'),
-        #interval
-        Output("interval-component","disabled"),
         #other
         Output("seq_logo_download_btn","children"),
         #loaded count
-        Output("loaded_count","value")
+        Output("status","value")
 
     ],
     [
         Input('trigger_panel','children'),
     ],
         State('url','pathname'),
-        State("loaded_count","value")
     )
-def trigger(nonsense,pathname,loaded_count):
+def trigger(nonsense,pathname):
 
     if ('result' not in pathname):
         raise PreventUpdate
@@ -690,8 +643,6 @@ def trigger(nonsense,pathname,loaded_count):
             err_info = ''
         err_info += ' ('+exc_info + ') '
     results_arr += [err_info]
- 
-    
 
     src = '' 
     if LOADED and status == 'finished':
@@ -780,17 +731,12 @@ def trigger(nonsense,pathname,loaded_count):
                     disabled_grouping_download,
                     disabled_reset_resolution_btn,disabled_reset_resolution_input]
     
-    interval_disabled = False
-    if LOADED or (uid == '') :
-        interval_disabled = True
-    results_arr += [interval_disabled]
 
     ###
     logo_type = config_dict.get('logo_format','')
     results_arr += [f'Sequence Logo ({logo_type})']
 
-    results_arr += [loaded_count+1]
-
+    results_arr += [status]
     return results_arr
 
 @app.callback(
@@ -867,17 +813,19 @@ app.clientside_callback(
     Input('reset_waitter', 'children'),
 )
 
-@app.callback(
-    Output("refresh_count","children"),
-    Input("interval-component","n_intervals")
-)
-def count_time(n_intervals):
-    global LOADED
-    if LOADED:
-        raise PreventUpdate
-    left = get_left_time(n_intervals)
-    return left
 
-   
+app.clientside_callback(
+    """
+    function(status) {
+        if(status == 'running'){
+            setTimeout(function(){
+                window.location.reload(1);
+             }, 10000);
+        }
+    }
+    """,
+    Output('garbage4', 'children'),
+    Input('status', 'value'),
+)  
 
 layout = get_layout()
