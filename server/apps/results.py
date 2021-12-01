@@ -539,6 +539,7 @@ LOADED = False
     ]
 )
 def fire_trigger(n_intervals,old_trigger,loaded_count):
+    print(n_intervals)
     if n_intervals == 0:
         if len(old_trigger) > 1:
             return old_trigger[:-1]
@@ -634,6 +635,7 @@ def save_config(config,config_file):
         State("loaded_count","value")
     )
 def trigger(nonsense,pathname,loaded_count):
+    print('in trigger')
 
     if ('result' not in pathname):
         raise PreventUpdate
@@ -642,6 +644,7 @@ def trigger(nonsense,pathname,loaded_count):
         uid = pathname.split('/')[-1]
     else:
         uid = ''
+
     
 
     results_arr = ['',uid]
@@ -699,10 +702,13 @@ def trigger(nonsense,pathname,loaded_count):
     results_arr += [src]
 
     config_file = f"{CONFIG_PATH}/{uid}.toml"
-    config_dict = load_config(config_file)
+    if os.path.exists(config_file):
+        config_dict = load_config(config_file)
+    else:
+        config_dict = {}
 
-    if not config_dict:
-        raise PreventUpdate
+    #if not config_dict:
+    #    raise PreventUpdate
 
     for item in ['task_name','create_time','seq_file_type','sequence_type','group_strategy','group_resolution','clustering_method',
                  'min_length','max_length','display_left_right','analysis','height_algorithm','align','padding_align','align_metric','connect_threshold','logo_type']:
@@ -717,7 +723,7 @@ def trigger(nonsense,pathname,loaded_count):
             results_arr += ['%s'%(config_dict.get(item,''))]
     
     #fast rerun
-    results_arr += [config_dict['display_range_left'],config_dict['display_range_right'], config_dict['group_limit'],config_dict['group_resolution']]
+    results_arr += [config_dict.get('display_range_left',''),config_dict.get('display_range_right',''), config_dict.get('group_limit',''),config_dict.get('group_resolution','')]
     ###
 
     lengths_src = ''
@@ -757,7 +763,7 @@ def trigger(nonsense,pathname,loaded_count):
     disabled_reset_resolution_btn = True
     disabled_reset_resolution_input = True
 
-    if config_dict['group_strategy'] == 'auto':
+    if config_dict.get('group_strategy','') == 'auto':
         show_other_panel = True
         disabled_msa_download = False
         disabled_phylo_download = False
@@ -765,7 +771,7 @@ def trigger(nonsense,pathname,loaded_count):
         disabled_reset_resolution_btn = False
         disabled_reset_resolution_input = False
 
-    if config_dict['padding_align'] and config_dict['align']:
+    if config_dict.get('padding_align',False) and config_dict.get('align',False):
         show_other_panel = True
     
     if not show_other_panel:
@@ -777,12 +783,13 @@ def trigger(nonsense,pathname,loaded_count):
                     disabled_reset_resolution_btn,disabled_reset_resolution_input]
     
     interval_disabled = False
-    if LOADED:
+    if LOADED or (uid == '') :
         interval_disabled = True
     results_arr += [interval_disabled]
+    print('disabled: ', interval_disabled)
 
     ###
-    logo_type = config_dict['logo_format']
+    logo_type = config_dict.get('logo_format','')
     results_arr += [f'Sequence Logo ({logo_type})']
 
     results_arr += [loaded_count+1]
