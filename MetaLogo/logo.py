@@ -621,7 +621,7 @@ class LogoGroup(Item):
         if hasattr(self,'raw_group_count'):
             task_name += f' [{len(self.groups)}/{self.raw_group_count} groups]' 
         if self.group_strategy == 'auto' or (self.align and self.padding_align ):
-            if len(self.groups)>0:
+            if len(self.group_ids)>0:
                 poses = len(self.seq_bits[self.group_ids[0]])
                 left = self.display_range_left
                 right = self.display_range_right
@@ -948,7 +948,8 @@ class LogoGroup(Item):
     def compute_xy(self):
         if self.logo_type == 'Horizontal':
             self.ax.set_xlim(self.start_pos[0]-1,self.start_pos[0] + self.get_width()+1)
-            self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
+            if self.ceiling_pos[1] > self.start_pos[1]:
+                self.ax.set_ylim(self.start_pos[1],self.ceiling_pos[1])
 
             if self.show_group_id:
                 r = self.ax.get_figure().canvas.get_renderer()
@@ -960,7 +961,8 @@ class LogoGroup(Item):
                     if _range > x_range:
                         x_range = _range
             
-                self.ax.set_xlim(self.start_pos[0],x_range)
+                if x_range > self.start_pos[0]:
+                    self.ax.set_xlim(self.start_pos[0],x_range)
 
 
         elif self.logo_type == 'Circle':
@@ -1017,7 +1019,8 @@ class LogoGroup(Item):
                 height =self.get_height()
                 width = self.get_width()
                 self.ax.get_figure().set_figheight(10)
-                self.ax.get_figure().set_figwidth(min(40,max(15,round((10/height)*width))))
+                if height != 0:
+                    self.ax.get_figure().set_figwidth(min(40,max(15,round((10/height)*width))))
         elif self.figure_size_x != -1 and self.figure_size_y != -1:
             self.ax.get_figure().set_figwidth(self.figure_size_x)
             self.ax.get_figure().set_figheight(self.figure_size_y)
@@ -1063,6 +1066,8 @@ class LogoGroup(Item):
 
     def get_group_mean_entropy_figure(self):
 
+        if len(self.group_ids) == 0:
+            return None
         fig,ax = plt.subplots()
         ents = self.get_entropy()
         mean_ents = [np.median([y for y in x if y!='-']) for x in ents]
@@ -1075,6 +1080,10 @@ class LogoGroup(Item):
         return ax
     
     def get_boxplot_entropy_figure(self):
+
+        if len(self.group_ids) == 0:
+            return None
+
         fig,ax = plt.subplots()
         ents = self.get_entropy()
         ents = [[y for y in x if y!='-'] for x in ents]
@@ -1084,6 +1093,8 @@ class LogoGroup(Item):
             grp_id = self.group_ids[i]
             for item in ents[i]:
                 lists.append([grp_id,item])
+        if len(lists) == 0:
+            return None
         df = pd.DataFrame(lists,columns=['Group','Entropy of Each Position'])
         return sns.boxplot(data=df,x='Group',y='Entropy of Each Position',ax=ax,order=self.group_ids)
 
@@ -1091,6 +1102,8 @@ class LogoGroup(Item):
 
     def get_entropy_figure(self):
 
+        if len(self.group_ids) == 0:
+            return None
         ents = self.get_entropy()[::-1]
 
 
@@ -1169,6 +1182,8 @@ class LogoGroup(Item):
 
     def get_correlation_figure(self):
 
+        if len(self.group_ids) == 0:
+            return None
         fig,ax = plt.subplots()
 
         if (not self.padding_align) and (self.group_strategy != 'auto'):
@@ -1188,6 +1203,9 @@ class LogoGroup(Item):
 
     
     def get_grp_counts_figure(self):
+
+        if len(self.group_ids) == 0:
+            return None
         fig,ax = plt.subplots()
         lens = []
         if len(self.group_ids) == 0:
@@ -1203,6 +1221,10 @@ class LogoGroup(Item):
         return ax
     
     def get_seq_lengths_dist(self):
+
+        if len(self.seqs) == 0:
+            return None
+
         fig,ax = plt.subplots()
         lens = [len(x[1]) for x in self.seqs]
         df = pd.DataFrame((pd.Series(lens).value_counts())).reset_index()

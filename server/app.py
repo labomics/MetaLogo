@@ -1,10 +1,9 @@
 import dash
 from flask import Flask
 import dash_bootstrap_components as dbc
-
+from .config import GOOGLE_ANALYTICS_ID
 server = Flask(__name__)
 
-GOOGLE_ANALYTICS_ID = ''
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 external_scripts = [f'https://www.googletagmanager.com/gtag/js?id={GOOGLE_ANALYTICS_ID}'] 
 

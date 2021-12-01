@@ -67,26 +67,33 @@ def run_from_args(args):
 
     if args.analysis:
 
-        fig = logogroup.get_grp_counts_figure().figure
-        count_name = f'{args.output_dir}/{base_name}.counts.png'
-        fig.savefig(count_name,bbox_inches='tight')
-        plt.close(fig)
+        fig = logogroup.get_grp_counts_figure()
+        if fig:
+            fig = fig.figure
+            count_name = f'{args.output_dir}/{base_name}.counts.png'
+            fig.savefig(count_name,bbox_inches='tight')
+            plt.close(fig)
 
-        fig = logogroup.get_seq_lengths_dist().figure
-        lengths_name = f'{args.output_dir}/{base_name}.lengths.png'
-        fig.savefig(lengths_name,bbox_inches='tight')
-        plt.close(fig)
+        fig = logogroup.get_seq_lengths_dist()
+        if fig:
+            fig = fig.figure
+            lengths_name = f'{args.output_dir}/{base_name}.lengths.png'
+            fig.savefig(lengths_name,bbox_inches='tight')
+            plt.close(fig)
 
 
         fig = logogroup.get_entropy_figure()
-        entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
-        fig.savefig(entropy_name,bbox_inches='tight')
-        plt.close(fig)
+        if fig:
+            entropy_name = f'{args.output_dir}/{base_name}.entropy.png'
+            fig.savefig(entropy_name,bbox_inches='tight')
+            plt.close(fig)
 
         boxplot_entropy_name = f'{args.output_dir}/{base_name}.boxplot_entropy.png'
-        fig = logogroup.get_boxplot_entropy_figure().figure
-        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-        plt.close(fig)
+        fig = logogroup.get_boxplot_entropy_figure()
+        if fig:
+            fig = fig.figure
+            fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+            plt.close(fig)
 
         if args.padding_align or args.group_strategy=='auto':
             clustermap_name = f'{args.output_dir}/{base_name}.clustermap.png'
@@ -131,8 +138,9 @@ def run_from_config(config_file):
         if 'analysis_format' in config:
             format = config['analysis_format']
 
-        fig = logogroup.get_grp_counts_figure().figure
+        fig = logogroup.get_grp_counts_figure()
         if fig:
+            fig =fig.figure
             count_name = f"{config['output_dir']}/{uid}.counts.png"
             fig.savefig(count_name,bbox_inches='tight')
             if format != 'png':
@@ -140,31 +148,36 @@ def run_from_config(config_file):
                 fig.savefig(count_name,bbox_inches='tight')
             plt.close(fig)
 
-        fig = logogroup.get_seq_lengths_dist().figure
-        lengths_name = f"{config['output_dir']}/{uid}.lengths.png"
-        fig.savefig(lengths_name,bbox_inches='tight')
-        if format != 'png':
-            lengths_name = f"{config['output_dir']}/{uid}.lengths.{format}"
+        fig = logogroup.get_seq_lengths_dist()
+        if fig:
+            fig = fig.figure
+            lengths_name = f"{config['output_dir']}/{uid}.lengths.png"
             fig.savefig(lengths_name,bbox_inches='tight')
-        plt.close(fig)
+            if format != 'png':
+                lengths_name = f"{config['output_dir']}/{uid}.lengths.{format}"
+                fig.savefig(lengths_name,bbox_inches='tight')
+            plt.close(fig)
 
 
         fig = logogroup.get_entropy_figure()
-        entropy_name = f"{config['output_dir']}/{uid}.entropy.png"
-        fig.savefig(entropy_name,bbox_inches='tight')
-        if format != 'png':
-            entropy_name = f"{config['output_dir']}/{uid}.entropy.{format}"
+        if fig:
+            entropy_name = f"{config['output_dir']}/{uid}.entropy.png"
             fig.savefig(entropy_name,bbox_inches='tight')
-        plt.close(fig)
+            if format != 'png':
+                entropy_name = f"{config['output_dir']}/{uid}.entropy.{format}"
+                fig.savefig(entropy_name,bbox_inches='tight')
+            plt.close(fig)
 
-        boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.png"
-        fig = logogroup.get_boxplot_entropy_figure().figure
-        fig.savefig(boxplot_entropy_name,bbox_inches='tight')
-        if format != 'png':
-            boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.{format}"
+        fig = logogroup.get_boxplot_entropy_figure()
+        if fig:
+            fig =fig.figure
+            boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.png"
             fig.savefig(boxplot_entropy_name,bbox_inches='tight')
+            if format != 'png':
+                boxplot_entropy_name = f"{config['output_dir']}/{uid}.boxplot_entropy.{format}"
+                fig.savefig(boxplot_entropy_name,bbox_inches='tight')
 
-        plt.close(fig)
+            plt.close(fig)
 
         if config['padding_align'] or config['group_strategy']=='auto':
             clustermap_name = f"{config['output_dir']}/{uid}.clustermap.png"

@@ -8,7 +8,6 @@ PNG_PATH = 'MetaLogo/figure_output'
 FA_PATH = 'MetaLogo/sequence_input'
 EXAMPLE_PATH = 'MetaLogo/examples'
 CONFIG_PATH = 'MetaLogo/configs'
-GOOGLE_ANALYTICS_ID = ''
 MAX_SEQ_LIMIT = 50000
 MAX_SEQ_LIMIT_AUTO = 10000
 MAX_INPUT_SIZE = 5242880
