@@ -179,7 +179,7 @@ def run_from_config(config_file):
 
             plt.close(fig)
 
-        if config['padding_align'] or config['group_strategy']=='auto':
+        if config.get('padding_align',False) or config.get('group_strategy','')=='auto':
             clustermap_name = f"{config['output_dir']}/{uid}.clustermap.png"
             fig = logogroup.get_correlation_figure()
             if fig:
