@@ -186,8 +186,9 @@ display_range_right_input = dbc.FormGroup(
 )
 group_limit = dbc.FormGroup(
     [
-        dbc.Label("Group Limit",html_for='input'),
+        dbc.Label("Group Limit (N)",html_for='input'),
         dbc.Input(type="number", min=1, max=GROUP_LIMIT, step=1, value=20,id="group_limit"),
+        html.Span("Only show top N groups",style={'fontSize':'10px','color':'#ff6f00'})
     ]
 )
 
@@ -1244,29 +1245,57 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
             hidexy_check_input, download_format_dropdown, color_dropdown, *args):
     
     #check input
-    for para in [
-                    auto_size_dropdown,
-                    group_limit,
-                    connect_tree_dropdown,
-                    group_resolution,clustering_method,
-                    basic_analysis_dropdown,
-                    display_left, display_right,
-                    height_algorithm_dropdown,
-                    hide_version_checklist,
-                    padding_align,
-                    gap_score,
-                    align_color, align_alpha,
-                    title_size, tick_size, label_size, id_size,  
-                    title_input, input_format_dropdown, 
-                    sequence_type_dropdown, grouping_by_dropdown, max_len_input, min_len_input,
-                    seq_textarea, file_upload_content, logo_shape_dropdown, sortby_dropdown,
-                    align_dropdown,align_metric, connect_threshold, logo_margin_input, column_margin_input,
-                    char_margin_input, xlabel_input, ylabel_input, zlabel_input, width_input, height_input,
-                    showid_check_input, showgrid_check_input,
-                    hidexy_check_input, download_format_dropdown, color_dropdown
+    for para,name in [
+                    [auto_size_dropdown,'auto size'],
+                    [group_limit,'group limit'],
+                    [connect_tree_dropdown,'connect tree'],
+                    [group_resolution,'group resolution'],
+                    [clustering_method,'clustering method'],
+                    [basic_analysis_dropdown,'basic analysis'],
+                    [display_left,'display left'], 
+                    [display_right,'display right'],
+                    [height_algorithm_dropdown,'height algorithm'],
+                    [hide_version_checklist,'hide version'],
+                    [padding_align, 'global align'],
+                    [gap_score, 'gap penalty'],
+                    [align_color,'align color'],
+                    [align_alpha,'align alpha'],
+                    [title_size, 'title size'],
+                    [tick_size, 'tick size'], 
+                    [label_size,'label size'],
+                    [id_size,  'id size'],
+                    [input_format_dropdown, 'input format'],
+                    [sequence_type_dropdown,'sequence type'],
+                    [grouping_by_dropdown,'grouping strategy'],
+                    [max_len_input, 'max len'],
+                    [min_len_input, 'min len'],
+                    [logo_shape_dropdown,'logo shape'], 
+                    [sortby_dropdown,'sort order'],
+                    [align_dropdown,'align'],
+                    [align_metric, 'align metric'],
+                    [connect_threshold, 'connect threshold'],
+                    [logo_margin_input, 'logo margin'],
+                    [column_margin_input,'column margin'],
+                    [char_margin_input, 'char margin'],
+                    [width_input, 'width'],
+                    [height_input,'height'],
+                    [showid_check_input, 'show id'],
+                    [showgrid_check_input,'show grid'],
+                    [hidexy_check_input, 'hide xy'],
+                    [download_format_dropdown,'download format'],
+                    [color_dropdown,'color']
         ]:
         if para is None:
-            return '','Error',f'None parameter not allowed, please check',True,''
+            return '','Error',f'{name} not set, please check',True,''
+    
+    if title_input is None:
+        title_input = ''
+    if xlabel_input is None:
+        xlabel_input = ''
+    if ylabel_input is None:
+        ylabel_input = ''
+    if zlabel_input is None:
+        zlabel_input = ''
 
 
     if group_limit > GROUP_LIMIT:
