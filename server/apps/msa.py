@@ -32,9 +32,10 @@ layout = dbc.Container([
                 height=1200,
                 width="100%",
                 showgap=False,
-                showconservation=False,
-                showconsensus=False,
-                overview='none'
+                #showconservation=False,
+                #showconsensus=False,
+                tilewidth=30,
+                #overview='none'
             )]),
             dbc.Row([html.Div(id='default-alignment-viewer-output',style={'display': 'none'})]),
         ]
@@ -71,12 +72,12 @@ def display_page(pathname):
 
 
 @app.callback(
-    [Output('default-alignment-viewer-output', 'children'),
-    Output("loading-output4", "children")],
+    Output('default-alignment-viewer-output', 'children'),
+    #Output("loading-output4", "children")],
     Input('my-default-alignment-viewer', 'eventDatum')
 )
 def update_output(value):
     if value is None:
-        return 'No data.',''
+        return 'No data.'#,''
     else:
-        return str(value),''
+        return str(value)#,''
