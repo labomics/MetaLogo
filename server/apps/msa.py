@@ -20,9 +20,29 @@ loading_spinner = html.Div(
                     fullscreen_style={"opacity": "0.8"}),
     ]
 )
-
+checklist = dbc.FormGroup(
+    [
+        dbc.Label("Control the panel"),
+        dbc.Checklist(
+            options=[
+                {"label": "Conservation", "value": 'conservation'},
+                {"label": "Gaps", "value": 'gaps'},
+                {"label": "Overview", "value": 'overview'},
+                {"label": "Consensus", "value": 'consensus'},
+            ],
+            value=['conservation','gaps','overview'],
+            id="checklist",
+            inline=True,
+        ),
+    ]
+)
 layout = dbc.Container([
     html.H3([html.Span("MSA result for task "),html.A(id="uid")]),
+    dbc.Col(
+        dbc.Row([
+            checklist,
+        ])
+    ),
     dbc.Col(
         [
             dbc.Row([
@@ -35,7 +55,7 @@ layout = dbc.Container([
                 #showconservation=False,
                 #showconsensus=False,
                 tilewidth=30,
-                #overview='none'
+                overview='slider'
             )]),
             dbc.Row([html.Div(id='default-alignment-viewer-output',style={'display': 'none'})]),
         ]
@@ -43,6 +63,32 @@ layout = dbc.Container([
     loading_spinner
 ])
 
+@app.callback(
+    [Output('my-default-alignment-viewer','showgap'),
+    Output('my-default-alignment-viewer','showconservation'),
+    Output('my-default-alignment-viewer','showconsensus'),
+    Output('my-default-alignment-viewer','overview')],
+    Input('checklist','value')
+)
+def change_panel(checklist):
+    arr = []
+    if 'gaps' in checklist:
+        arr.append(True)
+    else:
+        arr.append(False)
+    if 'conservation' in checklist:
+        arr.append(True)
+    else:
+        arr.append(False)
+    if 'consensus' in checklist:
+        arr.append(True)
+    else:
+        arr.append(False)
+    if 'overview' in checklist:
+        arr.append('slider')
+    else:
+        arr.append('none')
+    return arr
 
 @app.callback(
               [
@@ -66,7 +112,7 @@ def display_page(pathname):
         with open(msa_file, encoding='utf-8') as data_file:
             data = data_file.read()
         line_no = len(re.findall('\n',data))/2
-        return data, line_no*15,'',uid,'/results/'+uid
+        return data, line_no*20,'',uid,'/results/'+uid
     else:
         return '','','',''
 
