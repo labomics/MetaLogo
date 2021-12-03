@@ -23,7 +23,7 @@ loading_spinner = html.Div(
 )
 checklist = dbc.FormGroup(
     [
-        dbc.Label("Control the panel"),
+        dbc.Label("Panels"),
         dbc.Checklist(
             options=[
                 {"label": "Conservation", "value": 'conservation'},
@@ -37,12 +37,45 @@ checklist = dbc.FormGroup(
         ),
     ]
 )
+COLORSCALES_DICT = [
+    {'value': 'buried', 'label': 'Buried'},
+    {'value': 'cinema', 'label': 'Cinema'},
+    {'value': 'clustal2', 'label': 'Clustal2'},
+    {'value': 'clustal', 'label': 'Clustal'},
+    {'value': 'helix', 'label': 'Helix'},
+    {'value': 'hydro', 'label': 'Hydrophobicity'},
+    {'value': 'lesk', 'label': 'Lesk'},
+    {'value': 'mae', 'label': 'Mae'},
+    {'value': 'nucleotide', 'label': 'Nucleotide'},
+    {'value': 'purine', 'label': 'Purine'},
+    {'value': 'strand', 'label': 'Strand'},
+    {'value': 'taylor', 'label': 'Taylor'},
+    {'value': 'turn', 'label': 'Turn'},
+    {'value': 'zappo', 'label': 'Zappo'},
+]
+
+
+colorscale_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("Color scale", html_for="dropdown"),
+        dcc.Dropdown(
+            id="color_scale_dropdown",
+            options=COLORSCALES_DICT,
+            value='buried',
+            searchable=False,
+            clearable=False,
+        ),
+    ],
+    style={'width':'200px','marginRight':'50px'}
+)
 layout = dbc.Container([
     html.H3([html.Span("MSA result for task "),html.A(id="uid")]),
-    dbc.Col(
+    dbc.Col([
         dbc.Row([
-            checklist,
-        ])
+            colorscale_dropdown,
+            checklist
+        ]),
+    ]
     ),
     dbc.Col(
         [
@@ -86,6 +119,14 @@ def get_values(checklist):
     return arr
 
 @app.callback(
+    Output('my-default-alignment-viewer','colorscale'),
+    Input('color_scale_dropdown','value')
+)
+def change_color(val):
+    return val
+
+
+@app.callback(
               [
                 Output('my-default-alignment-viewer', 'data'), 
                 Output('my-default-alignment-viewer', 'height'), 
@@ -112,7 +153,6 @@ def display_page(pathname,checklist,data,height):
     return_arrs = []
 
     ctx = dash.callback_context
-    print(ctx.triggered)
     example_id = ''
     if ctx.triggered:
         example_id = ctx.triggered[0]['prop_id'].split('.')[0]
