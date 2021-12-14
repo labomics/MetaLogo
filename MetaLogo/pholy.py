@@ -166,7 +166,7 @@ def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clust
             for _seqname in name_dict[seqname]:
                 groups_dict[index].append([_seqname,msa_dict[seqname]])
     save_group_seqs(groups_dict,f'{fa_output_dir}/server.{uid}.grouping.fa')
-        
+
     return groups_dict
 
 def msa(seq_fa,outfile,clustalo_bin):

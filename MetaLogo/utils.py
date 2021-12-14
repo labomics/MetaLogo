@@ -21,6 +21,7 @@ def read_file(filename, filetype):
 
     seq_dict = {}
     seqnames = []
+    seqname_dict = {}
     seqname = None
     seq = None
     ith = 0
@@ -34,6 +35,7 @@ def read_file(filename, filetype):
                     ith += 1
                     seqname = f'{line[1:]} {ith}'
                     seqnames.append(seqname)
+                    seqname_dict[seqname] = f'{line[1:]}'
                 else:
                     seq_dict[seqname]  = seq_dict.get(seqname,'') + line.upper()
     elif filetype.lower() in ['fastq','fq']:
@@ -48,12 +50,13 @@ def read_file(filename, filetype):
                     assert line[0] == '@'
                     seqname = f"{line[1:]} {num+1}"
                     seqnames.append(seqname)
+                    seqname_dict[seqname] = f'{line[1:]}'
                 if num%4 == 1:
                     seq_dict[seqname] = line.upper()
     else:
         pass
 
-    return seq_dict, seqnames
+    return seq_dict, seqnames, seqname_dict
 
 def grouping(seqs,seq_file='',sequence_type='aa',group_by='length',group_resolution=1,clustering_method='max',
              clustalo_bin='', fasttree_bin='',fasttreemp_bin='', treecluster_bin='',

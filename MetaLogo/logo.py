@@ -224,7 +224,7 @@ class LogoGroup(Item):
                  figure_size_x=-1, figure_size_y=-1,gap_score=-1, padding_align=False, hide_version_tag=False,
                  sequence_type = 'auto', height_algorithm = 'bits',omit_prob = 0,
                  seq_file = '', seq_file_type = 'fasta', fa_output_dir = '.', output_dir = '.', uid = '',
-                 withtree = False,group_limit=20, target_sequence_name = '',
+                 withtree = False,group_limit=20, 
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
                  auto_size=True,
                  *args, **kwargs):
@@ -234,8 +234,7 @@ class LogoGroup(Item):
         self.seq_file_type = seq_file_type
         self.min_length = 0
         self.max_length = 100
-        self.target_sequence_name = target_sequence_name
-        self.target_sequence_content = None
+        self.target_sequence = None
         self.group_order = group_order
         self.group_strategy = group_strategy
         self.group_resolution = float(group_resolution)
@@ -314,7 +313,8 @@ class LogoGroup(Item):
             return
 
         if (self.seqs is None) and os.path.exists(self.seq_file):
-            seq_dict,seqnames = read_file(self.seq_file, self.seq_file_type)
+            seq_dict,seqnames,seqname_dict = read_file(self.seq_file, self.seq_file_type)
+            self.seqname_dict = seqname_dict
 
             if len(seqnames) == 0:
                 print('No sequences detected')
@@ -327,7 +327,7 @@ class LogoGroup(Item):
                 return
 
             seqs = [[seqname,seq_dict[seqname]]  for seqname in seqnames if (len(seq_dict[seqname])>self.min_length) and (len(seq_dict[seqname])<self.max_length)]
-            target_sequence_name = ' ' .join(seqnames[0].split(' ')[:-1])
+            target_sequence = seq_dict[seqnames[0]]
 
             if len(seqs) == 0:
                 print('No sequences left after length filter')
@@ -335,12 +335,12 @@ class LogoGroup(Item):
                 return
             
             self.seqs = seqs
-            if self.target_sequence_name == '':
-                self.target_sequence_name = target_sequence_name
+            self.target_sequence = target_sequence
         
-        if self.seqs is not None:
-            if self.target_sequence_name == '':
-                self.target_sequence_name = self.seqs[0][0]
+        elif self.seqs is not None:
+            self.target_sequence = self.seqs[0][1]
+        
+        print('target_sequence: ', self.target_sequence)
         
         if self.seqs is not None:
             if not os.path.exists(self.seq_file):
@@ -405,15 +405,17 @@ class LogoGroup(Item):
         
         self.raw_group_count = len(self.groups)
 
+
         self.target_group = None
         for grpid in self.groups:
             for name,seq in self.groups[grpid]:
-                if name == self.target_sequence_name:
+                if seq.replace('-','') == self.target_sequence.replace('-',''):
                     self.target_group = grpid
-                    self.target_sequence_content = seq
                     break
             if self.target_group is not None:
                 break
+        
+        print('target_group: ',self.target_group)
 
         if self.group_strategy.lower() == 'identifier':
             for group_id in self.groups:
