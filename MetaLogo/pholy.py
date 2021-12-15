@@ -48,6 +48,7 @@ def drawdists(dists,output):
     df = pd.DataFrame({'Pairwise distance':list(dists)})
     g = sns.histplot(df,x='Pairwise distance',kde=True,ax=ax)
     fig.savefig(output,bbox_inches='tight')
+    plt.close()
     return
 
 def drawtree(input,output):
@@ -59,6 +60,7 @@ def drawtree(input,output):
     axes = fig.add_subplot(1, 1, 1)
     Phylo.draw(tree, axes=axes)
     plt.savefig(output, dpi=100)
+    plt.close()
 
 
 def reverse_msa_seqname(name_dict,oldfile,newfile):

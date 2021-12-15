@@ -1066,11 +1066,11 @@ class LogoGroup(Item):
         return ents
 
 
-    def get_group_mean_entropy_figure(self):
+    def get_group_mean_entropy_figure(self,figsize=(8,6)):
 
         if len(self.group_ids) == 0:
             return None
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(figsize=figsize)
         ents = self.get_entropy()
         mean_ents = [np.median([y for y in x if y!='-']) for x in ents]
         df = pd.DataFrame(mean_ents)
@@ -1081,12 +1081,12 @@ class LogoGroup(Item):
         ax.set_ylabel('Mean Entropy of Positions')
         return ax
     
-    def get_boxplot_entropy_figure(self):
+    def get_boxplot_entropy_figure(self,figsize=(8,6)):
 
         if len(self.group_ids) == 0:
             return None
 
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(figsize=figsize)
         ents = self.get_entropy()
         ents = [[y for y in x if y!='-'] for x in ents]
 
@@ -1102,7 +1102,7 @@ class LogoGroup(Item):
 
 
 
-    def get_entropy_figure(self):
+    def get_entropy_figure(self,figsize=(8,6),fontsize=10):
 
         if len(self.group_ids) == 0:
             return None
@@ -1115,16 +1115,16 @@ class LogoGroup(Item):
 
         #ent_df = ent_df.loc[ent_df.index[::-1]]
 
-        fig,ax = plt.subplots(figsize=(8,6))
-        im = ax.imshow(ent_df)
+        fig,ax = plt.subplots(figsize=figsize)
+        im = ax.imshow(ent_df,aspect='auto')
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.1)
 
         cbar = ax.figure.colorbar(im, ax=ax,orientation='vertical',cax=cax)
-        cbar.ax.set_xlabel('Entropy')
+        cbar.ax.set_xlabel('Entropy',fontsize=fontsize)
 
         kw = dict(horizontalalignment="center",
-              verticalalignment="center",color='white')
+              verticalalignment="center",color='white',fontsize=5)
 
         for i in range(len(ent_df)):
             for j in range(ent_df.columns.size):
@@ -1182,11 +1182,10 @@ class LogoGroup(Item):
         return df.T.corr(method='pearson')
    
 
-    def get_correlation_figure(self):
+    def get_correlation_figure(self,figsize=(8,6),labelsize=15):
 
         if len(self.group_ids) == 0:
             return None
-        fig,ax = plt.subplots()
 
         if (not self.padding_align) and (self.group_strategy != 'auto'):
             return None
@@ -1198,17 +1197,17 @@ class LogoGroup(Item):
         else:
             corr = self.get_correlation()
 
-        g = sns.clustermap(corr)
-        g.ax_heatmap.tick_params(axis='both', which='major', labelsize=15)
+        g = sns.clustermap(corr,figsize=figsize)
+        g.ax_heatmap.tick_params(axis='both', which='major', labelsize=labelsize)
         return g
 
 
     
-    def get_grp_counts_figure(self):
+    def get_grp_counts_figure(self,figsize=(8,6)):
 
         if len(self.group_ids) == 0:
             return None
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(figsize=figsize)
         lens = []
         if len(self.group_ids) == 0:
             return None
@@ -1222,12 +1221,12 @@ class LogoGroup(Item):
 
         return ax
     
-    def get_seq_lengths_dist(self):
+    def get_seq_lengths_dist(self,figsize=(8,6)):
 
         if len(self.seqs) == 0:
             return None
 
-        fig,ax = plt.subplots()
+        fig,ax = plt.subplots(figsize=figsize)
         lens = [len(x[1]) for x in self.seqs]
         df = pd.DataFrame((pd.Series(lens).value_counts())).reset_index()
         df.columns = ['Length','Count']
