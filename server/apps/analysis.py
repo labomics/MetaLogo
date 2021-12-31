@@ -1336,6 +1336,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     if len(seqs) > MAX_SEQ_LIMIT_AUTO and grouping_by_dropdown.lower() == 'auto':
         return '','Error',f'In auto-grouping mode (MSA+Phylogenic tree+clustering), the input sequence number is limited to under {MAX_SEQ_LIMIT_AUTO}.',True,''
 
+    if len(seqs) == 1 and grouping_by_dropdown.lower() == 'auto':
+        return '','Error',f'In auto-grouping mode (MSA+Phylogenic tree+clustering), more sequences are needed.',True,''
+
     if len(seqs) == 0:
         return '','Error','Detect no sequences with limited lengths',True,''
     

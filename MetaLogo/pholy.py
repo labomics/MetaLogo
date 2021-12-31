@@ -124,11 +124,32 @@ def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clust
     if not os.path.exists(seq_fa): 
         save_seqs(seqs, seq_fa)
 
+    groups_dict = {}
+
     dep_seq_fa = f'{fa_output_dir}/server.{uid}.dep.fa'
     name_dict, seq_dict = deduplicate(seq_fa,dep_seq_fa)
 
-    msa_dict = msa(dep_seq_fa,f'{fa_output_dir}/server.{uid}.msa.fa',clustalo_bin)
+    msa(dep_seq_fa,f'{fa_output_dir}/server.{uid}.msa.fa',clustalo_bin)
 
+    if not os.path.exists(f'{fa_output_dir}/server.{uid}.msa.fa'):
+        return groups_dict
+
+    msa_dict = {}
+    with open(f'{fa_output_dir}/server.{uid}.msa.fa','r') as inpf:
+        seqname = ''
+        seq = ''
+        for line in inpf:
+            line = line.strip()
+            if line[0] == '>':
+                if seq != '':
+                    msa_dict[seqname] = seq
+                seqname = line[1:]
+                seq = ''
+            else:
+                seq += line
+        if seq != '':
+            msa_dict[seqname] = seq
+    
     if len(seqs) > 1000:
         fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
@@ -137,6 +158,10 @@ def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clust
         fasttree(f'{fa_output_dir}/server.{uid}.msa.fa',
                 f'{fa_output_dir}/server.{uid}.fasttree.tree',
                 fasttree_bin,sequence_type)
+
+    if not os.path.exists(f'{fa_output_dir}/server.{uid}.fasttree.tree'):    
+        return groups_dict
+
     try:
         if os.path.exists(f'{fa_output_dir}/server.{uid}.treedists.csv'):
             dists = pd.read_csv(f'{fa_output_dir}/server.{uid}.treedists.csv',index_col=False,header=0)['0'].tolist()
@@ -149,8 +174,10 @@ def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clust
     except:
         dists = get_distance_range_lessmem(f'{fa_output_dir}/server.{uid}.fasttree.tree')
 
-    
     treecluster(group_resolution,clustering_method,dists,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.cluster',treecluster_bin)
+
+    if not os.path.exists(f'{fa_output_dir}/server.{uid}.fasttree.cluster'):    
+        return groups_dict
 
     reverse_msa_seqname(name_dict,f'{fa_output_dir}/server.{uid}.msa.fa',f'{fa_output_dir}/server.{uid}.msa.rawid.fa')
     reverse_tree_seqname(name_dict,f'{fa_output_dir}/server.{uid}.fasttree.tree',f'{fa_output_dir}/server.{uid}.fasttree.rawid.tree')
@@ -159,7 +186,6 @@ def auto_detect_groups(seqs, seq_fa, sequence_type='aa',group_resolution=1,clust
     drawtree(f'{fa_output_dir}/server.{uid}.fasttree.rawid.tree',f'{figure_output_dir}/{uid}.tree.png')
 
     cluster_df = pd.read_csv(f'{fa_output_dir}/server.{uid}.fasttree.cluster',sep='\t')
-    groups_dict = {}
     for index, grp in cluster_df.groupby('ClusterNumber'):
         #if str(index) == '-1':
         #    continue
@@ -175,22 +201,7 @@ def msa(seq_fa,outfile,clustalo_bin):
     if not os.path.exists(outfile):
         cmd = f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}'
         os.system(f'{clustalo_bin} --auto -i {seq_fa} -o {outfile}')
-    msa_dict = {}
-    with open(outfile,'r') as inpf:
-        seqname = ''
-        seq = ''
-        for line in inpf:
-            line = line.strip()
-            if line[0] == '>':
-                if seq != '':
-                    msa_dict[seqname] = seq
-                seqname = line[1:]
-                seq = ''
-            else:
-                seq += line
-        if seq != '':
-            msa_dict[seqname] = seq
-    return msa_dict
+    return 
 
 def fasttree(msa_fa,outfile_tree,fasttree_bin='',sequence_type='aa'):
     if (not os.path.exists(outfile_tree)):
