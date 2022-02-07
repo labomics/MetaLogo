@@ -64,13 +64,10 @@ More detailed instructions please check the [tutorial](https://github.com/labomi
 
 ## Citation
 
-MetaLogo is currently in submission. Please remember to cite our work after MetaLogo get published.
+Please kindly cite our work if you use MetaLogo in your work.
 
-Currently you can get a [preprint version of our manuscript](https://www.biorxiv.org/content/10.1101/2021.08.12.456038v3).
+    Chen, Yaowen, et al. "MetaLogo: a heterogeneity-aware sequence logo generator and aligner." Briefings in Bioinformatics (2021).
 
-    MetaLogo: a generator and aligner for multiple sequence logos
-    Yaowen Chen, Zhen He, Yahui Men, Guohua Dong, Shuofeng Hu, Xiaomin Ying
-    bioRxiv 2021.08.12.456038; doi: https://doi.org/10.1101/2021.08.12.456038
 
 
 

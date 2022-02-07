@@ -16,7 +16,7 @@ nav = dbc.Nav(
         dbc.NavItem(dbc.NavLink("Results",  href="/results", id='jump_results')),
         dbc.NavItem(dbc.NavLink("Tutorial",  href="https://github.com/labomics/MetaLogo/wiki/Web-server",target='_blank')),
         dbc.NavItem(dbc.NavLink("Python package", href="https://github.com/labomics/MetaLogo",target='_blank')),
-        dbc.NavItem(dbc.NavLink("Paper",  target="_blank",href='https://www.biorxiv.org/content/10.1101/2021.08.12.456038v3')),
+        dbc.NavItem(dbc.NavLink("Paper",  target="_blank",href='https://pubmed.ncbi.nlm.nih.gov/35108357/')),
         dbc.NavItem(dbc.NavLink("Feedback", href="mailto:achenge07@163.com", target='_blank')),
     ]
 )
