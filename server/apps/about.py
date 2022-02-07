@@ -17,7 +17,13 @@ Users have plenty of options to get their custom sequence logos and basic analys
 
 Users could also download the standalone package of MetaLogo, integrate it into their own python project or easily set up a local MetaLogo server by using docker. A easy-to-use front website + a job queue organized back end could give users convenience to investigate and understand their sequences in their own computing environments. 
 
-If you think this tool is easy to use, please share it with those who need it. If you have any comments, please send an email to the maintainer via the feedback button at the top. When our article gets published, please remember to cite our work. Thank you.
+If you think this tool is easy to use, please share it with those who need it. If you have any comments, please send an email to the maintainer via the feedback button at the top. 
+
+If you use MetaLogo in your work, please kindly cite our paper:
+
+ - Chen, Yaowen, et al. "MetaLogo: a heterogeneity-aware sequence logo generator and aligner." Briefings in Bioinformatics (2021).
+
+Thank you.
 
 ''')  
 
