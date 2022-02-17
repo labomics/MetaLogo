@@ -38,7 +38,7 @@ If you want to using MetaLogo in your scripts, it is also very easy:
         'fasttreemp_bin':'../MetaLogo/dependencies/FastTreeMP',
         }
 
-    lg = logo.LogoGroup(sequences,height_algorithm='probabilities',group_strategy='length', **args)
+    lg = logo.LogoGroup(sequences,height_algorithm='probabilities',group_strategy='length', **bin_args)
     lg.draw()
 
 Note that the paths of clustal omega and fasttree bins should be given to MetaLogo, which are required for grouping.
