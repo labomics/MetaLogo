@@ -237,7 +237,13 @@ class LogoGroup(Item):
         self.target_sequence = None
         self.group_order = group_order
         self.group_strategy = group_strategy
+
         self.group_resolution = float(group_resolution)
+        if self.group_resolution > 1:
+            self.group_resolution = 1
+        if self.group_resolution < 0:
+            self.group_resolution = 0
+
         self.start_pos = start_pos
         self.logo_margin_ratio = logo_margin_ratio
         self.column_margin_ratio = column_margin_ratio

@@ -1296,7 +1296,9 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         ylabel_input = ''
     if zlabel_input is None:
         zlabel_input = ''
-
+    
+    if group_resolution >1 or group_resolution < 0:
+        return '','Error',f'Resolution should be >0 and <=1',True,''
 
     if group_limit > GROUP_LIMIT:
         return '','Error',f'Group limit not allowed > {GROUP_LIMIT}',True,''
