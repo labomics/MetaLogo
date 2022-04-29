@@ -1342,7 +1342,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
         return '','Error',f'In auto-grouping mode (MSA+Phylogenic tree+clustering), more sequences are needed.',True,''
 
     if len(seqs) == 0:
-        return '','Error','Detect no sequences with limited lengths',True,''
+        return '','Error','Detect no sequence with specified lengths (Minimum Length ~ Maximum Length)',True,''
     
 
     uid = str(uuid.uuid4())
