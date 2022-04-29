@@ -232,8 +232,8 @@ class LogoGroup(Item):
         self.seqs = seqs
         self.seq_file = seq_file
         self.seq_file_type = seq_file_type
-        self.min_length = 0
-        self.max_length = 100
+        self.min_length = min_length
+        self.max_length = max_length
         self.target_sequence = None
         self.group_order = group_order
         self.group_strategy = group_strategy
