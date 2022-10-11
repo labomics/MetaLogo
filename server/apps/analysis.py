@@ -737,7 +737,22 @@ auto_size_dropdown = dbc.FormGroup(
         ),
     ]
 )
-
+axis_rotation_dropdown = dbc.FormGroup(
+    [
+        dbc.Label("X-axis tick rotation", html_for="dropdown"),
+        dcc.Dropdown(
+            id="axis_rotation_dropdown",
+            options=[
+                {"label": "0", "value": '0'},
+                {"label": "45", "value": '45'},
+                {"label": "90", "value": '90'}
+            ],
+            value='0',
+            searchable=False,
+            clearable=False,
+        ),
+    ]
+)
 
 idsize_input = dbc.FormGroup(
     [
@@ -779,6 +794,7 @@ style_panel = dbc.Card(
                     dbc.Col(auto_size_dropdown),
                     dbc.Col(labelsize_input),
                     dbc.Col(ticksize_input),
+                    dbc.Col(axis_rotation_dropdown),
                     dbc.Col(idsize_input),
                 ]),
                 dbc.Row([
@@ -1176,6 +1192,7 @@ app.clientside_callback(
         Input('submit4', 'n_clicks')
     ],
     [
+        State('axis_rotation_dropdown','value'),
         State('auto_size_dropdown','value'),
         State('group_limit','value'),
         State('connect_tree_dropdown','value'),
@@ -1224,6 +1241,7 @@ app.clientside_callback(
     prevent_initial_call=True
 )
 def submit(nclicks1,nclicks2,nclicks3,nclicks4, 
+            axis_rotation_dropdown,
             auto_size_dropdown,
             group_limit,
             connect_tree_dropdown,
@@ -1246,6 +1264,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
     
     #check input
     for para,name in [
+                    [axis_rotation_dropdown,'x-axis rotation'],
                     [auto_size_dropdown,'auto size'],
                     [group_limit,'group limit'],
                     [connect_tree_dropdown,'connect tree'],
@@ -1425,7 +1444,7 @@ def submit(nclicks1,nclicks2,nclicks3,nclicks4,
                           group_resolution=group_resolution,create_time=int(time.time()),
                           analysis=analysis,clustering_method=clustering_method,withtree=withtree,
                           clustalo_bin=CLUSTALO_BIN,fasttreemp_bin=FASTTREEMP_BIN,fasttree_bin=FASTTREE_BIN,treecluster_bin=TREECLUSTER_BIN,
-                          group_limit=group_limit,auto_size=auto_size,
+                          group_limit=group_limit,auto_size=auto_size,x_axis_rotation=axis_rotation_dropdown
     )
 
     with open(f'{CONFIG_PATH}/{uid}.toml', 'w') as f:

@@ -50,7 +50,8 @@ def run_from_args(args):
                           group_resolution=args.group_resolution,clustering_method=args.clustering_method,
                           clustalo_bin=args.clustalo_bin,fasttreemp_bin=args.fasttreemp_bin,fasttree_bin=args.fasttree_bin,treecluster_bin=args.treecluster_bin,
                           withtree=args.withtree, group_limit = args.group_limit,
-                          auto_size=args.auto_size
+                          auto_size=args.auto_size,
+                          x_axis_rotation=args.x_axis_rotation 
                           )
     if hasattr(logogroup,'error'):
         print('error:',logogroup.error)
@@ -272,6 +273,7 @@ def main():
     parser.add_argument('--label_size',type=int,help='The size of figure xy labels',default=10)
     parser.add_argument('--tick_size',type=int,help='The size of figure ticks',default=10)
     parser.add_argument('--group_id_size',type=int,help='The size of group labels',default=10)
+    parser.add_argument('--x_axis_rotation',type=int,help='The rotation of x axis ticks',default=0)
 
     parser.add_argument('--figure_size_x',type=float,help='The width of figure',default=20)
     parser.add_argument('--figure_size_y',type=float,help='The height of figure',default=10)

@@ -226,7 +226,7 @@ class LogoGroup(Item):
                  seq_file = '', seq_file_type = 'fasta', fa_output_dir = '.', output_dir = '.', uid = '',
                  withtree = False,group_limit=20, 
                  clustalo_bin = '', fasttree_bin = '', fasttreemp_bin = '', treecluster_bin = '',
-                 auto_size=True,
+                 auto_size=True, x_axis_rotation=0,
                  *args, **kwargs):
         super(LogoGroup, self).__init__(*args, **kwargs)
         self.seqs = seqs
@@ -312,6 +312,8 @@ class LogoGroup(Item):
         
         self.group_limit = group_limit
         self.auto_size = auto_size
+
+        self.x_axis_rotation = int(x_axis_rotation)
 
         if (self.seqs is None) and (not os.path.exists(self.seq_file)):
             print('No sequences provided')
@@ -641,7 +643,9 @@ class LogoGroup(Item):
         self.ax.set_title(task_name,fontsize=self.title_size,loc='left')
 
         self.ax.tick_params(labelsize=self.tick_size)
-
+        if self.x_axis_rotation != 0:
+            self.ax.set_xticks(self.ax.get_xticks())
+            self.ax.set_xticklabels(self.ax.get_xticklabels(), rotation=self.x_axis_rotation, ha='right',rotation_mode='anchor')
 
         self.ax.spines['left'].set_visible(not self.hide_left_axis)
         self.ax.spines['right'].set_visible(not self.hide_right_axis)
