@@ -21,7 +21,7 @@ If you think this tool is easy to use, please share it with those who need it. I
 
 If you use MetaLogo in your work, please kindly cite our paper:
 
- - Chen, Yaowen, et al. "MetaLogo: a heterogeneity-aware sequence logo generator and aligner." Briefings in Bioinformatics (2021).
+ - Chen, Y., He, Z., Men, Y., Dong, G., Hu, S., & Ying, X. (2022). MetaLogo: a heterogeneity-aware sequence logo generator and aligner. Briefings in Bioinformatics, 23(2), bbab591.
 
 Thank you.
 
