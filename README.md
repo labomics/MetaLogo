@@ -27,6 +27,10 @@ If succeed, you can run MetaLogo directly:
 
     $metalogo -h
 
+Note that the paths of clustal omega and fasttree bins should be given to MetaLogo, which are required for grouping. You can have these binary files in the dependencies folder in this repo. Basically, you can run metalogo as follows:
+
+    $metalogo --seq_file examples/cdr3.fa --clustalo_bin dependencies/clustalo --fasttree_bin dependencies/FastTree --fasttreemp_bin dependencies/FastTreeMP --logo_format pdf --output_name test.xx --task_name test.xx
+
 If you want to using MetaLogo in your scripts, it is also very easy:
 
     from MetaLogo import logo

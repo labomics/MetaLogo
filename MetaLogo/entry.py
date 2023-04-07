@@ -59,11 +59,20 @@ def run_from_args(args):
     
 
     logogroup.draw()
-    logogroup.savefig(f'{args.output_dir}/{args.output_name}')
-    print(f'{args.output_dir}/{args.output_name}',' saved')
-    base_name = '.'.join(args.output_name.split('.')[:-1]) 
-    if not args.output_name.endswith('.png'):
-        logogroup.savefig(f'{args.output_dir}/{base_name}.png')
+
+    if len(args.output_name) > 0:
+        #if '.' in args.output_name:
+        #    base_name = '.'.join(args.output_name.split('.')[:-1]) 
+        #else:
+        base_name = args.output_name
+    else:
+        base_name = args.uid
+
+    logogroup.savefig(f"{args.output_dir}/{base_name}.{args.logo_format}")
+    print(f'{args.output_dir}/{base_name}.{args.logo_format}',' saved')
+
+    if  args.logo_format.lower() != 'png':
+        logogroup.savefig(f"{args.output_dir}/{base_name}.png")
         print(f'{args.output_dir}/{base_name}.png', ' saved')
 
     if args.analysis:
@@ -284,7 +293,7 @@ def main():
 
     #output 
     parser.add_argument('--output_dir',type=str,help='Output path of figure',default='figure_output')
-    parser.add_argument('--output_name',type=str,help='Output name of figure',default='test.png')
+    parser.add_argument('--output_name',type=str,help='Output name of figure',default='')
     parser.add_argument('--fa_output_dir',type=str,help='Output path of fas',default='sequence_input')
     parser.add_argument('--uid',type=str,help='Task id',default=str(uuid.uuid4()))
 
